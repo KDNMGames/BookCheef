@@ -22,7 +22,7 @@ export default function BookDocument({url,fileName='',fileType=''}) {
           const result=await mammoth.convertToHtml({arrayBuffer:buffer},{
             convertImage:mammoth.images.inline(async image=>({src:'data:'+image.contentType+';base64,'+await image.read('base64')}))
           });
-          if(active)setHtml(DOMPurify.sanitize(result.value,{ALLOWED_URI_REGEXP:/^(?:(?:https?|mailto|tel):|data:image\\/(?:png|jpeg|jpg|gif|webp|bmp);base64,)/i}));
+          if(active)setHtml(DOMPurify.sanitize(result.value,{ALLOWED_URI_REGEXP:/^(?:(?:https?|mailto|tel):|data:image\/(?:png|jpeg|jpg|gif|webp|bmp);base64,)/i}));
         }else if(['txt','md','markdown','rtf'].includes(type)){
           const value=await response.text();
           const clean=type==='rtf'?value.replace(/\\\\'[0-9a-f]{2}/gi,'').replace(/\\\\[a-z]+-?\\d* ?/gi,'').replace(/[{}]/g,''):value;
