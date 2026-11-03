@@ -40,7 +40,8 @@ export default function BookDocument({url,fileName='',fileType=''}) {
     return()=>{active=false;};
   },[url,type]);
 
-  if(type==='pdf')return <div className="document-viewer pdf-viewer"><iframe title={fileName||'PDF книга'} src={url+'#toolbar=1&navpanes=0'} /><a href={url} target="_blank" rel="noreferrer">Открыть PDF в отдельной вкладке</a></div>;\n  if(['png','jpg','jpeg','webp','gif','bmp','avif'].includes(type))return <figure className="document-image-viewer"><img src={url} alt={fileName||'Иллюстрация книги'}/></figure>;
+  if(type==='pdf')return <div className="document-viewer pdf-viewer"><iframe title={fileName||'PDF книга'} src={url+'#toolbar=1&navpanes=0'} /><a href={url} target="_blank" rel="noreferrer">Открыть PDF в отдельной вкладке</a></div>;
+  if(['png','jpg','jpeg','webp','gif','bmp','avif'].includes(type))return <figure className="document-image-viewer"><img src={url} alt={fileName||'Иллюстрация книги'}/></figure>;
   if(loading)return <p className="document-status">Загружаем документ…</p>;
   if(error)return <div className="document-error">{error}<p><a href={url} target="_blank" rel="noreferrer">Скачать исходный файл</a></p></div>;
   if(type==='docx'||type==='html'||type==='htm')return <div className="docx-content" dangerouslySetInnerHTML={{__html:html}}/>;
