@@ -24,3 +24,35 @@
 @media(max-width:600px){.question-admin{grid-template-columns:1fr}.question-admin .ghost{grid-column:auto}.choice-admin{grid-template-columns:1fr}}
 
 .choice-color-list{margin:12px 0;padding:12px;background:#09090e;border:1px solid #ffffff1b;border-radius:5px}.choice-color-list>b{font-size:11px;color:var(--accent)}.choice-color-row{display:flex;align-items:center;gap:15px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #ffffff12;font-size:11px;color:#ddd}.choice-color-row>span{flex:1;min-width:120px}.choice-color-row label{display:flex;align-items:center;gap:7px;margin:0}.choice-color-row input[type=color]{width:42px;height:30px}
+
+/* Коллекции и серии */
+.collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px}
+.collection-card{position:relative;display:block;width:100%;min-height:300px;aspect-ratio:3/4;overflow:hidden;border:1px solid #ffffff20;border-radius:5px;padding:0;background:#17131d;color:#fff;text-align:left;cursor:pointer;transition:transform .25s,border-color .25s}
+.collection-card:hover{transform:translateY(-5px);border-color:var(--accent)}
+.collection-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.collection-card:hover>img{transform:scale(1.045)}
+.collection-card-shade{position:absolute;inset:0;background:linear-gradient(180deg,#08070b05 20%,#08070bdf 100%)}
+.collection-card-copy{position:absolute;inset:auto 0 0;display:flex;flex-direction:column;gap:9px;padding:22px}
+.collection-card-copy b{font:600 23px/1.2 'Playfair Display',serif}
+.collection-card-copy small{font-size:12px;line-height:1.55;color:#e0d8ce;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.collection-card-copy em{display:flex;align-items:center;gap:6px;margin-top:4px;color:var(--accent);font:600 10px 'DM Sans';font-style:normal;text-transform:uppercase;letter-spacing:.1em}
+.collection-page{max-width:1200px;margin:0 auto;padding:55px 5% 90px}
+.collection-hero{display:grid;grid-template-columns:minmax(180px,300px) 1fr;gap:38px;align-items:center;margin:35px 0 55px}
+.collection-hero>img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:5px;box-shadow:0 20px 55px #0008}
+.collection-hero h1{font:600 clamp(32px,5vw,58px)/1.1 'Playfair Display',serif;margin:12px 0 18px}
+.collection-hero p{max-width:650px;color:#c8c0b6;line-height:1.8}
+.collection-books{padding:0}
+.collection-admin-panel{margin-bottom:25px}
+.collection-editor{display:flex;flex-direction:column;gap:14px}
+.collection-editor>label{display:flex;flex-direction:column;gap:7px;color:#c9c1b6;font-size:12px}
+.collection-editor input:not([type=checkbox]),.collection-editor textarea{width:100%;min-width:0;background:#09090e;border:1px solid #ffffff22;border-radius:4px;padding:11px;color:#f4f0e8;font:13px 'DM Sans'}
+.collection-editor input[type=file]{padding:8px}
+.collection-editor small{font-size:11px;color:#a99b88}
+.collection-book-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;padding:15px;background:#ffffff07;border:1px solid #ffffff1b;border-radius:5px}
+.collection-book-picker>b{grid-column:1/-1;color:var(--accent);font-size:12px;margin-bottom:4px}
+.collection-book-option{display:flex;align-items:center;gap:9px;min-width:0;padding:7px;background:#ffffff08;border-radius:4px;color:#eee;font-size:12px;cursor:pointer}
+.collection-book-option input{accent-color:var(--accent)}
+.collection-book-option img{width:35px;height:48px;object-fit:cover;border-radius:2px}
+.collection-book-option span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collection-manage-list{margin-top:18px}
+@media(max-width:650px){.collection-hero{grid-template-columns:110px 1fr;gap:18px;margin:25px 0 35px}.collection-hero h1{font-size:29px}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.collection-card{min-height:230px}.collection-card-copy{padding:13px}.collection-card-copy b{font-size:18px}.collection-card-copy small{font-size:10px}.collection-page{padding:35px 5% 65px}}
