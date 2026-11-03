@@ -37,8 +37,8 @@ const url=await upload(file);urls.push({url,name:file.name.replace(/\.[^.]+$/,''
 const area=contentRef.current;const source=form.book_content||'';const start=area?.selectionStart??source.length;const end=area?.selectionEnd??source.length;
 const block=urls.map(x=>'!['+x.name+']('+x.url+')').join('\n\n');
 const before=source.slice(0,start),after=source.slice(end);
-const prefix=before&& !before.endsWith('\\n\\n')?'\\n\\n':'';
-const suffix=after&& !after.startsWith('\\n\\n')?'\\n\\n':'';
+const prefix=before&& !before.endsWith('\n\n')?'\n\n':'';
+const suffix=after&& !after.startsWith('\n\n')?'\n\n':'';
 const next=before+prefix+block+suffix+after;
 setForm(v=>({...v,book_content:next}));
 requestAnimationFrame(()=>{if(area){const pos=(before+prefix+block).length;area.focus();area.setSelectionRange(pos,pos);}});
