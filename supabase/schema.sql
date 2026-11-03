@@ -50,3 +50,15 @@ drop policy if exists "Admins can update gallery images" on storage.objects;
 create policy "Admins can update gallery images" on storage.objects for update to authenticated using(bucket_id='gallery' and exists(select 1 from public.admins where user_id=auth.uid())) with check(bucket_id='gallery' and exists(select 1 from public.admins where user_id=auth.uid()));
 drop policy if exists "Admins can delete gallery images" on storage.objects;
 create policy "Admins can delete gallery images" on storage.objects for delete to authenticated using(bucket_id='gallery' and exists(select 1 from public.admins where user_id=auth.uid()));
+
+
+-- BookCheef metadata and reader migration
+alter table public.books add column if not exists author text not null default '';
+alter table public.books add column if not exists age text not null default '';
+alter table public.books add column if not exists genre text not null default '';
+alter table public.books add column if not exists series text not null default '';
+alter table public.books add column if not exists is_free boolean not null default false;
+alter table public.books add column if not exists price text;
+alter table public.books add column if not exists book_content text not null default '';
+-- Existing records with a purchase URL remain paid until edited by an administrator.
+update public.books set is_free=false where coalesce(buy_url,'')<>'';
