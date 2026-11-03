@@ -72,3 +72,7 @@
 
 /* Иллюстрации в начале и конце глав */
 .chapter-illustration{margin:22px auto 28px}.chapter-illustration img{max-width:100%;max-height:min(78vh,1000px);width:auto;height:auto;object-fit:contain}.scene-admin input[type=file]{font-size:11px;padding:8px;background:#09090e;border:1px solid #ffffff22;border-radius:4px;color:#ddd}
+
+
+/* Управление произвольными социальными ссылками в подвале */
+.social-links-editor{margin:14px 0;padding:15px;background:#ffffff07;border:1px solid #ffffff18;border-radius:5px}.social-links-editor-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.social-links-editor-head>b{font-size:12px;color:var(--accent)}.social-links-editor .panel-hint{margin:10px 0}.social-link-row{display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:end;padding:10px 0;border-top:1px solid #ffffff12}.social-link-row label{display:flex;flex-direction:column;gap:7px;margin:0;color:#c9c1b6;font-size:11px}.social-link-row input{width:100%;min-width:0;background:#09090e;border:1px solid #ffffff22;border-radius:4px;padding:10px;color:#f4f0e8;font:12px 'DM Sans'}.social-link-row .icon-btn{margin-bottom:2px}.socials a span{font-size:10px;font-weight:700;letter-spacing:.02em}@media(max-width:600px){.social-link-row{grid-template-columns:1fr auto}.social-link-row label:nth-child(2){grid-column:1/-1;grid-row:2}.social-link-row .icon-btn{grid-column:2;grid-row:1}}
