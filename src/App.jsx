@@ -30,12 +30,12 @@ setUploadingIllustration(true);setError('');
 try{
 const urls=[];
 for(const file of list){
-if(!/^image\\/(png|jpeg|webp)$/.test(file.type))throw Error('Поддерживаются PNG, JPG, JPEG и WebP.');
+if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw Error('Поддерживаются PNG, JPG, JPEG и WebP.');
 if(file.size>15*1024*1024)throw Error('Размер одной иллюстрации не должен превышать 15 МБ.');
-const url=await upload(file);urls.push({url,name:file.name.replace(/\\.[^.]+$/,'').replace(/[\\[\\]()]|!/g,' ')});
+const url=await upload(file);urls.push({url,name:file.name.replace(/\.[^.]+$/,'').replace(/[\[\]()]|!/g,' ')});
 }
 const area=contentRef.current;const source=form.book_content||'';const start=area?.selectionStart??source.length;const end=area?.selectionEnd??source.length;
-const block=urls.map(x=>'!['+x.name+']('+x.url+')').join('\\n\\n');
+const block=urls.map(x=>'!['+x.name+']('+x.url+')').join('\n\n');
 const before=source.slice(0,start),after=source.slice(end);
 const prefix=before&& !before.endsWith('\\n\\n')?'\\n\\n':'';
 const suffix=after&& !after.startsWith('\\n\\n')?'\\n\\n':'';
