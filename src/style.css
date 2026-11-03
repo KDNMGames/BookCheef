@@ -69,3 +69,6 @@
 .story-import-box summary{cursor:pointer;color:var(--accent);font-weight:600}
 .story-import-box pre{max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:#09090e;border:1px solid #ffffff1b;border-radius:4px;color:#d9d0c2;font:10px/1.55 monospace}
 .story-import-box details small,.story-import-box>small{display:block;margin-top:9px;color:#aaa39a;line-height:1.6}
+
+/* Иллюстрации в начале и конце глав */
+.chapter-illustration{margin:22px auto 28px}.chapter-illustration img{max-width:100%;max-height:min(78vh,1000px);width:auto;height:auto;object-fit:contain}.scene-admin input[type=file]{font-size:11px;padding:8px;background:#09090e;border:1px solid #ffffff22;border-radius:4px;color:#ddd}
