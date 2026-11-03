@@ -62,3 +62,8 @@ alter table public.books add column if not exists price text;
 alter table public.books add column if not exists book_content text not null default '';
 -- Existing records with a purchase URL remain paid until edited by an administrator.
 update public.books set is_free=false where coalesce(buy_url,'')<>'';
+
+-- Reader questions and branching interactive books
+alter table public.books add column if not exists is_interactive boolean not null default false;
+alter table public.books add column if not exists reader_questions jsonb not null default '[]'::jsonb;
+alter table public.books add column if not exists interactive_content jsonb;
