@@ -56,3 +56,16 @@
 .collection-book-option span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .collection-manage-list{margin-top:18px}
 @media(max-width:650px){.collection-hero{grid-template-columns:110px 1fr;gap:18px;margin:25px 0 35px}.collection-hero h1{font-size:29px}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.collection-card{min-height:230px}.collection-card-copy{padding:13px}.collection-card-copy b{font-size:18px}.collection-card-copy small{font-size:10px}.collection-page{padding:35px 5% 65px}}
+
+/* Импорт сценария BookCheef Story */
+.story-import-box{margin:0 0 18px;padding:17px;background:linear-gradient(135deg,#b88b4218,#563b7818);border:1px solid #c6a36a55;border-radius:6px}
+.story-import-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.story-import-head b{font:600 17px 'Playfair Display',serif;color:var(--accent)}
+.story-import-head span{font-size:9px;letter-spacing:.13em;color:#b7a68c}
+.story-import-box p{font-size:12px;line-height:1.65;color:#c9c1b6}
+.story-import-box>label{display:flex;flex-direction:column;gap:8px;font-size:11px;color:#ddd}
+.story-import-box input[type=file]{font-size:11px;padding:9px;background:#09090e;border:1px solid #ffffff22;border-radius:4px;color:#ddd}
+.story-import-box details{margin-top:12px;color:#ddd;font-size:11px}
+.story-import-box summary{cursor:pointer;color:var(--accent);font-weight:600}
+.story-import-box pre{max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:#09090e;border:1px solid #ffffff1b;border-radius:4px;color:#d9d0c2;font:10px/1.55 monospace}
+.story-import-box details small,.story-import-box>small{display:block;margin-top:9px;color:#aaa39a;line-height:1.6}
