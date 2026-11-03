@@ -1,0 +1,15 @@
+
+node_modules/
+dist/
+
+.env*
+*.local
+*.log
+
+*.zip
+*.txt
+reset-password.cjs
+notepad .env
+
+.DS_Store
+.vscode/
