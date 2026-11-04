@@ -99,3 +99,18 @@
 .reader-chapter-level-1{font-size:clamp(1.8rem,4vw,2.5rem);text-align:center;}
 .reader-chapter-level-2{font-size:clamp(1.45rem,3vw,2rem);}
 .reader-chapter-level-3{font-size:1.2rem;border-bottom:0;margin:1.5rem 0 .75rem;}
+
+
+/* Переключатель детского режима */
+.child-mode-toggle{display:inline-flex;align-items:center;gap:12px;margin-left:auto;padding:8px 11px;border:1px solid #ffffff25;border-radius:999px;background:#ffffff08;color:var(--ink,#f4f0e8);cursor:pointer;text-align:left;flex-shrink:0;transition:border-color .2s,background .2s}
+.child-mode-toggle:hover{border-color:var(--accent);background:#ffffff12}
+.child-mode-copy{display:flex;flex-direction:column;gap:2px}
+.child-mode-copy b{font-size:11px;letter-spacing:.02em}
+.child-mode-copy small{font-size:9px;color:#bcb3a7;white-space:nowrap}
+.child-mode-track{display:flex;align-items:center;width:36px;height:20px;padding:3px;border-radius:99px;background:#514b57;transition:background .2s}
+.child-mode-track>span{display:block;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.child-mode-toggle.is-active{border-color:var(--accent);background:#c6a36a18}
+.child-mode-toggle.is-active .child-mode-track{background:var(--accent)}
+.child-mode-toggle.is-active .child-mode-track>span{transform:translateX(16px)}
+@media(max-width:760px){.top{flex-wrap:wrap}.child-mode-toggle{order:3;margin:0 0 10px auto}.top nav{order:2}}
+@media(max-width:480px){.child-mode-toggle{width:100%;justify-content:space-between;margin:0 0 10px}.child-mode-copy small{white-space:normal}}
