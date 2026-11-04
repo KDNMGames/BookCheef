@@ -13,7 +13,7 @@ function renderFootnotedText(text,footnotes=[],style={}){
  const source=String(text??'');
  const entries=(footnotes||[]).map((f,i)=>({...f,_index:i,term:String(f.word||f.term||'').trim(),definition:String(f.text||f.note||'').trim()})).filter(f=>f.term&&f.definition).sort((a,b)=>b.term.length-a.term.length);
  if(!entries.length||!source)return source;
- const escapeRegex=value=>value.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&');
+ const escapeRegex=value=>value.replace(/[.*+?^${}()|[\\]\\]/g,'\\const escapeRegex=value=>value.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&');');
  const regex=new RegExp(entries.map(f=>escapeRegex(f.term)).join('|'),'gi');
  const markerStyle={color:style.markerColor||'#f2c879',background:style.markerBackground||'#3a2c19',borderRadius:style.markerShape==='square'?'3px':'50%'};
  const result=[];
