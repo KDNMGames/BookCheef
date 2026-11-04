@@ -92,3 +92,10 @@
 .section-chip{display:inline-flex;align-items:center;gap:6px}.section-chip-delete{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;padding:0;border:0;border-radius:50%;background:#ffffff12;color:#e6a0a0;cursor:pointer}.section-chip-delete:hover{background:#9b343455;color:#fff}.section-chip-delete:disabled{opacity:.45;cursor:wait}
 
 .footnote-marker{vertical-align:super;font-size:.72em;line-height:0;margin:0 2px}.footnote-marker a{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;text-decoration:none;font-weight:700;line-height:1}.footnote-marker a:hover{filter:brightness(1.3);transform:translateY(-1px)}.book-footnotes{margin:34px 0 24px;padding:22px 24px;border:1px solid;border-radius:14px}.book-footnotes .interactive-scene-label{margin-bottom:14px}.book-footnotes ol{margin:0;padding-left:25px;display:flex;flex-direction:column;gap:12px}.book-footnotes li{padding-left:5px;line-height:1.65}.book-footnotes li b{display:block;margin-bottom:2px}.book-footnotes li span{display:block}.footnotes-admin .question-admin{margin:14px 0}.footnote-style-editor{margin-top:16px;padding:13px;border:1px solid #ffffff20;border-radius:10px}.footnote-style-editor summary{cursor:pointer;color:var(--accent);font-weight:600;margin-bottom:12px}.footnote-style-editor[open] summary{margin-bottom:16px}.footnote-style-editor input[type=color]{height:38px;padding:3px;max-width:90px}
+
+
+/* Chapter headings in regular book text */
+.reader-chapter-heading{margin:2.2rem 0 1.15rem;padding:0 0 .8rem;color:var(--accent,#c6a36a);font-family:Georgia,serif;line-height:1.25;scroll-margin-top:2rem;border-bottom:1px solid color-mix(in srgb,var(--accent,#c6a36a) 45%,transparent);}
+.reader-chapter-level-1{font-size:clamp(1.8rem,4vw,2.5rem);text-align:center;}
+.reader-chapter-level-2{font-size:clamp(1.45rem,3vw,2rem);}
+.reader-chapter-level-3{font-size:1.2rem;border-bottom:0;margin:1.5rem 0 .75rem;}
