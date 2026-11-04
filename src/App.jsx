@@ -13,9 +13,11 @@ function renderFootnotedText(text,footnotes=[],style={}){
  const source=String(text??'');
  const entries=(footnotes||[]).map((f,i)=>({...f,_index:i,term:String(f.word||f.term||'').trim(),definition:String(f.text||f.note||'').trim()})).filter(f=>f.term&&f.definition).sort((a,b)=>b.term.length-a.term.length);
  if(!entries.length||!source)return source;
- const escapeRegex=value=>value.split('').map(ch=>"\\\\^$.*+?()[]{}|".includes(ch)?"\\\\\"+ch:ch).join('');
+ const slash=String.fromCharCode(92);
+ const specials='.*+?^$()|[]{}'+slash;
+ const escapeRegex=value=>Array.from(value,ch=>specials.includes(ch)?slash+ch:ch).join('');
  const alternatives=entries.map(f=>escapeRegex(f.term)).join('|');
- const regex=new RegExp('(?<![\\\\p{L}\\\\p{N}_])(?:'+alternatives+')(?![\\\\p{L}\\\\p{N}_])','giu');
+ const regex=new RegExp('(?<![A-Za-zА-Яа-яЁё0-9_])(?:'+alternatives+')(?![A-Za-zА-Яа-яЁё0-9_])','gi');
  const markerStyle={color:style.markerColor||'#f2c879',background:style.markerBackground||'#3a2c19',borderRadius:style.markerShape==='square'?'3px':'50%'};
  const result=[];
  let lastIndex=0,match;
