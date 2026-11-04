@@ -124,3 +124,12 @@
 .footnote-word .footnote-marker>span{display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;padding:0 3px;font-weight:700;line-height:1}
 .book-footnotes li[id]{scroll-margin-top:28px}
 .book-footnotes li:target{outline:2px solid var(--accent);outline-offset:5px;border-radius:5px;background:#ffffff0a}
+
+/* Сноски: исходное слово остаётся в тексте, номер отображается над ним */
+.footnote-word{display:inline;position:relative;color:inherit;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--accent);text-underline-offset:3px;cursor:pointer;border-radius:2px}
+.footnote-word-text{display:inline}
+.footnote-word .footnote-marker{display:inline-block;vertical-align:super;position:relative;top:-.08em;font-size:.68em;line-height:0;margin-left:2px}
+.footnote-word .footnote-marker>span{display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;padding:0 3px;font-weight:700;line-height:1}
+.book-footnotes li[id]{scroll-margin-top:35vh;outline:none}
+.book-footnotes li.footnote-target-flash{animation:footnoteTargetFlash 1.5s ease}
+@keyframes footnoteTargetFlash{0%,100%{outline:0 solid transparent;background:transparent}25%,70%{outline:2px solid var(--accent);outline-offset:5px;border-radius:5px;background:#ffffff12}}
