@@ -41,7 +41,7 @@ setUploadingIllustration(true);setError('');
 try{
 const urls=[];
 for(const file of list){
-if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw Error('Поддерживаются PNG, JPG, JPEG и WebP.');
+if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type))throw Error('Поддерживаются PNG, JPG, JPEG, WebP и GIF.');
 if(file.size>15*1024*1024)throw Error('Размер одной иллюстрации не должен превышать 15 МБ.');
 const url=await upload(file);urls.push({url,name:file.name.replace(/\.[^.]+$/,'').replace(/[\[\]()]|!/g,' ')});
 }
@@ -103,7 +103,7 @@ async function deleteCollection(id){if(!confirm('Удалить коллекци
 function addSocialLink(){setSettings(v=>({...v,social_links:[...(v.social_links||[]),{id:'social-'+Date.now().toString(36),name:'Новая соцсеть',url:'',image_url:''}]}))}
 function updateSocialLink(id,field,value){setSettings(v=>({...v,social_links:(v.social_links||[]).map(link=>link.id===id?{...link,[field]:value}:link)}))}
 function removeSocialLink(id){setSettings(v=>({...v,social_links:(v.social_links||[]).filter(link=>link.id!==id)}))}
-async function uploadSocialLogo(id,file){if(!file)return;try{if(!/^image\\/(png|jpeg|webp|gif|svg\\+xml)$/.test(file.type))throw Error('Для логотипа подходят PNG, JPG, WebP, GIF или SVG.');if(file.size>5*1024*1024)throw Error('Логотип должен быть не больше 5 МБ.');const url=await upload(file);updateSocialLink(id,'image_url',url);setNotice('Логотип загружен. Нажми «Сохранить оформление».')}catch(e){setError(e.message||'Не удалось загрузить логотип.')}}
+async function uploadSocialLogo(id,file){if(!file)return;try{if(!/^image\/(png|jpeg|webp|gif|svg\+xml)$/.test(file.type))throw Error('Для логотипа подходят PNG, JPG, WebP, GIF или SVG.');if(file.size>5*1024*1024)throw Error('Логотип должен быть не больше 5 МБ.');const url=await upload(file);updateSocialLink(id,'image_url',url);setNotice('Логотип загружен. Нажми «Сохранить оформление».')}catch(e){setError(e.message||'Не удалось загрузить логотип.')}}
 async function saveSettings(e){e.preventDefault();setSaving(true);try{let next={...settings,social_links:(settings.social_links||[]).filter(link=>String(link.name||'').trim()&&String(link.url||'').trim())};if(bgFile)next.background_url=await upload(bgFile);const {error}=await supabase.from('site_settings').upsert({id:1,data:next});if(error)throw error;setSettings(next);setBgFile(null);setNotice('Настройки сохранены')}catch(e){setError(e.message)}finally{setSaving(false)}}
 function renderContent(content){if(!content)return <p>Текст книги пока не добавлен.</p>;return content.split(/\n\s*\n/).map((block,i)=>{const m=block.trim().match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/);if(m)return <figure className="reader-figure" key={i}><img src={m[2]} alt={m[1]||'Иллюстрация'}/>{m[1]&&<figcaption>{m[1]}</figcaption>}</figure>;return <p key={i}>{block.split('\n').map((line,j)=><React.Fragment key={j}>{j>0&&<br/>}{line}</React.Fragment>)}</p>})}
 const metadata=b=>[b.author,b.age,b.genre,b.series].filter(Boolean).join(' · ');
