@@ -114,3 +114,13 @@
 .child-mode-toggle.is-active .child-mode-track>span{transform:translateX(16px)}
 @media(max-width:760px){.top{flex-wrap:wrap}.child-mode-toggle{order:3;margin:0 0 10px auto}.top nav{order:2}}
 @media(max-width:480px){.child-mode-toggle{width:100%;justify-content:space-between;margin:0 0 10px}.child-mode-copy small{white-space:normal}}
+
+
+/* Сноска не заменяет слово: слово остаётся в тексте, номер расположен над ним */
+.footnote-word{display:inline;position:relative;color:inherit;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--accent);text-underline-offset:3px;cursor:pointer;border-radius:2px}
+.footnote-word:hover{color:var(--accent)}
+.footnote-word:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.footnote-word .footnote-marker{display:inline-block;vertical-align:super;font-size:.68em;line-height:0;margin-left:2px}
+.footnote-word .footnote-marker>span{display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;padding:0 3px;font-weight:700;line-height:1}
+.book-footnotes li[id]{scroll-margin-top:28px}
+.book-footnotes li:target{outline:2px solid var(--accent);outline-offset:5px;border-radius:5px;background:#ffffff0a}
