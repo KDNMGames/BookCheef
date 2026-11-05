@@ -139,3 +139,30 @@
 .footnote-word{scroll-margin:35vh;text-decoration:none;color:inherit;cursor:pointer}.footnote-word-text{text-decoration:underline;text-decoration-style:dotted;text-decoration-color:#a8844b;text-underline-offset:3px}.footnote-marker{display:inline-block;vertical-align:super;margin-left:3px;font:700 9px/1 'DM Sans',sans-serif}.footnote-marker>span{display:inline-grid;place-items:center;min-width:15px;height:15px;padding:0 3px}.book-footnotes li{scroll-margin:30px}
 .footnote-return-button{position:fixed;right:24px;bottom:24px;z-index:30;width:52px;height:52px;border:1px solid #d6b879;border-radius:50%;background:#17151d;color:#f2d49a;display:grid;place-items:center;box-shadow:0 8px 28px #0007;cursor:pointer;transition:transform .2s,background .2s}.footnote-return-button:hover{background:#302719;transform:translateY(-3px)}
 .cookie-consent{position:fixed;left:20px;right:20px;bottom:20px;z-index:50;max-width:760px;margin:0 auto;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:22px;background:#17151df2;color:#f4f0e8;border:1px solid #c6a36a77;border-radius:8px;box-shadow:0 15px 55px #0009;backdrop-filter:blur(12px)}.cookie-consent b{font:600 17px 'Playfair Display',serif;color:#e7c17b}.cookie-consent p{margin:7px 0 0;color:#c9c1b6;font:12px/1.6 'DM Sans',sans-serif}.cookie-consent-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0}.cookie-consent-actions button{padding:10px 15px;border-radius:4px;font:600 11px 'DM Sans',sans-serif;cursor:pointer}.cookie-accept{border:1px solid #c6a36a;background:#c6a36a;color:#17120b}.cookie-reject{border:1px solid #ffffff35;background:transparent;color:#eee}.cookie-reject:hover{border-color:#c6a36a}@media(max-width:600px){.footnote-return-button{right:16px;bottom:16px;width:48px;height:48px}.cookie-consent{left:10px;right:10px;bottom:10px;padding:16px;display:block}.cookie-consent-actions{flex-direction:row;margin-top:14px}.cookie-consent-actions button{flex:1;padding:10px 8px;font-size:10px}}
+
+
+/* BookCheef Free / Pro account and promo-code UI */
+.pro-label{display:inline-flex;align-items:center;justify-content:center;padding:5px 11px;border-radius:999px;background:linear-gradient(135deg,#c6a36a,#f0d49b);color:#21180d;font-size:11px;font-weight:900;letter-spacing:.08em}
+.account-page{width:min(920px,calc(100% - 36px));min-height:58vh;margin:48px auto 90px}
+.account-panel{max-width:760px;margin:0 auto;padding:clamp(22px,4vw,42px)}
+.account-panel h1{margin:10px 0 12px;font-size:clamp(30px,5vw,46px)}
+.account-panel h2{margin:28px 0 10px}
+.account-panel .login{display:grid;gap:14px;max-width:460px;margin:22px 0}
+.account-panel .login label,.promo-redeem label,.promo-create-form label{display:grid;gap:7px}
+.account-panel input,.promo-redeem input,.promo-create-form input,.promo-create-form select{width:100%;min-width:0;padding:12px 13px;border:1px solid rgba(198,163,106,.3);border-radius:10px;background:#100f17;color:inherit}
+.subscription-status{display:flex;align-items:center;gap:15px;margin:22px 0;padding:18px;border:1px solid rgba(198,163,106,.35);border-radius:14px;background:rgba(198,163,106,.08)}
+.subscription-status>svg{width:30px;height:30px;color:#d8b879;flex:none}
+.subscription-status div{display:grid;gap:5px}
+.subscription-status small,.subscription-plans small,.promo-row small{display:block;opacity:.72}
+.subscription-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 28px}
+.subscription-plans button{display:grid;gap:8px;justify-items:start;padding:18px;border:1px solid rgba(198,163,106,.4);border-radius:14px;background:linear-gradient(145deg,rgba(198,163,106,.15),rgba(80,57,111,.14));color:inherit;text-align:left;cursor:pointer;transition:transform .2s,border-color .2s}
+.subscription-plans button:hover{transform:translateY(-3px);border-color:#d7b879}
+.subscription-plans b{font-size:20px}
+.promo-redeem{display:grid;gap:12px;max-width:460px;padding:20px;margin:24px 0;border:1px solid rgba(198,163,106,.25);border-radius:14px}
+.promo-redeem h3{margin:0}
+.promo-admin-panel{margin:24px 0}
+.promo-create-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
+.promo-list{display:grid;gap:8px;margin-top:18px}
+.promo-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(198,163,106,.2);border-radius:10px;background:rgba(255,255,255,.025)}
+.promo-row>div{display:grid;gap:4px}
+@media(max-width:760px){.subscription-plans{grid-template-columns:1fr}.subscription-plans button{grid-template-columns:1fr auto;align-items:center}.promo-create-form{grid-template-columns:1fr}.account-page{margin-top:26px}}
