@@ -40,6 +40,11 @@ returns boolean language sql stable security definer set search_path=public
 as $$ select exists(select 1 from public.admins where user_id=auth.uid()); $$;
 revoke all on function public.is_bookcheef_admin() from public;
 grant execute on function public.is_bookcheef_admin() to anon, authenticated;
+create or replace function public.has_active_pro_subscription()
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.user_subscriptions where user_id=auth.uid() and expires_at>now()); $;
+revoke all on function public.has_active_pro_subscription() from public;
+grant execute on function public.has_active_pro_subscription() to anon, authenticated;
 create or replace function public.get_my_subscription()
 returns table(is_active boolean, expires_at timestamptz)
 language sql stable security definer set search_path=public
@@ -103,10 +108,7 @@ drop policy if exists "Free or Pro subscribers read books" on public.books;
 create policy "Free or Pro subscribers read books" on public.books for select using (
   public.is_bookcheef_admin()
   or is_free = true
-  or exists (
-    select 1 from public.user_subscriptions s
-    where s.user_id = auth.uid() and s.expires_at > now()
-  )
+  or public.has_active_pro_subscription()
 );
 create or replace view public.book_catalog
 with (security_barrier=true)
@@ -124,7 +126,7 @@ begin
     and (
       b.is_free=true
       or public.is_bookcheef_admin()
-      or exists(select 1 from public.user_subscriptions s where s.user_id=auth.uid() and s.expires_at>now())
+      or public.has_active_pro_subscription()
     );
   if result is null then raise exception 'Книга доступна только по подписке Pro.'; end if;
   return result;
