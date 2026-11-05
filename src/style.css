@@ -196,6 +196,9 @@
 .profile-tabs button.active{background:#c6a36a;color:#17120b;border-color:#c6a36a;font-weight:800}
 .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
 .profile-stats>div{display:grid;justify-items:center;gap:7px;padding:17px 8px;border:1px solid #c6a36a35;border-radius:12px;background:#c6a36a0b}
+.profile-stats>button{display:grid;justify-items:center;gap:7px;padding:17px 8px;border:1px solid #c6a36a35;border-radius:12px;background:#c6a36a0b;color:inherit;cursor:pointer;font:inherit;transition:background .2s,border-color .2s,transform .2s}
+.profile-stats>button:hover,.profile-stats>button:focus-visible{background:#c6a36a20;border-color:#c6a36a;transform:translateY(-2px);outline:none}
+.profile-stats>button svg{color:#d8b879}.profile-stats>button b{font-size:25px}.profile-stats>button small{font-size:11px;color:#bcb2a5}
 .profile-stats svg{color:#d8b879}.profile-stats b{font-size:25px}.profile-stats small{font-size:11px;color:#bcb2a5}
 .profile-list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff17}
 .profile-list-row>img{width:48px;height:64px;object-fit:cover;border-radius:5px;background:#29232f}
