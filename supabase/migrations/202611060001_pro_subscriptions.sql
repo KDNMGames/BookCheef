@@ -95,3 +95,40 @@ end;
 $$;
 revoke all on function public.redeem_promo_code(text) from public;
 grant execute on function public.redeem_promo_code(text) to authenticated;
+
+
+-- Hide Pro book contents from unauthorised direct table reads.
+drop policy if exists "Public can read books" on public.books;
+drop policy if exists "Free or Pro subscribers read books" on public.books;
+create policy "Free or Pro subscribers read books" on public.books for select using (
+  public.is_bookcheef_admin()
+  or is_free = true
+  or exists (
+    select 1 from public.user_subscriptions s
+    where s.user_id = auth.uid() and s.expires_at > now()
+  )
+);
+create or replace view public.book_catalog
+with (security_barrier=true)
+as
+select id,title,description,cover_url,author,age,genre,series,is_free,is_interactive,views,created_at
+from public.books;
+grant select on public.book_catalog to anon, authenticated;
+create or replace function public.get_book_content(target_book_id uuid)
+returns jsonb language plpgsql stable security definer set search_path=public
+as $$
+declare result jsonb;
+begin
+  select to_jsonb(b) into result from public.books b
+  where b.id=target_book_id
+    and (
+      b.is_free=true
+      or public.is_bookcheef_admin()
+      or exists(select 1 from public.user_subscriptions s where s.user_id=auth.uid() and s.expires_at>now())
+    );
+  if result is null then raise exception 'Книга доступна только по подписке Pro.'; end if;
+  return result;
+end;
+$$;
+revoke all on function public.get_book_content(uuid) from public;
+grant execute on function public.get_book_content(uuid) to anon, authenticated;
