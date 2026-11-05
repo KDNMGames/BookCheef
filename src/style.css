@@ -166,3 +166,21 @@
 .promo-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(198,163,106,.2);border-radius:10px;background:rgba(255,255,255,.025)}
 .promo-row>div{display:grid;gap:4px}
 @media(max-width:760px){.subscription-plans{grid-template-columns:1fr}.subscription-plans button{grid-template-columns:1fr auto;align-items:center}.promo-create-form{grid-template-columns:1fr}.account-page{margin-top:26px}}
+
+
+/* Успешная активация подписки или промокода: окно и конфетти */
+.success-overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:22px;background:rgba(5,4,9,.78);backdrop-filter:blur(7px);overflow:hidden;animation:successFadeIn .25s ease both}
+.success-dialog{position:relative;z-index:2;width:min(460px,100%);padding:clamp(26px,5vw,42px);border:1px solid #d8b87988;border-radius:20px;background:linear-gradient(145deg,#211b2b,#111018 75%);box-shadow:0 25px 90px #000b;text-align:center;animation:successPop .45s cubic-bezier(.2,.85,.25,1.2) both}
+.success-dialog h2{margin:13px 0 10px;color:#f3d69a;font:600 clamp(25px,5vw,34px)/1.15 'Playfair Display',serif}
+.success-dialog p{margin:0 0 24px;color:#d4cabb;font:14px/1.7 'DM Sans',sans-serif}
+.success-dialog .primary{min-width:150px}
+.success-check{display:grid;place-items:center;width:66px;height:66px;margin:0 auto 18px;border:2px solid #d9bd7b;border-radius:50%;background:#c6a36a20;color:#f1d79e;font-size:37px;font-weight:700;box-shadow:0 0 35px #d7b87935}
+.success-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.success-confetti span{position:absolute;top:-18px;left:var(--confetti-x);width:9px;height:15px;border-radius:2px;background:hsl(calc((var(--confetti-x) * 3.6)),75%,68%);opacity:.95;transform:rotate(var(--confetti-rotate));animation:successConfettiFall 3.6s linear var(--confetti-delay) infinite}
+.success-confetti span:nth-child(3n){width:7px;height:7px;border-radius:50%;background:#f4d58e}
+.success-confetti span:nth-child(3n + 1){background:#bba4e8}
+.success-confetti span:nth-child(3n + 2){background:#8ed9bd}
+@keyframes successFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes successPop{from{opacity:0;transform:translateY(18px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes successConfettiFall{0%{translate:0 -5vh;rotate:0deg;opacity:0}10%{opacity:1}100%{translate:var(--confetti-drift) 110vh;rotate:760deg;opacity:.8}}
+@media(prefers-reduced-motion:reduce){.success-overlay,.success-dialog,.success-confetti span{animation:none}}
