@@ -184,3 +184,39 @@
 @keyframes successPop{from{opacity:0;transform:translateY(18px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes successConfettiFall{0%{translate:0 -5vh;rotate:0deg;opacity:0}10%{opacity:1}100%{translate:var(--confetti-drift) 110vh;rotate:760deg;opacity:.8}}
 @media(prefers-reduced-motion:reduce){.success-overlay,.success-dialog,.success-confetti span{animation:none}}
+
+/* Личный кабинет: избранное, история чтения и оценки */
+.profile-head{display:flex;align-items:center;gap:14px;margin:24px 0;padding:16px;border:1px solid #ffffff1c;border-radius:14px;background:#ffffff08}
+.profile-avatar{display:grid;place-items:center;width:52px;height:52px;flex:none;border-radius:50%;background:#c6a36a20;color:#e7c17b}
+.profile-head>div:nth-child(2){display:grid;gap:5px;min-width:0;overflow-wrap:anywhere}
+.profile-head small,.profile-list-row small{display:block;color:#b7ad9f;font-size:11px;margin-top:4px}
+.profile-logout{margin-left:auto;flex:none}
+.profile-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 24px;padding-bottom:12px;border-bottom:1px solid #ffffff20}
+.profile-tabs button{padding:9px 13px;border:1px solid #ffffff20;border-radius:999px;background:#ffffff08;color:#ddd;cursor:pointer;font-size:12px}
+.profile-tabs button.active{background:#c6a36a;color:#17120b;border-color:#c6a36a;font-weight:800}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+.profile-stats>div{display:grid;justify-items:center;gap:7px;padding:17px 8px;border:1px solid #c6a36a35;border-radius:12px;background:#c6a36a0b}
+.profile-stats svg{color:#d8b879}.profile-stats b{font-size:25px}.profile-stats small{font-size:11px;color:#bcb2a5}
+.profile-list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff17}
+.profile-list-row>img{width:48px;height:64px;object-fit:cover;border-radius:5px;background:#29232f}
+.profile-list-row>span{flex:1;min-width:0}.profile-list-row>span b{display:block;overflow-wrap:anywhere}
+.profile-book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin:14px 0 26px}
+.profile-book{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid #ffffff1b;border-radius:10px;background:#ffffff06}
+.profile-book img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:5px}
+.profile-book>b{font-size:12px;line-height:1.4}.profile-book .ghost{justify-content:center}
+.text-action{border:0;background:none;color:#d8b879;font-size:11px;cursor:pointer;text-align:left;padding:5px 0}
+.muted{color:#b7ad9f;font-size:13px}
+.favorite-chip{position:absolute;z-index:5;top:10px;right:10px;width:38px;height:38px;display:grid;place-items:center;border:1px solid #ffffff66;border-radius:50%;background:#100e17c9;color:#fff;cursor:pointer;backdrop-filter:blur(8px)}
+.favorite-chip.active,.collection-favorite.active{color:#ff8298;border-color:#ff8298;background:#321723}
+.card-under{position:relative}
+.card-rating{display:inline-flex;align-items:center;gap:4px;margin-left:8px;color:#c7bba9;font-size:10px}
+.card-rating svg:first-child{color:#9bd5b0}.card-rating svg:nth-of-type(2){color:#e49b9b;margin-left:4px}
+.collection-card-wrap{position:relative;min-width:0}
+.collection-favorite{position:absolute;z-index:4;top:12px;right:12px;width:38px;height:38px;display:grid;place-items:center;border:1px solid #ffffff70;border-radius:50%;background:#100e17c9;color:#fff;cursor:pointer}
+.detail-reader-actions{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin:22px 0;padding:16px;border:1px solid #c6a36a3d;border-radius:12px;background:#c6a36a0b}
+.book-rating-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.book-rating-actions>b{width:100%;font-size:12px;color:#d8cbb6;margin-bottom:3px}
+.book-rating-actions button{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #ffffff26;border-radius:8px;background:#ffffff08;color:#e9e1d5;cursor:pointer;font-size:12px}
+.book-rating-actions button.selected{border-color:#c6a36a;background:#c6a36a20;color:#f1d79e}
+.book-rating-actions button span{font-weight:800}
+@media(max-width:600px){.profile-head{flex-wrap:wrap}.profile-logout{margin-left:0}.profile-stats{gap:7px}.profile-stats>div{padding:13px 5px}.profile-stats small{font-size:9px}.profile-tabs{flex-wrap:nowrap;overflow-x:auto}.profile-tabs button{white-space:nowrap}.profile-list-row{flex-wrap:wrap}.profile-list-row>span{min-width:calc(100% - 70px)}.detail-reader-actions>.primary{width:100%;justify-content:center}.book-rating-actions{width:100%}.book-rating-actions button{flex:1;justify-content:center}}
