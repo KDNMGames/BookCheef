@@ -132,3 +132,5 @@ end;
 $$;
 revoke all on function public.get_book_content(uuid) from public;
 grant execute on function public.get_book_content(uuid) to anon, authenticated;
+
+NOTIFY pgrst, 'reload schema';
