@@ -46,8 +46,9 @@ create policy "Users manage own reading history" on public.user_reading_history
 for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
 
 drop policy if exists "Ratings are publicly readable" on public.book_ratings;
-create policy "Ratings are publicly readable" on public.book_ratings
-for select to anon,authenticated using(true);
+drop policy if exists "Users read own ratings" on public.book_ratings;
+create policy "Users read own ratings" on public.book_ratings
+for select to authenticated using(user_id=auth.uid());
 drop policy if exists "Users manage own ratings" on public.book_ratings;
 create policy "Users manage own ratings" on public.book_ratings
 for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
@@ -55,7 +56,7 @@ for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid()
 grant select,insert,delete on public.user_book_favorites to authenticated;
 grant select,insert,delete on public.user_collection_favorites to authenticated;
 grant select,insert,update,delete on public.user_reading_history to authenticated;
-grant select on public.book_ratings to anon,authenticated;
+grant select on public.book_ratings to authenticated;
 grant insert,update,delete on public.book_ratings to authenticated;
 
 create index if not exists user_reading_history_last_opened_idx
@@ -63,4 +64,20 @@ on public.user_reading_history(user_id,last_opened_at desc);
 create index if not exists book_ratings_book_idx
 on public.book_ratings(book_id,rating);
 
+notify pgrst,'reload schema';
+
+-- Public counts without exposing individual reader identities
+create or replace function public.get_book_rating_summary()
+returns table(book_id uuid, likes bigint, dislikes bigint, my_rating smallint)
+language sql stable security definer set search_path=public
+as $$
+  select r.book_id,
+    count(*) filter (where r.rating=1) as likes,
+    count(*) filter (where r.rating=-1) as dislikes,
+    max(r.rating) filter (where r.user_id=auth.uid()) as my_rating
+  from public.book_ratings r
+  group by r.book_id;
+$$;
+revoke all on function public.get_book_rating_summary() from public;
+grant execute on function public.get_book_rating_summary() to anon,authenticated;
 notify pgrst,'reload schema';
