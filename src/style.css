@@ -262,3 +262,37 @@
 @media(max-width:600px){.reader-scale-tools{margin:24px 18px -24px;justify-content:flex-start}.reader-scale-tools>span{width:100%}.reader p{font-size:calc(15px * var(--reader-scale,1))}}
 
 .reader-scale-preview{flex-basis:100%;max-width:850px;margin:6px auto 0;padding:12px 16px;border:1px solid #c6a36a44;border-radius:10px;background:#17151dcc;color:#eee8dc;line-height:1.55;transition:font-size .15s ease}
+
+
+/* Лёгкие анимации интерфейса: только opacity и transform, без тяжёлых эффектов */
+@keyframes bc-page-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bc-section-enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bc-soft-pop{from{opacity:.75;transform:scale(.985)}to{opacity:1;transform:scale(1)}}
+.app>main{animation:bc-page-enter .28s ease-out both}
+.hero{animation:bc-section-enter .42s ease-out both}
+.catalog{animation:bc-section-enter .38s ease-out both}
+.catalog:nth-of-type(2){animation-delay:.04s}
+.catalog:nth-of-type(3){animation-delay:.08s}
+.catalog:nth-of-type(4){animation-delay:.12s}
+.detail-layout,.collection-hero,.account-panel{animation:bc-soft-pop .32s ease-out both}
+.book-card{animation:bc-section-enter .32s ease-out both}
+.book-card:nth-child(2){animation-delay:.035s}
+.book-card:nth-child(3){animation-delay:.07s}
+.book-card:nth-child(4){animation-delay:.105s}
+.book-card:nth-child(n+5){animation-delay:0s}
+.top nav button,.ghost,.primary,.hero-cta,.buy,.filters button,.collection-card,.socials a,.favorite-btn,.icon-btn,.back-link,.reader-scale-tools button{transition:color .16s ease,background-color .16s ease,border-color .16s ease,opacity .16s ease,transform .16s ease}
+.top nav button:hover,.ghost:hover,.primary:hover,.hero-cta:hover,.buy:hover,.filters button:hover,.collection-card:hover,.socials a:hover,.favorite-btn:hover,.icon-btn:hover{transform:translateY(-2px)}
+.book-card:hover .book-front>img{transform:scale(1.025)}
+.book-inner{transition:transform .48s cubic-bezier(.2,.7,.2,1)}
+.book-front>img{transition:transform .48s ease}
+.interactive-scene,.interactive-choices,.reader-question,.book-footnotes{animation:bc-section-enter .24s ease-out both}
+.interactive-choices button,.interactive-ending button,.reader-question button{transition:filter .16s ease,transform .16s ease}
+.interactive-choices button:hover,.interactive-ending button:hover,.reader-question button:hover{transform:translateY(-1px)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(hover:none){.top nav button:hover,.ghost:hover,.primary:hover,.hero-cta:hover,.buy:hover,.filters button:hover,.collection-card:hover,.socials a:hover,.favorite-btn:hover,.icon-btn:hover{transform:none}.book-inner{transition-duration:.32s}}
+@media(max-width:800px){.app{background-attachment:scroll}}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+ .app>main,.hero,.catalog,.detail-layout,.collection-hero,.account-panel,.book-card,.interactive-scene,.interactive-choices,.reader-question,.book-footnotes{animation:none!important}
+}
