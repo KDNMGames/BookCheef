@@ -227,3 +227,16 @@
 
 /* Общий процент рейтинга и единый цвет кнопок оценки */
 .card-rating{color:#d8cbb6;font-size:11px;white-space:nowrap}.card-rating b{color:#f1d79e;font-weight:700}.book-rating-percent{font-size:12px;color:#f1d79e;font-weight:700;padding:5px 9px;border:1px solid #c6a36a55;border-radius:6px}.book-rating-actions button{color:#e9e1d5}.book-rating-actions button svg{color:inherit}.book-rating-actions button.selected{color:#f1d79e;border-color:#c6a36a;background:#c6a36a20}
+
+
+/* Download Android app from the personal account */
+.app-download-panel{max-width:760px;margin:18px auto 0;padding:clamp(22px,4vw,34px);display:flex;align-items:flex-start;gap:20px;border:1px solid rgba(198,163,106,.38);background:linear-gradient(135deg,rgba(198,163,106,.12),rgba(80,57,111,.12))}
+.app-download-icon{width:58px;height:58px;flex:none;display:grid;place-items:center;border-radius:16px;background:rgba(198,163,106,.14);font-size:30px}
+.app-download-copy{min-width:0}
+.app-download-copy h2{margin:5px 0 8px}
+.app-download-copy p{margin:0 0 17px;line-height:1.65;opacity:.86}
+.app-download-button{display:inline-flex;align-items:center;gap:12px;padding:13px 18px;border-radius:11px;background:var(--accent,#c6a36a);color:#17120b;text-decoration:none;font-weight:750;transition:transform .2s,filter .2s}
+.app-download-button:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.app-download-copy>small{display:block;margin-top:12px;line-height:1.55;opacity:.7}
+.app-download-release-link{display:inline-block;margin-top:10px;color:var(--accent,#c6a36a);font-size:13px}
+@media(max-width:560px){.app-download-panel{gap:13px;padding:20px}.app-download-icon{width:44px;height:44px;font-size:24px}.app-download-button{width:100%;justify-content:center;text-align:center}}
