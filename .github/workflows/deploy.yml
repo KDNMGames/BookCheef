@@ -22,6 +22,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Private logo repository is accessed only when explicitly enabled.
+      # DATABASE_REPO_TOKEN must be a fine-grained, read-only token.
+      - name: Check out private branding assets
+        if: ${{ vars.ENABLE_PRIVATE_BRANDING == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: KDNMGames/BookCheef_DataBase
+          ref: main
+          token: ${{ secrets.DATABASE_REPO_TOKEN }}
+          path: .private-brand-assets
+          sparse-checkout: |
+            Logos/SiteLogos
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Copy site favicon from private repository
+        if: ${{ vars.ENABLE_PRIVATE_BRANDING == 'true' }}
+        shell: bash
+        run: |
+          mkdir -p public
+          if [ -f .private-brand-assets/Logos/SiteLogos/favicon.png ]; then
+            cp .private-brand-assets/Logos/SiteLogos/favicon.png public/favicon.png
+            echo "Private favicon copied into the public build."
+          elif [ -f .private-brand-assets/Logos/SiteLogos/favicon.ico ]; then
+            cp .private-brand-assets/Logos/SiteLogos/favicon.ico public/favicon.ico
+            echo "Private favicon copied into the public build."
+          else
+            echo "::notice::No favicon file found; upload favicon.png or favicon.ico to Logos/SiteLogos."
+          fi
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
