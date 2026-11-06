@@ -240,3 +240,23 @@
 .app-download-copy>small{display:block;margin-top:12px;line-height:1.55;opacity:.7}
 .app-download-release-link{display:inline-block;margin-top:10px;color:var(--accent,#c6a36a);font-size:13px}
 @media(max-width:560px){.app-download-panel{gap:13px;padding:20px}.app-download-icon{width:44px;height:44px;font-size:24px}.app-download-button{width:100%;justify-content:center;text-align:center}}
+
+
+/* Accessibility: reader text scaling and mobile account shortcut */
+.reader-scale-tools{max-width:850px;margin:34px auto -48px;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;color:#d9d1c5;font-size:13px}
+.reader-scale-tools>span{margin-right:auto;color:#c6a36a}
+.reader-scale-tools button{min-width:38px;padding:8px 11px;border:1px solid #c6a36a66;border-radius:8px;background:#17151d;color:#f4efe5;cursor:pointer}
+.reader-scale-tools button:hover{border-color:#d8b879;background:#292330}
+.reader-scale-tools output{min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
+.reader p{font-size:calc(17px * var(--reader-scale,1))}
+.reader .docx-content,.reader .txt-content{font-size:calc(17px * var(--reader-scale,1))}
+.reader .docx-content p,.reader .txt-content p{font-size:inherit}
+.mobile-account-link{display:none;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border:1px solid #c6a36a66;border-radius:50%;background:#ffffff0a;color:var(--accent);cursor:pointer}
+@media(max-width:700px){
+ .top{padding:0 16px;gap:10px}
+ .top nav{gap:12px}
+ .top nav .desktop-account-link{display:none}
+ .mobile-account-link{display:inline-flex;margin-left:auto}
+ .top nav{flex:1;justify-content:center}
+}
+@media(max-width:600px){.reader-scale-tools{margin:24px 18px -24px;justify-content:flex-start}.reader-scale-tools>span{width:100%}.reader p{font-size:calc(15px * var(--reader-scale,1))}}
