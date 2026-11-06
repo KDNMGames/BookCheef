@@ -260,3 +260,5 @@
  .top nav{flex:1;justify-content:center}
 }
 @media(max-width:600px){.reader-scale-tools{margin:24px 18px -24px;justify-content:flex-start}.reader-scale-tools>span{width:100%}.reader p{font-size:calc(15px * var(--reader-scale,1))}}
+
+.reader-scale-preview{flex-basis:100%;max-width:850px;margin:6px auto 0;padding:12px 16px;border:1px solid #c6a36a44;border-radius:10px;background:#17151dcc;color:#eee8dc;line-height:1.55;transition:font-size .15s ease}
