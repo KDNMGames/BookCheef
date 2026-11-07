@@ -1,0 +1,43 @@
+name: BookCheef marketing publication reports
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "marketing/outbox/*.json"
+  workflow_dispatch:
+    inputs:
+      report_file:
+        description: "Path to a report JSON file in marketing/outbox/"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-marketing-reports
+  cancel-in-progress: false
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Send publication report to BookCheef bot admins
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_SHA: ${{ github.sha }}
+          MANUAL_REPORT_FILE: ${{ inputs.report_file }}
+        run: |
+          if [ -n "$MANUAL_REPORT_FILE" ]; then
+            node scripts/send-marketing-report.mjs "$MANUAL_REPORT_FILE"
+          else
+            node scripts/send-marketing-report.mjs
+          fi
