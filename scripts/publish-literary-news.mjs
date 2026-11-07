@@ -1,7 +1,5 @@
 const feeds = [
   "https://readrate.com/rus/rss/news",
-  "https://lithub.com/feed/",
-  "https://www.theguardian.com/books/rss",
 ];
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -72,7 +70,7 @@ for (const url of feeds) {
 const unique = [...new Map(candidates.map(x => [x.link, x])).values()]
   .filter(x => !seen.has(x.link))
   .sort((a, b) => b.date - a.date)
-  .slice(0, 2);
+  .slice(0, 1);
 
 if (!unique.length) {
   console.log("No new verified RSS items in the last five days; nothing posted.");
