@@ -216,7 +216,7 @@ Deno.serve(async (req: Request) => {
   const suppliedPublisherToken = req.headers.get("x-book-audio-publisher-token") ?? "";
   const internalCall = !!configuredPublisherToken && safeEqual(suppliedPublisherToken, configuredPublisherToken);
   const auth = req.headers.get("Authorization") ?? "";
-  const accessToken = auth.replace(/^Bearer\\s+/i, "");
+  const accessToken = auth.replace(/^Bearer\s+/i, "");
   if (!internalCall && !accessToken) return json({ error: "Требуется авторизация" }, 401);
 
   const adminDb = createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
