@@ -26,7 +26,7 @@ The manifest must record: title, publication_key, author, age, genre, series, ta
 ## Resumable writing protocol
 
 1. When long-form mode is requested, create the manuscript bible and a chapter-by-chapter outline before drafting. Each chapter entry has a purpose, viewpoint characters, conflict, turning point, continuity dependencies, and expected word range.
-2. Write in bounded batches of at most TWO chapters per automation run. Aim for 2,500–3,500 words per chapter; do not sacrifice quality to hit a number. Never try to emit the entire novel in one response or one JSON payload.
+2. Write in bounded batches of at most TWO chapters per automation run. Aim for 3,000–4,000 words per chapter; do not sacrifice quality to hit a number. Never try to emit the entire novel in one response or one JSON payload.
 3. Save each completed chapter as its own Markdown file immediately. Update manifest word counts, synopsis, completed_chapters and next_chapter in the same run. Commit/checkpoint after each batch. Do not overwrite a completed chapter unless a specific revision is required; preserve the previous content in a versioned backup file before revising.
 4. At the beginning of every subsequent run, inspect all draft manifests. If a long-form draft is incomplete, resume the oldest active draft before starting another book. Read its bible, outline, latest chapter, and previous chapter summaries. Continue from next_chapter; never restart, rename the work, or silently discard saved chapters.
 5. After each chapter, perform continuity checks against the bible and previous summaries: character identity/age/relationships, chronology, geography, established facts, unresolved plotlines, viewpoint, and consequences. Record a concise continuity note in the manifest or chapter synopsis. If a contradiction is found, fix the smallest relevant passage and preserve the prior version.
@@ -43,3 +43,17 @@ The manifest must record: title, publication_key, author, age, genre, series, ta
 - GitHub is the durable manuscript checkpoint store; the final reader still receives one assembled book_content field. No new Supabase tables or schema changes are needed for this protocol.
 - If the assembled payload or reader has a practical size/performance limit, report the measured limit and stop before publication rather than truncating the book. Do not split a single novel into unrelated catalog entries without user approval.
 - Keep normal short-book automation behavior for requests that do not ask for a long-form novel.
+
+## Illustration and visual continuity rules
+
+- Generate no images while the manuscript is incomplete. After the complete text and editorial audit, create a visual passport from the cover concept: medium/technique, line/detail treatment, palette, lighting, contrast, texture, and realism.
+- Repeat one identical concise style anchor in the cover prompt and every internal illustration prompt. Change only the depicted episode, framing, and camera angle. Do not mix media, palettes, lighting, or realism levels within one book.
+- Every published book requires a cover and 1–5 internal illustrations. For a long ordinary novel, select 1–5 high-value moments across the complete manuscript; do not mechanically illustrate every chapter. Put illustration markers beside the corresponding visual episode and ensure the publisher replaces every marker.
+- Prefer environments, architecture, objects, and silhouettes over complex close-up anatomy. Avoid crowds, tangled hands, complex gestures, extra limbs, collages, text, logos, and watermarks. Do not claim images are defect-free unless the generated files were actually inspected.
+- The five-scene/one-image-per-scene rule applies to interactive books only. An ordinary long novel is not limited to five chapters or scenes; it still has no more than five internal illustrations because of the current publisher limit.
+
+## Author and series continuity
+
+- Maintain a reusable pool of original pseudonymous authors and series. Store each author's distinct voice and biography in `book-publications/authors/<latin-slug>.json`; check existing author bibles and the catalog before inventing a new author or series.
+- Do not use the prohibited fixed author names specified in the active BookCheef automation. Do not imitate a specific living or deceased author's recognizable style or reuse protected characters/worlds.
+- Select age rating from the actual content and intended audience, not to force demographic variety. Preserve series-world and character continuity across books.
