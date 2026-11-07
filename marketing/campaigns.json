@@ -1,0 +1,27 @@
+{
+  "campaigns": [
+    {
+      "id": "launch-2026-11",
+      "name": "Старт продвижения BookCheef",
+      "created_at": "2026-11-08",
+      "status": "prepared",
+      "channels": [
+        "website",
+        "telegram"
+      ],
+      "audience": "Русскоязычные читатели, любители фантастики, фэнтези, детских книг и интерактивной литературы",
+      "assets": [
+        "intro",
+        "free-books",
+        "interactive-books",
+        "weekly-new-books"
+      ],
+      "publications": [],
+      "metrics": {
+        "site_clicks": null,
+        "telegram_subscribers_gained": null,
+        "notes": "Сбор статистики подключается отдельно; исходные показатели нужно зафиксировать перед первой публикацией."
+      }
+    }
+  ]
+}
