@@ -8,7 +8,7 @@ export default function AdminAudioManager({books=[]}){
   const selected=candidates.find(book=>String(book.id)===String(selectedId))||null;
   return <section className="panel admin-audio-manager">
     <div className="panel-title"><h2>Создание аудиокниг</h2><Headphones size={19}/></div>
-    <p className="panel-hint">Выбери опубликованную книгу или черновик из каталога, чтобы создать или обновить её аудиоверсию. Озвучка выполняется по главам и сохраняется в отдельном защищённом хранилище.</p>
+    <p className="panel-hint">Новые обычные книги автоматически попадают в очередь озвучки после публикации. Фоновая задача обрабатывает главы постепенно и повторяет попытки после восстановления бесплатной квоты. Здесь можно вручную запустить или обновить аудиоверсию выбранной книги.</p>
     <label className="admin-audio-book-select">Книга для озвучки
       <select value={selectedId} onChange={event=>setSelectedId(event.target.value)}>
         <option value="">Выбери книгу…</option>
