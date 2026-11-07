@@ -4,7 +4,7 @@
       "id": "launch-2026-11",
       "name": "Старт продвижения BookCheef",
       "created_at": "2026-11-08",
-      "status": "prepared",
+      "status": "research_started",
       "channels": [
         "website",
         "telegram"
@@ -21,7 +21,14 @@
         "site_clicks": null,
         "telegram_subscribers_gained": null,
         "notes": "Сбор статистики подключается отдельно; исходные показатели нужно зафиксировать перед первой публикацией."
-      }
+      },
+      "last_research_at": "2026-11-08",
+      "research_report": "marketing/reports/2026-11-08-initial-scan.md",
+      "platforms_checked": 6,
+      "third_party_auto_allowed": 0,
+      "third_party_manual_or_review": 3,
+      "third_party_blocked": 3,
+      "external_publications": []
     }
   ]
 }
