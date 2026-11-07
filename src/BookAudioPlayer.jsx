@@ -1,4 +1,4 @@
-import React,{useEffect,useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {supabase} from './supabase';
 import {Headphones,RefreshCw,LoaderCircle,Volume2,CheckCircle2} from 'lucide-react';
 
@@ -36,6 +36,8 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
   const [generating,setGenerating]=useState(false);
   const [progress,setProgress]=useState({done:0,total:0,title:''});
   const [error,setError]=useState('');
+  const [playingAll,setPlayingAll]=useState(false);
+  const audioRef=useRef(null);
 
   async function reload(){
     if(!supabase||!book?.id){setAudioChapters([]);setLoading(false);return;}
@@ -52,7 +54,7 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
     setLoading(false);
   }
 
-  useEffect(()=>{setError('');setAudioUrl('');setSelectedIndex(null);reload();},[book?.id]);
+  useEffect(()=>{setError('');setAudioUrl('');setSelectedIndex(null);setPlayingAll(false);reload();},[book?.id]);
 
   useEffect(()=>{
     let active=true;
@@ -70,6 +72,26 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
     resolveUrl();
     return()=>{active=false;};
   },[audioChapters,selectedIndex]);
+
+  useEffect(()=>{
+    if(!playingAll||!audioUrl||!audioRef.current)return;
+    audioRef.current.play().catch(()=>setPlayingAll(false));
+  },[playingAll,audioUrl]);
+
+  function playWholeBook(){
+    if(!audioChapters.length)return;
+    setError('');
+    setPlayingAll(true);
+    setSelectedIndex(audioChapters[0].chapter_index);
+  }
+
+  function handleTrackEnded(){
+    if(!playingAll)return;
+    const currentPosition=audioChapters.findIndex(item=>item.chapter_index===selectedIndex);
+    const next=audioChapters[currentPosition+1];
+    if(next)setSelectedIndex(next.chapter_index);
+    else setPlayingAll(false);
+  }
 
   async function generateAll(){
     if(!supabase||!allowGeneration||generating)return;
@@ -113,7 +135,10 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
         </select>
       </label>
       {selected?<span className="book-audio-duration">{durationLabel(selected.duration_seconds)}</span>:null}
-      {urlLoading?<span className="book-audio-loading"><LoaderCircle size={16}/> Загружаем аудио…</span>:audioUrl?<audio controls preload="metadata" src={audioUrl} className="book-audio-element">Ваш браузер не поддерживает аудиоплеер.</audio>:null}
+      <button type="button" className="ghost book-audio-play-all" onClick={playingAll?()=>{setPlayingAll(false);audioRef.current?.pause();}:playWholeBook} disabled={!audioChapters.length||urlLoading}>
+        {playingAll?'Остановить книгу':'Слушать '+(readyCount===chapters.length?'книгу целиком':'все готовые главы')}
+      </button>
+      {urlLoading?<span className="book-audio-loading"><LoaderCircle size={16}/> Загружаем аудио…</span>:audioUrl?<audio ref={audioRef} controls preload="metadata" src={audioUrl} onEnded={handleTrackEnded} onPause={()=>{}} className="book-audio-element">Ваш браузер не поддерживает аудиоплеер.</audio>:null}
     </div>:<p className="book-audio-empty">{loading?'Загружаем список аудиоглав…':'Аудиоверсия пока не создана.'}</p>}
     {allowGeneration&&chapters.length>0?<div className="book-audio-admin">
       <button type="button" className="primary" onClick={generateAll} disabled={generating}>
