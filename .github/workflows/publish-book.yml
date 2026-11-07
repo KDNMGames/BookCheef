@@ -42,7 +42,7 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            FILE="book-publications/inbox/2026-11-07-archive-forgotten-rains.json"
+            FILE="book-publications/inbox/2026-11-07-city-listened-to-trees.json"
           fi
           echo "Selected publication package: ${FILE}"
 
