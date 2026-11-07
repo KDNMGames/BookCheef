@@ -3,7 +3,7 @@ import {Headphones,BookOpen,Info} from 'lucide-react';
 import BookAudioPlayer from './BookAudioPlayer.jsx';
 
 export default function AdminAudioManager({books=[]}){
-  const candidates=useMemo(()=>books.filter(book=>String(book.book_content||'').trim().length>0),[books]);
+  const candidates=useMemo(()=>books.filter(book=>String(book.book_content||'').trim().length>0||(Array.isArray(book.interactive_content?.nodes)&&book.interactive_content.nodes.some(node=>String(node?.text||'').trim()))),[books]);
   const [selectedId,setSelectedId]=useState('');
   const selected=candidates.find(book=>String(book.id)===String(selectedId))||null;
   return <section className="panel admin-audio-manager">
