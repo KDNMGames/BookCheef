@@ -4,9 +4,9 @@ This protocol is for books explicitly requested as novels, sagas, or very large 
 
 ## Scale targets
 
-- Target manuscript: 300,000–400,000 words (configurable per request); never claim the target has been met without counting words in the assembled manuscript.
-- Plan: 4 volumes, approximately 25–35 chapters per volume (about 100–140 chapters total).
-- Typical chapter: 2,500–3,500 words. Chapter count and length may vary to serve the story.
+- Target manuscript: 500,000–600,000 words (configurable per request); never claim the target has been met without counting words in the assembled manuscript.
+- Plan: 5 volumes, approximately 30–36 chapters per volume (about 150–180 chapters total).
+- Typical chapter: 3,000–4,000 words. Chapter count and length may vary to serve the story.
 - Build a substantial cast, several intersecting plotlines, a dated chronology, geography, social/historical rules, and a clear ending. Avoid padding and repetitive scenes.
 - A long novel is an ordinary book unless the user explicitly requests interactive format. The existing interactive-book five-scene/image cap does not limit ordinary novels.
 
