@@ -26,7 +26,7 @@ function durationLabel(value){
   return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');
 }
 
-export default function BookAudioPlayer({book,isAdmin=false}){
+export default function BookAudioPlayer({book,allowGeneration=false}){
   const chapters=useMemo(()=>parseChapters(book?.book_content,book?.title),[book?.book_content,book?.title]);
   const [audioChapters,setAudioChapters]=useState([]);
   const [selectedIndex,setSelectedIndex]=useState(null);
@@ -72,7 +72,7 @@ export default function BookAudioPlayer({book,isAdmin=false}){
   },[audioChapters,selectedIndex]);
 
   async function generateAll(){
-    if(!supabase||!isAdmin||generating)return;
+    if(!supabase||!allowGeneration||generating)return;
     setGenerating(true);setError('');
     const total=chapters.length;
     setProgress({done:0,total,title:''});
@@ -115,7 +115,7 @@ export default function BookAudioPlayer({book,isAdmin=false}){
       {selected?<span className="book-audio-duration">{durationLabel(selected.duration_seconds)}</span>:null}
       {urlLoading?<span className="book-audio-loading"><LoaderCircle size={16}/> Загружаем аудио…</span>:audioUrl?<audio controls preload="metadata" src={audioUrl} className="book-audio-element">Ваш браузер не поддерживает аудиоплеер.</audio>:null}
     </div>:<p className="book-audio-empty">{loading?'Загружаем список аудиоглав…':'Аудиоверсия пока не создана.'}</p>}
-    {isAdmin&&chapters.length>0?<div className="book-audio-admin">
+    {allowGeneration&&chapters.length>0?<div className="book-audio-admin">
       <button type="button" className="primary" onClick={generateAll} disabled={generating}>
         {generating?<><LoaderCircle size={16} className="spin"/> Озвучиваем {progress.done}/{progress.total}</>:<><RefreshCw size={16}/> {readyCount?'Продолжить / проверить озвучку':'Создать аудиокнигу'}</>}
       </button>
