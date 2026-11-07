@@ -22,11 +22,12 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout publication package
         uses: actions/checkout@v4
 
-      - name: Validate package and publish
+      - name: Validate package, generate images and publish
         shell: bash
         env:
           PUBLISHER_URL: https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-publisher
@@ -59,14 +60,112 @@ jobs:
             echo "::error::No publication package JSON file found."
             exit 1
           fi
+          export FILE
 
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); const qs=p.reader_questions; const age=Number.parseInt(String(p.age||'6+').replace(/[^0-9]/g,''),10)||0; if(!p.title || !p.publication_key || !p.book_content || !(p.cover?.prompt || p.cover?.url) || !Array.isArray(p.illustrations) || p.illustrations.length<1 || p.illustrations.length>5 || p.illustrations.some(i=>!i.prompt || !i.chapter || !Number.isInteger(Number(i.number)) || Number(i.number)<1 || Number(i.number)>5) || !Array.isArray(qs) || qs.length<3 || qs.length>5 || qs.some(q=>!q.question || !q.answer) || (age>=6 && !((p.footnotes?.length||0)>0 || (p.interactive_content?.footnotes?.length||0)>0))) process.exit(2);" "${FILE}"
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const file = process.env.FILE;
+          const payload = JSON.parse(fs.readFileSync(file, "utf8"));
+          const qs = payload.reader_questions;
+          const age = Number.parseInt(String(payload.age || "6+").replace(/[^0-9]/g, ""), 10) || 0;
+          if (!payload.title || !payload.publication_key || !payload.book_content ||
+              !(payload.cover?.prompt || payload.cover?.url || payload.cover?.base64) ||
+              !Array.isArray(payload.illustrations) || payload.illustrations.length < 1 ||
+              payload.illustrations.length > 5 ||
+              payload.illustrations.some(i => (!(i.prompt || i.base64) || !i.chapter ||
+                !Number.isInteger(Number(i.number)) || Number(i.number) < 1 || Number(i.number) > 5)) ||
+              !Array.isArray(qs) || qs.length < 3 || qs.length > 5 ||
+              qs.some(q => !q.question || !q.answer) ||
+              (age >= 6 && !((payload.footnotes?.length || 0) > 0 ||
+                (payload.interactive_content?.footnotes?.length || 0) > 0))) {
+            throw new Error("Publication package validation failed");
+          }
+
+          const tasks = [];
+          if (payload.cover?.prompt && !payload.cover?.base64 && !payload.cover?.url) {
+            tasks.push({ target: payload.cover, prompt: payload.cover.prompt, label: "cover" });
+          }
+          for (const item of payload.illustrations) {
+            if (item.prompt && !item.base64) {
+              tasks.push({ target: item, prompt: item.prompt, label: `illustration ${item.number}` });
+            }
+          }
+          if (tasks.length) {
+            const endpoint = process.env.PUBLISHER_URL;
+            const token = process.env.PUBLISHER_TOKEN;
+            const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+            async function generateOne(task, provider) {
+              const send = async () => {
+                const response = await fetch(endpoint, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-book-publisher-token": token
+                  },
+                  body: JSON.stringify({
+                    action: "generate_image",
+                    provider,
+                    prompt: task.prompt
+                  })
+                });
+                const result = await response.json().catch(() => ({}));
+                return { response, result };
+              };
+              let { response, result } = await send();
+              if (provider === "ovh" && response.status === 429) {
+                console.log("OVHcloud rate limit reached; waiting 65 seconds before one retry.");
+                await wait(65000);
+                ({ response, result } = await send());
+              }
+              if (!response.ok || !result.ok || !result.base64) {
+                throw new Error(`${provider} failed for ${task.label}: HTTP ${response.status}; ${result.error || "no image returned"}`);
+              }
+              return { mime_type: result.mime_type, base64: result.base64 };
+            }
+
+            async function generateBatch(provider) {
+              const images = [];
+              for (let i = 0; i < tasks.length; i++) {
+                if (provider === "ovh" && i > 0) {
+                  // OVHcloud anonymous limit: 2 requests/minute/IP/model.
+                  await wait(31000);
+                }
+                console.log(`Generating ${tasks[i].label} with ${provider} (${i + 1}/${tasks.length})`);
+                images.push(await generateOne(tasks[i], provider));
+              }
+              return images;
+            }
+
+            let generated;
+            let selectedProvider;
+            try {
+              generated = await generateBatch("cloudflare");
+              selectedProvider = "Cloudflare Workers AI";
+            } catch (cloudflareError) {
+              console.log(`Cloudflare could not complete the full image set: ${cloudflareError.message}`);
+              console.log("Restarting the complete image set with free OVHcloud SDXL to keep one consistent visual style.");
+              generated = await generateBatch("ovh");
+              selectedProvider = "OVHcloud AI Endpoints (free anonymous SDXL)";
+            }
+            for (let i = 0; i < tasks.length; i++) {
+              tasks[i].target.mime_type = generated[i].mime_type;
+              tasks[i].target.base64 = generated[i].base64;
+              delete tasks[i].target.prompt;
+            }
+            console.log(`All ${generated.length} images generated with ${selectedProvider}.`);
+          } else {
+            console.log("Package already contains image data or a cover URL; no generation needed.");
+          }
+
+          fs.writeFileSync("publication-payload.json", JSON.stringify(payload));
+          NODE
 
           HTTP_STATUS="$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
             --request POST "${PUBLISHER_URL}" \
             --header "Content-Type: application/json" \
             --header "x-book-publisher-token: ${PUBLISHER_TOKEN}" \
-            --data-binary "@${FILE}")"
+            --data-binary "@publication-payload.json")"
 
           if [ "${HTTP_STATUS}" -lt 200 ] || [ "${HTTP_STATUS}" -ge 300 ]; then
             echo "::error::Publisher returned HTTP ${HTTP_STATUS}:"
