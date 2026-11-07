@@ -117,37 +117,27 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
 
   const readyCount=audioChapters.length;
   const selected=audioChapters.find(x=>x.chapter_index===selectedIndex);
+  if(!readyCount&&!allowGeneration)return null;
   if(!chapters.length&&!readyCount)return null;
 
-  return <section className="book-audio-panel" aria-label="Аудиокнига">
-    <div className="book-audio-heading">
-      <div className="book-audio-icon"><Headphones size={20}/></div>
-      <div className="book-audio-heading-copy">
-        <b>Аудиоверсия книги</b>
-        <span>{loading?'Проверяем доступные главы':readyCount+' из '+chapters.length+' глав озвучено'} · голос рассказчика Charon</span>
-      </div>
-      {readyCount===chapters.length&&chapters.length>0?<span className="book-audio-ready"><CheckCircle2 size={15}/> Готово</span>:null}
-    </div>
+  return <section className="book-audio-panel book-audio-compact" aria-label="Аудиокнига">
     {readyCount>0?<div className="book-audio-controls">
-      <label className="book-audio-select-label">Глава
-        <select value={selectedIndex??''} onChange={e=>setSelectedIndex(Number(e.target.value))}>
+      <label className="book-audio-select-label" aria-label="Выбрать главу">
+        <select value={selectedIndex??''} onChange={e=>{setPlayingAll(false);setSelectedIndex(Number(e.target.value));}}>
           {audioChapters.map(item=><option key={item.id} value={item.chapter_index}>{item.chapter_index}. {item.chapter_title}</option>)}
         </select>
       </label>
-      {selected?<span className="book-audio-duration">{durationLabel(selected.duration_seconds)}</span>:null}
       <button type="button" className="ghost book-audio-play-all" onClick={playingAll?()=>{setPlayingAll(false);audioRef.current?.pause();}:playWholeBook} disabled={!audioChapters.length||urlLoading}>
-        {playingAll?'Остановить книгу':'Слушать '+(readyCount===chapters.length?'книгу целиком':'все готовые главы')}
+        {playingAll?'Стоп':'Вся книга'}
       </button>
-      {urlLoading?<span className="book-audio-loading"><LoaderCircle size={16}/> Загружаем аудио…</span>:audioUrl?<audio ref={audioRef} controls preload="metadata" src={audioUrl} onEnded={handleTrackEnded} onPause={()=>{}} className="book-audio-element">Ваш браузер не поддерживает аудиоплеер.</audio>:null}
-    </div>:<p className="book-audio-empty">{loading?'Загружаем список аудиоглав…':'Аудиоверсия пока не создана.'}</p>}
+      {urlLoading?<span className="book-audio-loading"><LoaderCircle size={16}/></span>:audioUrl?<audio ref={audioRef} controls preload="metadata" src={audioUrl} onEnded={handleTrackEnded} className="book-audio-element">Ваш браузер не поддерживает аудиоплеер.</audio>:null}
+    </div>:null}
     {allowGeneration&&chapters.length>0?<div className="book-audio-admin">
       <button type="button" className="primary" onClick={generateAll} disabled={generating}>
-        {generating?<><LoaderCircle size={16} className="spin"/> Озвучиваем {progress.done}/{progress.total}</>:<><RefreshCw size={16}/> {readyCount?'Продолжить / проверить озвучку':'Создать аудиокнигу'}</>}
+        {generating?<><LoaderCircle size={16} className="spin"/> Озвучиваем {progress.done}/{progress.total}</>:<><RefreshCw size={16}/> {readyCount?'Продолжить озвучку':'Создать аудиокнигу'}</>}
       </button>
       {generating?<div className="book-audio-progress"><div style={{width:(progress.total?progress.done/progress.total*100:0)+'%'}}/><span>{progress.title||'Подготовка…'}</span></div>:null}
-      <small>Генерация идёт последовательно по главам. Уже готовые главы повторно не оплачиваются и не создаются заново.</small>
     </div>:null}
     {error?<p className="book-audio-error" role="alert">{error}</p>:null}
-    <p className="book-audio-note"><Volume2 size={13}/> Озвучка создана нейросетью Google Gemini. Для сохранения голоса аудиофайлы хранятся отдельно от текста книги.</p>
   </section>;
 }
