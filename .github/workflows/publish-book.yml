@@ -60,7 +60,7 @@ jobs:
             exit 1
           fi
 
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!p.title || !p.publication_key || !p.book_content || !p.cover?.prompt || !Array.isArray(p.illustrations) || p.illustrations.length>2 || p.illustrations.some(i=>!i.prompt || !i.chapter || !Number.isInteger(Number(i.number)))) process.exit(2);" "${FILE}"
+          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); const qs=p.reader_questions; const age=Number.parseInt(String(p.age||'6+').replace(/[^0-9]/g,''),10)||0; if(!p.title || !p.publication_key || !p.book_content || !(p.cover?.prompt || p.cover?.url) || !Array.isArray(p.illustrations) || p.illustrations.length<1 || p.illustrations.length>5 || p.illustrations.some(i=>!i.prompt || !i.chapter || !Number.isInteger(Number(i.number)) || Number(i.number)<1 || Number(i.number)>5) || !Array.isArray(qs) || qs.length<3 || qs.length>5 || qs.some(q=>!q.question || !q.answer) || (age>=6 && !((p.footnotes?.length||0)>0 || (p.interactive_content?.footnotes?.length||0)>0))) process.exit(2);" "${FILE}"
 
           HTTP_STATUS="$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
             --request POST "${PUBLISHER_URL}" \
