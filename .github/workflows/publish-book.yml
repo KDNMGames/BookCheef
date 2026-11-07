@@ -42,7 +42,7 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            FILE="book-publications/inbox/2026-11-07-attic-time-workshop.json"
+            FILE="book-publications/inbox/2026-11-07-moon-phases.json"
           fi
           echo "Selected publication package: ${FILE}"
 
