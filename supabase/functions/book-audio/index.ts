@@ -14,6 +14,16 @@ function json(data: unknown, status = 200) {
   });
 }
 
+
+function safeEqual(a: string, b: string) {
+  const aa = new TextEncoder().encode(a);
+  const bb = new TextEncoder().encode(b);
+  if (aa.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
+  return diff === 0;
+}
+
 function splitBook(markdown: string, bookTitle: string) {
   const source = String(markdown ?? "").replace(/\r\n?/g, "\n").trim();
   const headings = [...source.matchAll(/^##\s+(.+)$/gm)];
@@ -180,10 +190,6 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const auth = req.headers.get("Authorization") ?? "";
-  const accessToken = auth.replace(/^Bearer\s+/i, "");
-  if (!accessToken) return json({ error: "Требуется авторизация" }, 401);
-
   let payload: any;
   try { payload = await req.json(); }
   catch { return json({ error: "Некорректный JSON" }, 400); }
@@ -198,12 +204,66 @@ Deno.serve(async (req: Request) => {
   catch { return json({ error: "Не удалось прочитать серверный ключ Supabase" }, 503); }
   if (!secretKey) return json({ error: "Серверный ключ Supabase недоступен" }, 503);
 
+  const configuredPublisherToken = Deno.env.get("BOOK_PUBLISHER_TOKEN") ?? "";
+  const suppliedPublisherToken = req.headers.get("x-book-audio-publisher-token") ?? "";
+  const internalCall = !!configuredPublisherToken && safeEqual(suppliedPublisherToken, configuredPublisherToken);
+  const auth = req.headers.get("Authorization") ?? "";
+  const accessToken = auth.replace(/^Bearer\\s+/i, "");
+  if (!internalCall && !accessToken) return json({ error: "Требуется авторизация" }, 401);
+
   const adminDb = createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: userResult, error: userError } = await adminDb.auth.getUser(accessToken);
-  if (userError || !userResult?.user) return json({ error: "Сессия недействительна. Войди в аккаунт заново." }, 401);
-  const { data: adminRecord, error: adminError } = await adminDb
-    .from("admins").select("user_id").eq("user_id", userResult.user.id).maybeSingle();
-  if (adminError || !adminRecord) return json({ error: "Создавать аудиокниги может только администратор BookCheef" }, 403);
+  if (!internalCall) {
+    const { data: userResult, error: userError } = await adminDb.auth.getUser(accessToken);
+    if (userError || !userResult?.user) return json({ error: "Сессия недействительна. Войди в аккаунт заново." }, 401);
+    const { data: adminRecord, error: adminError } = await adminDb
+      .from("admins").select("user_id").eq("user_id", userResult.user.id).maybeSingle();
+    if (adminError || !adminRecord) return json({ error: "Создавать аудиокниги может только администратор BookCheef" }, 403);
+  }
+
+  if (payload.action === "process_next") {
+    if (!internalCall) return json({ error: "Недостаточно прав для фоновой обработки" }, 403);
+    const { data: books, error: booksError } = await adminDb.from("books")
+      .select("id,title,book_content,is_interactive,created_at")
+      .not("book_content", "is", null)
+      .order("created_at", { ascending: true })
+      .limit(1000);
+    if (booksError) return json({ error: "Не удалось получить список книг для озвучки" }, 500);
+    const { data: audioRows, error: audioError } = await adminDb.from("book_audio_chapters")
+      .select("book_id,chapter_index,content_hash,updated_at");
+    if (audioError) return json({ error: "Не удалось проверить уже созданные аудиоглавы" }, 500);
+
+    const rowsByBook = new Map<string, any[]>();
+    for (const row of audioRows ?? []) {
+      const list = rowsByBook.get(row.book_id) ?? [];
+      list.push(row);
+      rowsByBook.set(row.book_id, list);
+    }
+    const candidates: any[] = [];
+    for (const book of books ?? []) {
+      if (book.is_interactive === true || !String(book.book_content ?? "").trim()) continue;
+      const chapters = splitBook(book.book_content, book.title);
+      const existingRows = rowsByBook.get(book.id) ?? [];
+      let pendingIndex = -1;
+      for (let i = 0; i < chapters.length; i++) {
+        const spoken = cleanForSpeech(chapters[i].text);
+        if (!spoken) continue;
+        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(spoken));
+        const hash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+        const existing = existingRows.find((row) => row.chapter_index === i + 1);
+        if (existing?.content_hash !== hash) { pendingIndex = i + 1; break; }
+      }
+      if (pendingIndex < 0) continue;
+      const lastAudioAt = existingRows.reduce((latest, row) => {
+        const stamp = Date.parse(row.updated_at ?? "");
+        return Number.isFinite(stamp) ? Math.max(latest, stamp) : latest;
+      }, 0);
+      candidates.push({ book_id: book.id, chapter_index: pendingIndex, lastAudioAt, createdAt: Date.parse(book.created_at ?? "") || 0 });
+    }
+    candidates.sort((a, b) => a.lastAudioAt - b.lastAudioAt || a.createdAt - b.createdAt);
+    if (!candidates.length) return json({ ok: true, empty: true, message: "Все обычные книги уже озвучены" });
+    payload.book_id = candidates[0].book_id;
+    payload.chapter_index = candidates[0].chapter_index;
+  }
 
   const bookId = String(payload.book_id ?? "");
   const chapterIndex = Number(payload.chapter_index);
@@ -239,10 +299,16 @@ Deno.serve(async (req: Request) => {
   const chunks = splitText(spokenText);
   const pcmParts: Uint8Array[] = [];
   let selectedModel = "gemini-3.8-flash-tts";
-  for (const chunk of chunks) {
-    const generated = await generateChunk(chunk, apiKey);
-    selectedModel = generated.model;
-    pcmParts.push(extractPcm(generated.bytes));
+  try {
+    for (const chunk of chunks) {
+      const generated = await generateChunk(chunk, apiKey);
+      selectedModel = generated.model;
+      pcmParts.push(extractPcm(generated.bytes));
+    }
+  } catch (generationError) {
+    const message = String(generationError instanceof Error ? generationError.message : generationError).slice(0, 900);
+    const rateLimited = /429|RESOURCE_EXHAUSTED|quota|rate.?limit|exhausted/i.test(message);
+    return json({ error: message, rate_limited: rateLimited, retry_later: true }, rateLimited ? 429 : 503);
   }
   const totalLength = pcmParts.reduce((sum, part) => sum + part.length, 0);
   const pcm = new Uint8Array(totalLength);
