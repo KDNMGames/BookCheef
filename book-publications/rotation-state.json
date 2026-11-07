@@ -1,13 +1,13 @@
 {
-  "cycle_position": 2,
-  "published_count": 1,
+  "cycle_position": 3,
+  "published_count": 2,
   "updated_at": "2026-11-07",
   "note": "Cycle begins with first publication under the new 2 ordinary : 1 interactive rule.",
   "last_publication": {
-    "title": "Память тихой орбиты",
-    "author": "Эйрен Вальт",
-    "age": "16+",
+    "title": "Город на линии отлива",
+    "author": "Рувена Эст",
+    "age": "14+",
     "type": "ordinary",
-    "publication_key": "bookcheef-2026-11-07-memory-of-silent-orbit"
+    "publication_key": "bookcheef-2026-11-07-city-on-the-tide-line"
   }
 }
