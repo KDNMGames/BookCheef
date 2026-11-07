@@ -14,8 +14,8 @@ const cutoff = Date.now() - 5 * 24 * 60 * 60 * 1000;
 
 function decode(value = "") {
   return value
-    .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, "$1")
-    .replace(/<(br|\\/p|\\/div|\\/li)\\b[^>]*>/gi, "\\n\\n")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/<(?:br\b|\/(?:p|div|li)\b)[^>]*>/gi, "\n\n")
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
@@ -23,11 +23,15 @@ function decode(value = "") {
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&#(\\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([\\da-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
-    .split("\\n").map(line => line.replace(/[ \\t]+/g, " ").trim()).filter(Boolean).join("\\n\\n")
-    .replace(/\\n{3,}/g, "\\n\\n")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([\da-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .split("\n").map(line => line.replace(/[ \t]+/g, " ").trim()).filter(Boolean).join("\n\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+function escapeHtml(value = "") {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 function tag(block, name) {
@@ -82,13 +86,13 @@ if (!unique.length) {
     const post = [
       "📰 <b>КНИЖНЫЕ НОВОСТИ</b>",
       "",
-      "📖 <b>" + item.title + "</b>",
-      excerpt ? excerpt : "",
+      "📖 <b>" + escapeHtml(item.title) + "</b>",
+      ...(excerpt ? [escapeHtml(excerpt)] : []),
       "",
       "🔗 <a href=\"" + item.link + "\">Читать источник</a>",
       "",
       "📚 BookCheef — https://kdnmgames.github.io/BookCheef/",
-    ].filter(Boolean).join("\n");
+    ].join("\n");
     await send(post.slice(0, 3900));
     seen.add(item.link);
     console.log("Published:", item.title);
