@@ -386,3 +386,16 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @keyframes book-audio-spin{to{transform:rotate(360deg)}}
 .book-audio-panel .spin{animation:book-audio-spin 1s linear infinite}
 @media(max-width:600px){.book-audio-panel{padding:15px;margin:18px 0}.book-audio-heading-copy span{font-size:10px}.book-audio-ready{font-size:10px}.book-audio-controls{grid-template-columns:minmax(0,1fr) auto}.book-audio-admin .primary{width:100%;justify-content:center}}
+
+
+/* Admin audiobook generation workspace */
+.admin-audio-manager{margin:18px 0 22px}
+.admin-audio-manager>.panel-title{display:flex;align-items:center;justify-content:space-between}
+.admin-audio-manager>.panel-title>svg{color:var(--accent,#c6a36a)}
+.admin-audio-book-select{display:flex;flex-direction:column;gap:7px;max-width:720px;margin:14px 0;color:var(--ink,#eee8dc);font-size:12px}
+.admin-audio-book-select select{width:100%;padding:11px 13px;border:1px solid #ffffff26;border-radius:9px;background:#100e17;color:#eee8dc;font:inherit}
+.admin-audio-empty{display:flex;align-items:center;gap:10px;padding:17px;border:1px dashed #ffffff25;border-radius:10px;color:#aaa095;font-size:12px;line-height:1.6}
+.admin-audio-empty svg{flex:none;color:var(--accent,#c6a36a)}
+.admin-audio-info{display:flex;align-items:flex-start;gap:8px;margin-top:12px;color:#938a7f;font-size:11px;line-height:1.6}
+.admin-audio-info svg{flex:none;color:var(--accent,#c6a36a);margin-top:1px}
+.admin-audio-manager .book-audio-panel{margin:16px 0 0}
