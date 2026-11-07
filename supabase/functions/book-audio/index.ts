@@ -24,7 +24,15 @@ function safeEqual(a: string, b: string) {
   return diff === 0;
 }
 
-function splitBook(markdown: string, bookTitle: string) {
+function splitBook(markdown: string, bookTitle: string, interactiveContent?: any) {
+  const nodes = Array.isArray(interactiveContent?.nodes) ? interactiveContent.nodes : [];
+  if (nodes.length) {
+    return nodes.map((node: any, index: number) => {
+      const choices = Array.isArray(node?.choices) ? node.choices.map((choice: any) => String(choice?.label ?? "").trim()).filter(Boolean) : [];
+      const text = [String(node?.text ?? "").trim(), choices.length ? `Варианты выбора: ${choices.join(". ")}.` : ""].filter(Boolean).join("\n\n");
+      return { title: String(node?.title ?? `Сцена ${index + 1}`), text };
+    }).filter((chapter: any) => chapter.text);
+  }
   const source = String(markdown ?? "").replace(/\r\n?/g, "\n").trim();
   const headings = [...source.matchAll(/^##\s+(.+)$/gm)];
   if (!headings.length) {
@@ -223,8 +231,7 @@ Deno.serve(async (req: Request) => {
   if (payload.action === "process_next") {
     if (!internalCall) return json({ error: "Недостаточно прав для фоновой обработки" }, 403);
     const { data: books, error: booksError } = await adminDb.from("books")
-      .select("id,title,book_content,is_interactive,created_at")
-      .not("book_content", "is", null)
+      .select("id,title,book_content,interactive_content,is_interactive,created_at")
       .order("created_at", { ascending: true })
       .limit(1000);
     if (booksError) return json({ error: "Не удалось получить список книг для озвучки" }, 500);
@@ -240,8 +247,8 @@ Deno.serve(async (req: Request) => {
     }
     const candidates: any[] = [];
     for (const book of books ?? []) {
-      if (book.is_interactive === true || !String(book.book_content ?? "").trim()) continue;
-      const chapters = splitBook(book.book_content, book.title);
+      const chapters = splitBook(book.book_content, book.title, book.interactive_content);
+      if (!chapters.length) continue;
       const existingRows = rowsByBook.get(book.id) ?? [];
       let pendingIndex = -1;
       for (let i = 0; i < chapters.length; i++) {
@@ -273,11 +280,10 @@ Deno.serve(async (req: Request) => {
   }
 
   const { data: book, error: bookError } = await adminDb
-    .from("books").select("id,title,book_content,is_free").eq("id", bookId).single();
+    .from("books").select("id,title,book_content,interactive_content,is_interactive,is_free").eq("id", bookId).single();
   if (bookError || !book) return json({ error: "Книга не найдена" }, 404);
-  if (!String(book.book_content ?? "").trim()) return json({ error: "Для озвучки нужен текст книги в BookCheef; вложенные PDF/DOCX пока не поддерживаются" }, 400);
-
-  const chapters = splitBook(book.book_content, book.title);
+  const chapters = splitBook(book.book_content, book.title, book.interactive_content);
+  if (!chapters.length) return json({ error: "Для озвучки нужен текст книги или заполненные сцены интерактивной книги; вложенные PDF/DOCX пока не поддерживаются" }, 400);
   const chapter = chapters[chapterIndex - 1];
   if (!chapter) return json({ error: "Глава с таким номером не найдена" }, 404);
 
