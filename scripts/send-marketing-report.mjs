@@ -2,16 +2,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 
-const before = process.env.GITHUB_EVENT_BEFORE || "";
-const after = process.env.GITHUB_SHA || "HEAD";
-const zeroSha = /^0+$/.test(before);
-const changed = zeroSha
-  ? execFileSync("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", after], { encoding: "utf8" })
-  : execFileSync("git", ["diff", "--name-only", before, after], { encoding: "utf8" });
 const manualFile = process.argv[2] || "";
-const files = manualFile
-  ? [manualFile]
-  : changed.split(/\r?\n/).filter((p) => /^marketing\/outbox\/[^/]+\.json$/.test(p));
+let files;
+if (manualFile) {
+  files = [manualFile];
+} else {
+  const before = process.env.GITHUB_EVENT_BEFORE || "";
+  const after = process.env.GITHUB_SHA || "HEAD";
+  const zeroSha = /^0+$/.test(before);
+  const changed = zeroSha
+    ? execFileSync("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", after], { encoding: "utf8" })
+    : execFileSync("git", ["diff", "--name-only", before, after], { encoding: "utf8" });
+  files = changed.split(/\r?\n/).filter((p) => /^marketing\/outbox\/[^/]+\.json$/.test(p));
+}
 
 if (!files.length) {
   console.log("No marketing publication reports in this push.");
