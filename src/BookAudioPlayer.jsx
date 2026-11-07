@@ -2,7 +2,15 @@ import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {supabase} from './supabase';
 import {Headphones,RefreshCw,LoaderCircle,Volume2,CheckCircle2} from 'lucide-react';
 
-function parseChapters(markdown,title){
+function parseChapters(markdown,title,interactiveContent){
+  const nodes=Array.isArray(interactiveContent?.nodes)?interactiveContent.nodes:[];
+  if(nodes.length){
+    return nodes.map((node,index)=>{
+      const choices=Array.isArray(node.choices)?node.choices.map(choice=>choice?.label).filter(Boolean):[];
+      const text=[String(node.text||'').trim(),choices.length?'Варианты выбора: '+choices.join('. ')+'.':''].filter(Boolean).join('\n\n');
+      return {title:String(node.title||`Сцена ${index+1}`),text};
+    }).filter(chapter=>chapter.text);
+  }
   const source=String(markdown||'').replace(/\r\n?/g,'\n').trim();
   const headings=[...source.matchAll(/^##\s+(.+)$/gm)];
   if(!headings.length){
@@ -27,7 +35,7 @@ function durationLabel(value){
 }
 
 export default function BookAudioPlayer({book,allowGeneration=false}){
-  const chapters=useMemo(()=>parseChapters(book?.book_content,book?.title),[book?.book_content,book?.title]);
+  const chapters=useMemo(()=>parseChapters(book?.book_content,book?.title,book?.interactive_content),[book?.book_content,book?.title,book?.interactive_content]);
   const [audioChapters,setAudioChapters]=useState([]);
   const [selectedIndex,setSelectedIndex]=useState(null);
   const [audioUrl,setAudioUrl]=useState('');
