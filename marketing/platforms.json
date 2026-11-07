@@ -139,6 +139,78 @@
       "notes": "Доступный фрагмент правил запрещает самопиар и коммерческую рекламу без согласования с администрацией. Не использовать для самостоятельной рекламной публикации.",
       "last_checked": "2026-11-08",
       "evidence": "https://www.litprichal.ru/forum_pravila.php"
+    },
+    {
+      "id": "author-today-selfpromo",
+      "name": "Author.Today — раздел «Самопиар»",
+      "url": "https://author.today/",
+      "rules_url": "https://author.today/pages/blog-rules",
+      "status": "manual_only",
+      "mode": "manual_user_post",
+      "scope": "third_party",
+      "notes": "Правила прямо предусматривают раздел «Самопиар» и допускают рекламный отрывок собственного произведения до 3 500 знаков, а также ссылки на личные блоги и сайты из разрешённого списка. Это не разрешает автоматическую публикацию; нужен реальный авторский аккаунт и ручная публикация в правильной категории. Для рекламы самого каталога BookCheef соответствие правилу нужно проверить у модерации до публикации.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://author.today/pages/blog-rules"
+    },
+    {
+      "id": "litnet",
+      "name": "Литнет",
+      "url": "https://litnet.com/ru",
+      "rules_url": "https://litnet.com/ru/info/rules",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Правила запрещают рекламные материалы и анонсы/описания своих публикаций на других онлайн-площадках в блогах и комментариях. Не продвигать BookCheef там.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://litnet.com/ru/info/rules"
+    },
+    {
+      "id": "fenixclub",
+      "name": "Киноклуб «Феникс»",
+      "url": "https://fenixclub.com/",
+      "rules_url": "https://fenixclub.com/index.php?act=boardrules",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Правила прямо запрещают рекламу и саморекламу. Не размещать.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://fenixclub.com/index.php?act=boardrules"
+    },
+    {
+      "id": "moscowcinema-forum",
+      "name": "Форум любителей кино MoscowCinema",
+      "url": "https://moscowcinema.mybb.ru/",
+      "rules_url": "https://moscowcinema.mybb.ru/viewtopic.php?id=2",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Правила запрещают рекламные действия и ссылки на другие ресурсы в публичных сообщениях. Не размещать.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://moscowcinema.mybb.ru/viewtopic.php?id=2"
+    },
+    {
+      "id": "kinonews-forum",
+      "name": "Форум KinoNews",
+      "url": "https://forum.kinonews.ru/",
+      "rules_url": "https://forum.kinonews.ru/",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "На форуме указано, что реклама в любом виде не допускается. Не размещать.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://forum.kinonews.ru/"
+    },
+    {
+      "id": "kinoagentstvo",
+      "name": "Киноагентство — форум и блоги",
+      "url": "https://kinoagentstvo.ru/",
+      "rules_url": "https://kinoagentstvo.ru/rules/",
+      "status": "review_required",
+      "mode": "manual_until_verified",
+      "scope": "third_party",
+      "notes": "Правила предусматривают лимит сторонних рекламных объявлений в отдельных пользовательских блогах/темах, но условия и допустимость для BookCheef нужно проверить по конкретному разделу и рекламным правилам; автоматическая публикация не разрешена явно.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://kinoagentstvo.ru/rules/"
     }
   ]
 }
