@@ -42,7 +42,11 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            FILE="book-publications/inbox/2026-11-07-moon-phases.json"
+            FILE="$(git diff-tree --root --no-commit-id --name-only -r "$GITHUB_SHA" | grep -E '^book-publications/inbox/[^/]+\.json$' | head -n 1 || true)"
+            if [ -z "${FILE}" ]; then
+              echo "::error::The triggering commit did not contain a publication package."
+              exit 1
+            fi
           fi
           echo "Selected publication package: ${FILE}"
 
