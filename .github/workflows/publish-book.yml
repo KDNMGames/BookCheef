@@ -55,11 +55,16 @@ jobs:
 
           node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!p.title || !p.publication_key || !p.book_content || !p.cover?.prompt || !Array.isArray(p.illustrations) || p.illustrations.length>2 || p.illustrations.some(i=>!i.prompt || !i.chapter || !Number.isInteger(Number(i.number)))) process.exit(2);" "${FILE}"
 
-          curl --fail-with-body --silent --show-error \
+          HTTP_STATUS="$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
             --request POST "${PUBLISHER_URL}" \
             --header "Content-Type: application/json" \
             --header "x-book-publisher-token: ${PUBLISHER_TOKEN}" \
-            --data-binary "@${FILE}" \
-            --output response.json
+            --data-binary "@${FILE}")"
+
+          if [ "${HTTP_STATUS}" -lt 200 ] || [ "${HTTP_STATUS}" -ge 300 ]; then
+            echo "::error::Publisher returned HTTP ${HTTP_STATUS}:"
+            cat response.json
+            exit 1
+          fi
 
           node -e "const r=JSON.parse(require('fs').readFileSync('response.json','utf8')); if(!r.ok) { console.error(r); process.exit(1); } console.log(JSON.stringify(r,null,2));"
