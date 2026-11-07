@@ -399,3 +399,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .admin-audio-info{display:flex;align-items:flex-start;gap:8px;margin-top:12px;color:#938a7f;font-size:11px;line-height:1.6}
 .admin-audio-info svg{flex:none;color:var(--accent,#c6a36a);margin-top:1px}
 .admin-audio-manager .book-audio-panel{margin:16px 0 0}
+
+
+/* Layout fix: reader controls and audiobook player must occupy separate vertical space */
+.reader-scale-tools{position:relative;display:flex;clear:both;width:min(850px,calc(100% - 36px));box-sizing:border-box;margin:34px auto 24px;gap:10px;row-gap:10px;}
+.reader-scale-preview{display:block;flex:0 0 100%;width:100%;max-width:100%;box-sizing:border-box;margin:8px 0 0;}
+.book-audio-panel{position:relative;display:block;clear:both;width:100%;box-sizing:border-box;margin:0 0 28px;}
+.reader-scale-tools + .book-audio-panel{margin-top:0;}
+@media(max-width:600px){.reader-scale-tools{width:auto;margin:24px 18px 20px;}.reader-scale-preview{margin-top:8px;}.book-audio-panel{margin:0 0 22px;}}
