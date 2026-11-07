@@ -14,7 +14,8 @@ const cutoff = Date.now() - 5 * 24 * 60 * 60 * 1000;
 
 function decode(value = "") {
   return value
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, "$1")
+    .replace(/<(br|\\/p|\\/div|\\/li)\\b[^>]*>/gi, "\\n\\n")
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
@@ -22,9 +23,10 @@ function decode(value = "") {
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([\da-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
-    .replace(/\s+/g, " ")
+    .replace(/&#(\\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([\\da-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .split("\\n").map(line => line.replace(/[ \\t]+/g, " ").trim()).filter(Boolean).join("\\n\\n")
+    .replace(/\\n{3,}/g, "\\n\\n")
     .trim();
 }
 
@@ -50,7 +52,7 @@ async function send(text) {
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ chat_id: channel, text, disable_web_page_preview: false }),
+    body: JSON.stringify({ chat_id: channel, text, parse_mode: "HTML", disable_web_page_preview: false }),
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok || !result.ok) throw new Error("Telegram sendMessage failed: " + (result.description || response.status));
@@ -76,14 +78,14 @@ if (!unique.length) {
   console.log("No new verified RSS items in the last five days; nothing posted.");
 } else {
   for (const item of unique) {
-    const excerpt = item.description.slice(0, 500);
+    const excerpt = item.description.length > 700 ? item.description.slice(0, 699).trimEnd() + "…" : item.description;
     const post = [
-      "📰 КНИЖНЫЕ НОВОСТИ",
+      "📰 <b>КНИЖНЫЕ НОВОСТИ</b>",
       "",
-      item.title,
-      excerpt ? "\n" + excerpt : "",
+      "📖 <b>" + item.title + "</b>",
+      excerpt ? excerpt : "",
       "",
-      "Источник: " + item.link,
+      "🔗 <a href=\"" + item.link + "\">Читать источник</a>",
       "",
       "📚 BookCheef — https://kdnmgames.github.io/BookCheef/",
     ].filter(Boolean).join("\n");
