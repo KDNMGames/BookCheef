@@ -42,7 +42,7 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            FILE="$(git diff-tree --no-commit-id --name-only -r "${GITHUB_SHA}" | grep -E '^book-publications/inbox/[^/]+\.json$' | head -n 1 || true)"
+            FILE="$(jq -r '[.head_commit.added[]?, .head_commit.modified[]?] | .[] | select(test("^book-publications/inbox/[^/]+\\.json$"))' "$GITHUB_EVENT_PATH" | head -n 1 || true)"
           fi
 
           if [ -z "${FILE}" ] || [ ! -f "${FILE}" ]; then
