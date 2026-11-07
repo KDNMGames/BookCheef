@@ -32,6 +32,7 @@ jobs:
           PUBLISHER_URL: https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-publisher
           PUBLISHER_TOKEN: ${{ secrets.BOOK_PUBLISHER_TOKEN }}
           PACKAGE_PATH: ${{ github.event_name == 'workflow_dispatch' && inputs.package_path || '' }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if [ -z "${PUBLISHER_TOKEN:-}" ]; then
@@ -42,13 +43,13 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            echo "Push head commit: $(jq -r '.head_commit.id // "unknown"' "$GITHUB_EVENT_PATH")"
-            FILE="$(jq -r '(.head_commit.added // []) + (.head_commit.modified // []) | .[] | select(test("^book-publications/inbox/[^/]+\\.json$"))' "$GITHUB_EVENT_PATH" | head -n 1 || true)"
+            FILE="$(curl --fail --silent --show-error \
+              --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+              --header "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/KDNMGames/BookCheef/commits/${GITHUB_SHA}" | \
+              jq -r '.files[]?.filename | select(test("^book-publications/inbox/[^/]+\\.json$"))' | head -n 1 || true)"
             if [ -z "${FILE}" ]; then
-              FILE="$(git diff-tree --root --no-commit-id --name-only -r "$GITHUB_SHA" | grep -E '^book-publications/inbox/[^/]+\.json$' | head -n 1 || true)"
-            fi
-            if [ -z "${FILE}" ]; then
-              echo "::error::The triggering push did not identify a publication package."
+              echo "::error::The triggering commit did not identify a publication package."
               exit 1
             fi
           fi
