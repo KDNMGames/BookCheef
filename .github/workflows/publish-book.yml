@@ -50,7 +50,7 @@ jobs:
             exit 1
           fi
 
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!p.title || !p.publication_key || !p.book_content || !p.cover?.base64 || !p.cover?.mime_type) process.exit(2);" "${FILE}"
+          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!p.title || !p.publication_key || !p.book_content || !p.cover?.prompt || !Array.isArray(p.illustrations) || p.illustrations.length>2 || p.illustrations.some(i=>!i.prompt || !i.chapter || !Number.isInteger(Number(i.number)))) process.exit(2);" "${FILE}"
 
           curl --fail-with-body --silent --show-error \
             --request POST "${PUBLISHER_URL}" \
