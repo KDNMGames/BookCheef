@@ -1,0 +1,62 @@
+name: Publish BookCheef book
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "book-publications/inbox/*.json"
+  workflow_dispatch:
+    inputs:
+      package_path:
+        description: "Path to a publication JSON package"
+        required: true
+        default: "book-publications/inbox/sample.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout publication package
+        uses: actions/checkout@v4
+
+      - name: Validate package and publish
+        shell: bash
+        env:
+          PUBLISHER_URL: https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-publisher
+          PUBLISHER_TOKEN: ${{ secrets.BOOK_PUBLISHER_TOKEN }}
+          PACKAGE_PATH: ${{ github.event_name == 'workflow_dispatch' && inputs.package_path || '' }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PUBLISHER_TOKEN:-}" ]; then
+            echo "::error::Repository secret BOOK_PUBLISHER_TOKEN is missing."
+            exit 1
+          fi
+
+          if [ -n "${PACKAGE_PATH}" ]; then
+            FILE="${PACKAGE_PATH}"
+          else
+            FILE="$(git diff-tree --no-commit-id --name-only -r "${GITHUB_SHA}" | grep -E '^book-publications/inbox/[^/]+\.json$' | head -n 1 || true)"
+          fi
+
+          if [ -z "${FILE}" ] || [ ! -f "${FILE}" ]; then
+            echo "::error::No publication package JSON file found."
+            exit 1
+          fi
+
+          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!p.title || !p.publication_key || !p.book_content || !p.cover?.base64 || !p.cover?.mime_type) process.exit(2);" "${FILE}"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST "${PUBLISHER_URL}" \
+            --header "Content-Type: application/json" \
+            --header "x-book-publisher-token: ${PUBLISHER_TOKEN}" \
+            --data-binary "@${FILE}" \
+            --output response.json
+
+          node -e "const r=JSON.parse(require('fs').readFileSync('response.json','utf8')); if(!r.ok) { console.error(r); process.exit(1); } console.log(JSON.stringify(r,null,2));"
