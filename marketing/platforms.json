@@ -1,0 +1,72 @@
+{
+  "updated_at": "2026-11-08",
+  "language": "ru",
+  "platforms": [
+    {
+      "id": "bookcheef-telegram",
+      "name": "Собственный Telegram-канал BookCheef",
+      "url": "https://t.me/BookCheef",
+      "rules_url": "https://telegram.org/tos",
+      "status": "auto_allowed",
+      "mode": "official_bot_api",
+      "scope": "own_channel_only",
+      "notes": "Автопубликация разрешена в собственный канал, где бот уже администратор. Не рассылать сообщения пользователям и не публиковать рекламу в чужих группах без явного разрешения.",
+      "last_checked": "2026-11-08"
+    },
+    {
+      "id": "telegram-third-party",
+      "name": "Чужие Telegram-каналы и группы",
+      "url": "https://telegram.org/tos/eu-dsa",
+      "rules_url": "https://telegram.org/tos/eu-dsa",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Запрещены нежелательные рекламные сообщения/спам. Никакой автоматической рассылки или массовых комментариев. Только индивидуальное разрешение администратора и ручное размещение, если правила конкретной группы допускают.",
+      "last_checked": "2026-11-08"
+    },
+    {
+      "id": "pikabu",
+      "name": "Пикабу",
+      "url": "https://pikabu.ru",
+      "rules_url": "https://pikabu.ru/information/rules",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Правила ограничивают посты-ссылки и коммерческое продвижение; рекламные материалы регулируются отдельными правилами. Не использовать для автоматической рекламы BookCheef.",
+      "last_checked": "2026-11-08"
+    },
+    {
+      "id": "vk-third-party",
+      "name": "ВКонтакте — сторонние сообщества",
+      "url": "https://vk.com",
+      "rules_url": "https://dev.vk.com/ru/api/wall",
+      "status": "review_required",
+      "mode": "manual_until_verified",
+      "scope": "third_party",
+      "notes": "Не публиковать автоматически в чужих сообществах. Требуется проверить правила конкретного сообщества и условия API, а также получить разрешение администратора.",
+      "last_checked": "2026-11-08"
+    },
+    {
+      "id": "vk-owned",
+      "name": "ВКонтакте — собственное сообщество BookCheef",
+      "url": "https://vk.com",
+      "rules_url": "https://dev.vk.com/ru/api/wall",
+      "status": "manual_only",
+      "mode": "official_api_after_setup",
+      "scope": "own_community",
+      "notes": "Кандидат на автопубликацию через официальный API после создания/подтверждения собственного сообщества, получения токена и проверки актуальных условий. Пока не настроено.",
+      "last_checked": "2026-11-08"
+    },
+    {
+      "id": "other-forums",
+      "name": "Русскоязычные литературные форумы и каталоги",
+      "url": "",
+      "rules_url": "",
+      "status": "review_required",
+      "mode": "manual_until_verified",
+      "scope": "third_party",
+      "notes": "Добавлять площадку в реестр только после проверки правил. Автоматизация включается исключительно при прямом разрешении.",
+      "last_checked": "2026-11-08"
+    }
+  ]
+}
