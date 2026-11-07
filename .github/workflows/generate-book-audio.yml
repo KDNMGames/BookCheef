@@ -1,0 +1,74 @@
+name: Generate BookCheef audiobooks
+
+on:
+  workflow_run:
+    workflows: ["Publish BookCheef book"]
+    types: [completed]
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-audiobook-generation
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Generate pending audiobook chapters
+        shell: bash
+        env:
+          AUDIO_URL: https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-audio
+          AUDIO_TOKEN: ${{ secrets.BOOK_PUBLISHER_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AUDIO_TOKEN:-}" ]; then
+            echo "::error::Repository secret BOOK_PUBLISHER_TOKEN is missing."
+            exit 1
+          fi
+
+          completed=0
+          max_chapters=8
+          for ((i=1; i<=max_chapters; i++)); do
+            status="$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
+              --request POST "${AUDIO_URL}" \
+              --header "Content-Type: application/json" \
+              --header "x-book-audio-publisher-token: ${AUDIO_TOKEN}" \
+              --data '{"action":"process_next"}')"
+            body="$(cat response.json)"
+            if [ "${status}" = "429" ]; then
+              echo "Gemini free quota/rate limit reached. The remaining chapters will be retried on the next scheduled run."
+              break
+            fi
+            if [ "${status}" -lt 200 ] || [ "${status}" -ge 300 ]; then
+              if echo "${body}" | jq -e '.rate_limited == true' >/dev/null 2>&1; then
+                echo "Gemini free quota/rate limit reached. The remaining chapters will be retried later."
+                break
+              fi
+              echo "::error::Audiobook worker returned HTTP ${status}: ${body}"
+              exit 1
+            fi
+
+            if ! echo "${body}" | jq -e '.ok == true' >/dev/null 2>&1; then
+              echo "::error::Audiobook worker returned an unexpected response: ${body}"
+              exit 1
+            fi
+            if echo "${body}" | jq -e '.empty == true' >/dev/null 2>&1; then
+              echo "No pending ordinary-book chapters remain."
+              break
+            fi
+
+            title="$(echo "${body}" | jq -r '.chapter_title // "Глава"')"
+            chapter="$(echo "${body}" | jq -r '.chapter_index // 0')"
+            model="$(echo "${body}" | jq -r '.model // "Gemini TTS"')"
+            echo "Ready: ${title} (chapter ${chapter}), model: ${model}"
+            completed=$((completed + 1))
+            if [ "${i}" -lt "${max_chapters}" ]; then sleep 5; fi
+          done
+          echo "Audiobook chapters generated in this run: ${completed}"
