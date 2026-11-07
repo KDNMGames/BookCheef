@@ -24,7 +24,7 @@ if (!token) throw new Error("TELEGRAM_BOT_TOKEN GitHub secret is missing.");
 
 for (const file of files) {
   const report = JSON.parse(fs.readFileSync(path.resolve(file), "utf8"));
-  if (report.status !== "published") {
+  if (report.status !== "published" && report.status !== "test") {
     console.log(`Skipping non-published report: ${file}`);
     continue;
   }
