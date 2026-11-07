@@ -121,9 +121,44 @@ Deno.serve(async (req: Request) => {
 
   if (chat.type === "private" && text.startsWith("/")) {
     const command = text.split(/\s+/)[0].split("@")[0].toLowerCase();
+    if (command === "/status" && adminIds.has(senderId)) {
+      try {
+        const me = await telegram("getMe", token) as any;
+        const channel = await telegram("getChat", token, { chat_id: channelId }) as any;
+        const channelMember = await telegram("getChatMember", token, {
+          chat_id: channelId,
+          user_id: me.id,
+        }) as any;
+        const channelReady = channelMember.status === "administrator"
+          && channelMember.can_post_messages === true;
+        let groupLine = "Группа обсуждений: не привязана";
+        if (channel.linked_chat_id) {
+          try {
+            const groupMember = await telegram("getChatMember", token, {
+              chat_id: channel.linked_chat_id,
+              user_id: me.id,
+            }) as any;
+            const groupReady = groupMember.status === "administrator"
+              && groupMember.can_delete_messages === true;
+            groupLine = `Группа обсуждений: привязана; удаление сообщений: ${groupReady ? "разрешено" : "НЕ разрешено"}`;
+          } catch {
+            groupLine = "Группа обсуждений: привязана, но бот не имеет доступа к проверке";
+          }
+        }
+        const channelLine = `Канал ${channelId}: ${channelReady ? "администратор, публикация разрешена" : `нет прав на публикацию (статус: ${channelMember.status})`}`;
+        await sendText(token, chat.id, `Проверка BookCheef 📚\n\n${channelLine}\n${groupLine}\n\nWebhook: работает (команда получена).`);
+      } catch (error) {
+        await sendText(token, chat.id, `Не удалось проверить настройки: ${String(error).slice(0, 500)}`);
+      }
+      return json({ ok: true, command: "status" });
+    }
+    if (command === "/status" && !adminIds.has(senderId)) {
+      await sendText(token, chat.id, "Эта команда доступна только администратору BookCheef.");
+      return json({ ok: true, command: "status_denied" });
+    }
     const replies: Record<string, string> = {
       "/start": "Привет! Это бот BookCheef 📚\n\nЗдесь будут новости книжной галереи, новые истории и интересные события из мира литературы.\n\nСайт: https://kdnmgames.github.io/BookCheef/\nКанал: https://t.me/BookCheef",
-      "/help": "Команды BookCheef:\n/start — приветствие\n/help — помощь\n/site — открыть книжную галерею\n/channel — открыть Telegram-канал",
+      "/help": "Команды BookCheef:\n/start — приветствие\n/help — помощь\n/site — открыть книжную галерею\n/channel — открыть Telegram-канал\n/status — проверить подключение канала и права бота (администратор)",
       "/site": "Книжная галерея BookCheef: https://kdnmgames.github.io/BookCheef/",
       "/channel": "Telegram-канал BookCheef: https://t.me/BookCheef",
     };
