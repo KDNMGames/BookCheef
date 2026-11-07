@@ -42,7 +42,10 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            FILE="$(jq -r '[.head_commit.added[]?, .head_commit.modified[]?] | .[] | select(test("^book-publications/inbox/[^/]+\\.json$"))' "$GITHUB_EVENT_PATH" | head -n 1 || true)"
+            FILE="$(jq -r '(.head_commit.added // []) + (.head_commit.modified // []) + ([.commits[]? | (.added[]?, .modified[]?)]) | .[] | select(test("^book-publications/inbox/[^/]+\\.json$"))' "$GITHUB_EVENT_PATH" | tail -n 1 || true)"
+            if [ -z "${FILE}" ]; then
+              FILE="$(find book-publications/inbox -maxdepth 1 -type f -name '*.json' | sort | tail -n 1)"
+            fi
           fi
 
           if [ -z "${FILE}" ] || [ ! -f "${FILE}" ]; then
