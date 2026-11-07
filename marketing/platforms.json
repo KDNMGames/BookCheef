@@ -67,6 +67,78 @@
       "scope": "third_party",
       "notes": "Добавлять площадку в реестр только после проверки правил. Автоматизация включается исключительно при прямом разрешении.",
       "last_checked": "2026-11-08"
+    },
+    {
+      "id": "liberclub-community",
+      "name": "LiberClub — книжное сообщество",
+      "url": "https://liberclub.ru/community",
+      "rules_url": "https://liberclub.ru/community",
+      "status": "review_required",
+      "mode": "manual_only_until_admin_approval",
+      "scope": "third_party",
+      "notes": "Правила запрещают превращать клубы, чаты и комментарии в рекламу сторонних товаров/услуг/каналов без отношения к книгам и без согласования с администрацией. Нет разрешения на автоматическую публикацию; требуется индивидуальное согласование.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://liberclub.ru/community"
+    },
+    {
+      "id": "babyblog-books-music-cinema",
+      "name": "Babyblog — Книги, музыка, кино, ТВ",
+      "url": "https://www.babyblog.ru/community/books/rules-and-faq",
+      "rules_url": "https://www.babyblog.ru/community/books/rules-and-faq",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Правила сообщества прямо запрещают рекламу, ссылки и пиар. Не размещать.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://www.babyblog.ru/community/books/rules-and-faq"
+    },
+    {
+      "id": "kniginapolke",
+      "name": "Книжная полка",
+      "url": "https://kniginapolke.ru",
+      "rules_url": "https://kniginapolke.ru/rules",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Правила запрещают спам и рекламу; приложение предназначено для бесплатного обмена книгами. Не размещать.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://kniginapolke.ru/rules"
+    },
+    {
+      "id": "writercenter-klf",
+      "name": "Мастерская писателей — Клуб Любителей Фантастики",
+      "url": "https://writercenter.ru/society/klf/",
+      "rules_url": "https://writercenter.ru/society/klf/rules/",
+      "status": "review_required",
+      "mode": "manual_until_verified",
+      "scope": "third_party",
+      "notes": "Тематика полностью релевантна фантастике и фэнтези; правила требуют тематической связи произведений с клубом, но не дают явного разрешения на рекламу сайта/канала или автоматическую публикацию. Активность страницы выглядит устаревшей; проверить актуальность и согласовать с администратором.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://writercenter.ru/society/klf/rules/"
+    },
+    {
+      "id": "mirf-forum",
+      "name": "Форум «Мир фантастики»",
+      "url": "https://cft.mirf.ru/",
+      "rules_url": "https://cft.mirf.ru/",
+      "status": "review_required",
+      "mode": "manual_until_verified",
+      "scope": "third_party",
+      "notes": "Тематически релевантный форум фантастики и фэнтези; для публикаций требуется регистрация. Отдельное разрешение на рекламу и автоматическую публикацию не подтверждено. Сначала изучить справку/правила и запросить согласие модератора.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://cft.mirf.ru/"
+    },
+    {
+      "id": "litprichal",
+      "name": "ЛитПричал — литературный портал",
+      "url": "https://www.litprichal.ru/",
+      "rules_url": "https://www.litprichal.ru/forum_pravila.php",
+      "status": "blocked",
+      "mode": "none",
+      "scope": "third_party",
+      "notes": "Доступный фрагмент правил запрещает самопиар и коммерческую рекламу без согласования с администрацией. Не использовать для самостоятельной рекламной публикации.",
+      "last_checked": "2026-11-08",
+      "evidence": "https://www.litprichal.ru/forum_pravila.php"
     }
   ]
 }
