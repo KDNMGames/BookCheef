@@ -296,3 +296,63 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
  .app>main,.hero,.catalog,.detail-layout,.collection-hero,.account-panel,.book-card,.interactive-scene,.interactive-choices,.reader-question,.book-footnotes{animation:none!important}
 }
+
+
+/* Масштабирование всего текста в окне чтения, включая интерактивные кнопки */
+.reader p,
+.reader .docx-content,
+.reader .txt-content,
+.reader .reader-answer {
+  font-size: calc(17px * var(--reader-scale, 1)) !important;
+}
+.reader .docx-content p,
+.reader .txt-content p,
+.reader .reader-answer {
+  font-size: calc(17px * var(--reader-scale, 1)) !important;
+}
+.reader .reader-heading h2,
+.reader .reader-questions h2 {
+  font-size: calc(28px * var(--reader-scale, 1)) !important;
+}
+.reader .reader-chapter-level-1 {
+  font-size: calc(32px * var(--reader-scale, 1)) !important;
+}
+.reader .reader-chapter-level-2 {
+  font-size: calc(26px * var(--reader-scale, 1)) !important;
+}
+.reader .reader-chapter-level-3 {
+  font-size: calc(19px * var(--reader-scale, 1)) !important;
+}
+.reader .interactive-scene-label,
+.reader .book-footnotes .interactive-scene-label {
+  font-size: calc(10px * var(--reader-scale, 1)) !important;
+}
+.reader .interactive-prompt {
+  font-size: calc(18px * var(--reader-scale, 1)) !important;
+}
+.reader .interactive-choices button,
+.reader .interactive-ending button,
+.reader .reader-question button {
+  font-size: calc(13px * var(--reader-scale, 1)) !important;
+}
+.reader .reader-question h3 {
+  font-size: calc(17px * var(--reader-scale, 1)) !important;
+}
+.reader .reader-figure figcaption {
+  font-size: calc(12px * var(--reader-scale, 1)) !important;
+}
+.reader .footnote-marker,
+.reader .footnote-word .footnote-marker {
+  font-size: calc(9px * var(--reader-scale, 1)) !important;
+}
+.reader .book-footnotes li,
+.reader .book-footnotes li b,
+.reader .book-footnotes li span {
+  font-size: calc(15px * var(--reader-scale, 1)) !important;
+}
+.reader-scale-tools {
+  font-size: calc(13px * var(--reader-scale, 1));
+}
+.reader-scale-tools button {
+  font-size: calc(13px * var(--reader-scale, 1));
+}
