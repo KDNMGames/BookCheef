@@ -8,7 +8,10 @@ const zeroSha = /^0+$/.test(before);
 const changed = zeroSha
   ? execFileSync("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", after], { encoding: "utf8" })
   : execFileSync("git", ["diff", "--name-only", before, after], { encoding: "utf8" });
-const files = changed.split(/\r?\n/).filter((p) => /^marketing\/outbox\/[^/]+\.json$/.test(p));
+const manualFile = process.argv[2] || "";
+const files = manualFile
+  ? [manualFile]
+  : changed.split(/\r?\n/).filter((p) => /^marketing\/outbox\/[^/]+\.json$/.test(p));
 
 if (!files.length) {
   console.log("No marketing publication reports in this push.");
