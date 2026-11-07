@@ -42,9 +42,13 @@ jobs:
           if [ -n "${PACKAGE_PATH}" ]; then
             FILE="${PACKAGE_PATH}"
           else
-            FILE="$(git diff-tree --root --no-commit-id --name-only -r "$GITHUB_SHA" | grep -E '^book-publications/inbox/[^/]+\.json$' | head -n 1 || true)"
+            echo "Push head commit: $(jq -r '.head_commit.id // "unknown"' "$GITHUB_EVENT_PATH")"
+            FILE="$(jq -r '(.head_commit.added // []) + (.head_commit.modified // []) | .[] | select(test("^book-publications/inbox/[^/]+\\.json$"))' "$GITHUB_EVENT_PATH" | head -n 1 || true)"
             if [ -z "${FILE}" ]; then
-              echo "::error::The triggering commit did not contain a publication package."
+              FILE="$(git diff-tree --root --no-commit-id --name-only -r "$GITHUB_SHA" | grep -E '^book-publications/inbox/[^/]+\.json$' | head -n 1 || true)"
+            fi
+            if [ -z "${FILE}" ]; then
+              echo "::error::The triggering push did not identify a publication package."
               exit 1
             fi
           fi
