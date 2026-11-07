@@ -1,0 +1,11 @@
+{
+  "status": "test",
+  "report_id": "telegram-report-link-test-2026-11-08",
+  "platform": "Проверка интеграции",
+  "community_name": "Тестовое сообщение BookCheef",
+  "community_url": "https://t.me/BookCheef",
+  "post_url": "https://t.me/BookCheef",
+  "published_at": "2026-11-07T22:24:41.831Z",
+  "destination": "https://kdnmgames.github.io/BookCheef/",
+  "post_text": "Это тест сопряжения. Реальные отчёты будут приходить после подтверждённой рекламной публикации."
+}
