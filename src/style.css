@@ -356,3 +356,33 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .reader-scale-tools button {
   font-size: calc(13px * var(--reader-scale, 1));
 }
+
+
+/* Chapter-based audiobook player */
+.book-audio-panel{margin:22px 0 26px;padding:20px;border:1px solid #c6a36a55;border-radius:14px;background:linear-gradient(135deg,#c6a36a12,#17151d 68%);box-shadow:0 14px 38px #0003}
+.book-audio-heading{display:flex;align-items:center;gap:12px;margin-bottom:15px}
+.book-audio-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid #c6a36a66;border-radius:12px;background:#c6a36a18;color:#f1d79e;flex:none}
+.book-audio-heading-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.book-audio-heading-copy b{font-size:15px;color:#f3ecdf}
+.book-audio-heading-copy span{font-size:11px;color:#a9a096}
+.book-audio-ready{margin-left:auto;display:inline-flex;align-items:center;gap:5px;color:#a8d6ad;font-size:11px;white-space:nowrap}
+.book-audio-controls{display:grid;grid-template-columns:minmax(180px,1fr) auto;gap:10px 14px;align-items:end}
+.book-audio-select-label{display:flex;flex-direction:column;gap:6px;color:#bfb5a6;font-size:11px}
+.book-audio-select-label select{width:100%;min-width:0;padding:10px 12px;border:1px solid #ffffff25;border-radius:8px;background:#100e17;color:#eee8dc;font:inherit;font-size:12px}
+.book-audio-duration{align-self:end;padding:10px 0;color:#c6a36a;font-size:12px;font-variant-numeric:tabular-nums}
+.book-audio-element{grid-column:1/-1;width:100%;height:42px;accent-color:#c6a36a}
+.book-audio-loading{grid-column:1/-1;display:flex;align-items:center;gap:7px;color:#c6a36a;font-size:12px}
+.book-audio-empty{margin:0;color:#aaa095;font-size:12px}
+.book-audio-admin{display:flex;flex-direction:column;gap:9px;margin-top:15px;padding-top:14px;border-top:1px solid #ffffff17}
+.book-audio-admin .primary{align-self:flex-start;display:inline-flex;align-items:center;gap:8px}
+.book-audio-admin .primary:disabled{opacity:.65;cursor:wait}
+.book-audio-admin small{color:#91897f;font-size:10px;line-height:1.6}
+.book-audio-progress{height:5px;position:relative;overflow:hidden;border-radius:99px;background:#ffffff16}
+.book-audio-progress>div{height:100%;border-radius:inherit;background:#c6a36a;transition:width .25s ease}
+.book-audio-progress span{display:block;margin-top:7px;color:#bfb5a6;font-size:10px}
+.book-audio-error{margin:12px 0 0;padding:10px 12px;border:1px solid #b96b6b66;border-radius:8px;background:#7c29291c;color:#ffb4b4;font-size:12px;line-height:1.5}
+.book-audio-note{display:flex;align-items:center;gap:6px;margin:13px 0 0;color:#837c73;font-size:10px;line-height:1.5}
+.book-audio-note svg{flex:none;color:#c6a36a}
+@keyframes book-audio-spin{to{transform:rotate(360deg)}}
+.book-audio-panel .spin{animation:book-audio-spin 1s linear infinite}
+@media(max-width:600px){.book-audio-panel{padding:15px;margin:18px 0}.book-audio-heading-copy span{font-size:10px}.book-audio-ready{font-size:10px}.book-audio-controls{grid-template-columns:minmax(0,1fr) auto}.book-audio-admin .primary{width:100%;justify-content:center}}
