@@ -44,30 +44,7 @@ jobs:
           else
             FILE="$(jq -r '(.head_commit.added // []) + (.head_commit.modified // []) + ([.commits[]? | (.added[]?, .modified[]?)]) | .[] | select(test("^book-publications/inbox/[^/]+\\.json$"))' "$GITHUB_EVENT_PATH" | tail -n 1 || true)"
             if [ -z "${FILE}" ]; then
-              FILE="$(git show --pretty="" --name-only HEAD | grep -E '^book-publications/inbox/[^/]+\.json
-          fi
-
-          if [ -z "${FILE}" ] || [ ! -f "${FILE}" ]; then
-            echo "::error::No publication package JSON file found."
-            exit 1
-          fi
-
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); if(!p.title || !p.publication_key || !p.book_content || !p.cover?.prompt || !Array.isArray(p.illustrations) || p.illustrations.length>2 || p.illustrations.some(i=>!i.prompt || !i.chapter || !Number.isInteger(Number(i.number)))) process.exit(2);" "${FILE}"
-
-          HTTP_STATUS="$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
-            --request POST "${PUBLISHER_URL}" \
-            --header "Content-Type: application/json" \
-            --header "x-book-publisher-token: ${PUBLISHER_TOKEN}" \
-            --data-binary "@${FILE}")"
-
-          if [ "${HTTP_STATUS}" -lt 200 ] || [ "${HTTP_STATUS}" -ge 300 ]; then
-            echo "::error::Publisher returned HTTP ${HTTP_STATUS}:"
-            cat response.json
-            exit 1
-          fi
-
-          node -e "const r=JSON.parse(require('fs').readFileSync('response.json','utf8')); if(!r.ok) { console.error(r); process.exit(1); } console.log(JSON.stringify(r,null,2));"
- | tail -n 1 || true)"
+              FILE="$(git show --pretty="" --name-only HEAD | grep -E '^book-publications/inbox/[^/]+\.json$' | tail -n 1 || true)"
             fi
             if [ -z "${FILE}" ]; then
               FILE="$(find book-publications/inbox -maxdepth 1 -type f -name '*.json' -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)"
