@@ -85,14 +85,11 @@ if (!unique.length) {
     const excerpt = item.description.length > 700 ? item.description.slice(0, 699).trimEnd() + "…" : item.description;
     const post = [
       "📰 <b>КНИЖНЫЕ НОВОСТИ</b>",
-      "",
       "📖 <b>" + escapeHtml(item.title) + "</b>",
-      ...(excerpt ? [escapeHtml(excerpt)] : []),
-      "",
+      excerpt ? escapeHtml(excerpt) : "",
       "🔗 <a href=\"" + item.link + "\">Читать источник</a>",
-      "",
       "📚 BookCheef — https://kdnmgames.github.io/BookCheef/",
-    ].join("\n");
+    ].filter(Boolean).join("\n\n");
     await send(post.slice(0, 3900));
     seen.add(item.link);
     console.log("Published:", item.title);
