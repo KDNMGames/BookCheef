@@ -49,8 +49,6 @@ jobs:
         id: book
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          PUBLISHER_URL: https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-publisher
-          PUBLISHER_TOKEN: ${{ secrets.BOOK_PUBLISHER_TOKEN }}
         run: node scripts/generate-daily-book.mjs
 
       - name: Commit generated package
@@ -61,7 +59,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$PACKAGE_PATH"
+          git add "$PACKAGE_PATH" book-publications/pending-publications.json
           git commit -m "Create daily BookCheef book package"
           git push
 
