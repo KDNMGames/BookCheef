@@ -368,8 +368,8 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
         await saveOpenRouterCooldown(error.message);
         try {
           const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
-          const userText = "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. Описание: " + description + "\\nКонтекст: " + (priorContext || "Начало истории.") + "\\nЧерновик: " + draft + "\\nСохрани события, напиши полноценную прозу, выведи только текст части.";
-          const fallbackText = runCursorAgent(systemText + "\\n\\n" + userText, { timeout: 900000 });
+          const userText = "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. Описание: " + description + "\nКонтекст: " + (priorContext || "Начало истории.") + "\nЧерновик: " + draft + "\nСохрани события, напиши полноценную прозу, выведи только текст части.";
+          const fallbackText = runCursorAgent(systemText + "\n\n" + userText, { timeout: 900000 });
           const fallbackWords = countWords(fallbackText);
           if (fallbackWords < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Cursor fallback part too short: " + fallbackWords + " words.");
           return fallbackText;
