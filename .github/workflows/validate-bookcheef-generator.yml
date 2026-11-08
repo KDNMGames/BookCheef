@@ -36,10 +36,10 @@ jobs:
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
             const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
-            for (const token of ["createCheckpointStore", "Resuming saved book", "await saveWork(pkg)", "Generation paused because the provider quota is exhausted", "process.exit(0);"]) {
+            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "Generation paused because the provider quota is exhausted", "process.exit(0);"]) {
               if (!source.includes(token)) throw new Error("Missing generator feature: " + token);
             }
-            for (const token of ["async function saveWork", "async function loadWork", "version: 1"]) {
+            for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "version: 1"]) {
               if (!checkpoint.includes(token)) throw new Error("Missing checkpoint storage feature: " + token);
             }
             if (!workflow.includes("git add -A book-publications/work-in-progress")) throw new Error("Workflow does not persist checkpoint changes and deletions");
