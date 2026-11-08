@@ -122,7 +122,7 @@ async function generatePackage(attempt, previousError = "") {
   console.log("Using text model " + model + " (attempt " + attempt + ").");
   const retryInstruction = attempt > 1
     ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError +
-      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — замени word на слово, дословно скопированное из текста книги, или исправь сам текст так, чтобы слово встречалось. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
+      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — замени word на слово, дословно скопированное из текста книги, или исправь сам текст так, чтобы слово встречалось. Если ошибка Ordinary book is too short — создай полный текст не менее 7 000 символов, 4–6 глав по 1 300–1 800 символов каждая; не сокращай главы. Если ошибка Missing illustration marker — chapter в illustrations должен точно совпадать с заголовком главы; вставь соответствующий маркер в book_content. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
     : "";
   const requestBody = {
     model,
@@ -200,14 +200,14 @@ function normalizePackage(pkg) {
   if (typeof pkg.is_interactive !== "boolean") pkg.is_interactive = bookType === "interactive";
   if (pkg.series == null) pkg.series = "";
   if (Array.isArray(pkg.illustrations) && typeof pkg.book_content === "string" && bookType === "ordinary") {
-    const headings = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)].map(match => ({
+    const headings = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)].map(match => ({
       title: match[1].trim(),
       index: match.index,
       end: match.index + match[0].length
     }));
     const norm = value => String(value || "").normalize("NFKC").toLocaleLowerCase("ru")
-      .replace(/^глава\\s+\\d+[.:\\s-]*/i, "")
-      .replace(/[«»“”"'’]/g, "").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+      .replace(/^глава\s+\d+[.:\s-]*/i, "")
+      .replace(/[«»“”"'’]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
     for (let i = 0; i < pkg.illustrations.length; i++) {
       const item = pkg.illustrations[i];
       if (!item || !item.chapter || !item.number || !headings.length) continue;
@@ -219,7 +219,7 @@ function normalizePackage(pkg) {
       const marker = "{{illustration:" + item.chapter + ":" + item.number + "}}";
       if (!pkg.book_content.includes(marker)) {
         const insertAt = heading.end;
-        pkg.book_content = pkg.book_content.slice(0, insertAt) + "\\n\\n" + marker + "\\n\\n" + pkg.book_content.slice(insertAt);
+        pkg.book_content = pkg.book_content.slice(0, insertAt) + "\n\n" + marker + "\n\n" + pkg.book_content.slice(insertAt);
       }
     }
   }
