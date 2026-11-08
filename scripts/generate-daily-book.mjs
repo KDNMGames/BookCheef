@@ -113,6 +113,22 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 Верни полный JSON. Не добавляй publication_key — он будет назначен системой.`;
 
 async function generatePackage(attempt, previousError = "") {
+  const providerConfig = config.daily_book.text_provider || {};
+  const modelCandidates = [providerConfig.model, ...(providerConfig.fallback_models || [])].filter(Boolean);
+  const model = modelCandidates[(attempt - 1) % modelCandidates.length] || "openrouter/free";
+  console.log("Using text model " + model + " (attempt " + attempt + ").");
+  const requestBody = {
+    model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError + ". Исправь именно эту ошибку. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters." : "") }
+    ],
+    temperature: 0.65,
+    max_tokens: 4500
+  };
+  if ((providerConfig.json_mode_models || []).includes(model)) {
+    requestBody.response_format = { type: "json_object" };
+  }
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -121,16 +137,7 @@ async function generatePackage(attempt, previousError = "") {
       "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
       "X-Title": "BookCheef Daily Publisher"
     },
-    body: JSON.stringify({
-      model: config.daily_book.text_provider?.model || "openrouter/free",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError + ". Исправь именно эту ошибку. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters." : "") }
-      ],
-      temperature: 0.65,
-      max_tokens: 4500,
-      response_format: { type: "json_object" }
-    }),
+    body: JSON.stringify(requestBody),
     signal: AbortSignal.timeout(120000)
   });
   const body = await response.json().catch(() => ({}));
