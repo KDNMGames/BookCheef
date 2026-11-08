@@ -280,6 +280,28 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  if (payload.action === "check_publication") {
+    try {
+      const publicationKey = typeof payload.publication_key === "string" ? payload.publication_key.trim() : "";
+      if (!publicationKey || publicationKey.length > 160) {
+        return Response.json({ ok: false, error: "A valid publication_key is required" }, { status: 400 });
+      }
+      const url = Deno.env.get("SUPABASE_URL");
+      const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
+      if (!url || !secretKeysRaw) return Response.json({ ok: false, error: "Supabase server configuration is missing" }, { status: 503 });
+      const secretKey = JSON.parse(secretKeysRaw).default;
+      if (!secretKey) return Response.json({ ok: false, error: "Supabase server key is unavailable" }, { status: 503 });
+      const supabase = createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await supabase.from("books")
+        .select("id,title,publication_key,cover_url,created_at")
+        .eq("publication_key", publicationKey).maybeSingle();
+      if (error) throw new Error("Publication lookup failed");
+      return Response.json({ ok: true, published: Boolean(data), book: data ?? null });
+    } catch (error) {
+      return Response.json({ ok: false, action: "check_publication", error: error instanceof Error ? error.message : "Publication lookup failed" }, { status: 500 });
+    }
+  }
+
   if (payload.action === "upload_image") {
     try {
       const path = typeof payload.path === "string" ? payload.path : "";
