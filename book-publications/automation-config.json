@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "timezone": "Europe/Berlin",
+  "daily_book": {
+    "enabled": true,
+    "schedule_local": "01:10",
+    "max_new_books_per_run": 1,
+    "rotation": [
+      "interactive",
+      "ordinary",
+      "ordinary"
+    ],
+    "advance_rotation_only_after_verified_publication": true,
+    "text_provider": {
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "secret_name": "OPENROUTER_API_KEY",
+      "max_attempts": 3,
+      "retry_delay_seconds": 30
+    },
+    "image_providers": {
+      "primary": "cloudflare",
+      "fallback": "ovh",
+      "require_complete_consistent_set": true,
+      "max_internal_illustrations": 5,
+      "ovh_delay_between_requests_seconds": 31,
+      "ovh_retry_429_after_seconds": 65
+    },
+    "publication": {
+      "inbox": "book-publications/inbox",
+      "workflow": ".github/workflows/publish-book.yml",
+      "verify_database_row": true,
+      "verify_public_cover_and_illustrations": true,
+      "notify_telegram_after_success": true,
+      "never_overwrite_existing_books": true
+    },
+    "content_rules": {
+      "reader_questions": {
+        "min": 3,
+        "max": 5
+      },
+      "age_appropriate_footnotes": true,
+      "illustration_count_min": 1,
+      "illustration_count_max": 5,
+      "interactive_scene_count_max": 5,
+      "interactive_one_image_per_scene": true,
+      "no_unresolved_illustration_markers": true,
+      "require_original_titles_and_plots": true,
+      "preserve_author_bibles_and_series_continuity": true
+    },
+    "on_failure": {
+      "preserve_package_and_state": true,
+      "do_not_advance_rotation": true,
+      "do_not_publish_partial_book": true,
+      "report_failure_to_telegram_admins": true
+    }
+  },
+  "long_novel": {
+    "title": "Последний день Вселенной",
+    "generator": "cursor-agent-cli",
+    "workflow": ".github/workflows/generate-next-novel-chapter.yml",
+    "schedule_local": "02:10",
+    "exclusive_generator": true,
+    "daily_chapters_max": 1,
+    "never_publish_until_complete_and_edited": true
+  },
+  "management": {
+    "source_of_truth": "book-publications/automation-config.json",
+    "changes_may_be_requested_in_chat": true,
+    "assistant_may_edit_repository_config_and_workflows": true,
+    "require_successful_migration_test_before_disabling_chatgpt_automation": true
+  }
+}
