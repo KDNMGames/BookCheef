@@ -1,0 +1,80 @@
+name: Daily BookCheef book generation
+
+on:
+  schedule:
+    # 01:10 Europe/Berlin in CET and CEST; local-time gate skips the duplicate slot.
+    - cron: '10 0,23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: bookcheef-daily-book-generation
+  cancel-in-progress: false
+
+jobs:
+  generate-or-resume:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout BookCheef
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Europe/Berlin schedule
+        id: local_schedule
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "schedule" && "$(TZ=Europe/Berlin date +%H)" != "01" ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping duplicate UTC slot; daily book generation is scheduled for 01:10 Europe/Berlin."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node.js
+        if: steps.local_schedule.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate a book or resume the oldest pending package
+        if: steps.local_schedule.outputs.run == 'true'
+        id: book
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PUBLISHER_URL: https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-publisher
+          PUBLISHER_TOKEN: ${{ secrets.BOOK_PUBLISHER_TOKEN }}
+        run: node scripts/generate-daily-book.mjs
+
+      - name: Commit generated package
+        if: steps.local_schedule.outputs.run == 'true' && steps.book.outputs.created == 'true'
+        env:
+          PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$PACKAGE_PATH"
+          git commit -m "Create daily BookCheef book package"
+          git push
+
+      - name: Dispatch publisher
+        if: steps.local_schedule.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+        run: |
+          set -euo pipefail
+          test -n "$PACKAGE_PATH"
+          node -e "if(!/^book-publications\\/inbox\\/[A-Za-z0-9._-]+\\.json$/.test(process.argv[1])) process.exit(1)" "$PACKAGE_PATH"
+          curl --fail-with-body --silent --show-error \\
+            -X POST \\
+            -H "Accept: application/vnd.github+json" \\
+            -H "Authorization: Bearer $GH_TOKEN" \\
+            -H "X-GitHub-Api-Version: 2022-11-28" \\
+            https://api.github.com/repos/KDNMGames/BookCheef/actions/workflows/publish-book.yml/dispatches \\
+            -d "{\\"ref\\":\\"main\\",\\"inputs\\":{\\"package_path\\":\\"$PACKAGE_PATH\\"}}"
+          echo "Publisher dispatched for $PACKAGE_PATH"
