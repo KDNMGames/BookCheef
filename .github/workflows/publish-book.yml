@@ -81,18 +81,30 @@ jobs:
             throw new Error("Publication package validation failed");
           }
 
+          const endpoint = process.env.PUBLISHER_URL;
+          const token = process.env.PUBLISHER_TOKEN;
+          const statusResponse = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-book-publisher-token": token },
+            body: JSON.stringify({ action: "check_publication", publication_key: payload.publication_key })
+          });
+          const statusResult = await statusResponse.json().catch(() => ({}));
+          if (!statusResponse.ok || !statusResult.ok) {
+            throw new Error(`Could not verify publication status before image generation: HTTP ${statusResponse.status}`);
+          }
+          const alreadyPublished = statusResult.published === true;
+          if (alreadyPublished) console.log("This publication key already exists in Supabase; skipping image generation.");
+
           const tasks = [];
-          if (payload.cover?.prompt && !payload.cover?.base64 && !payload.cover?.url) {
+          if (!alreadyPublished && payload.cover?.prompt && !payload.cover?.base64 && !payload.cover?.url) {
             tasks.push({ target: payload.cover, prompt: payload.cover.prompt, label: "cover" });
           }
           for (const item of payload.illustrations) {
-            if (item.prompt && !item.base64) {
+            if (!alreadyPublished && item.prompt && !item.base64 && !item.url) {
               tasks.push({ target: item, prompt: item.prompt, label: `illustration ${item.number}` });
             }
           }
           if (tasks.length) {
-            const endpoint = process.env.PUBLISHER_URL;
-            const token = process.env.PUBLISHER_TOKEN;
             const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
             async function generateOne(task, provider) {
