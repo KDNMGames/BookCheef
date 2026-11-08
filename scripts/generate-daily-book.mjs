@@ -129,6 +129,9 @@ async function generatePackage(attempt, previousError = "") {
   if ((providerConfig.json_mode_models || []).includes(model)) {
     requestBody.response_format = { type: "json_object" };
   }
+  if ((providerConfig.reasoning_off_models || []).includes(model)) {
+    requestBody.reasoning = { enabled: false };
+  }
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
