@@ -31,7 +31,7 @@ jobs:
             https://openrouter.ai/api/v1/chat/completions \
             --header "Authorization: Bearer $OPENROUTER_API_KEY" \
             --header "Content-Type: application/json" \
-            --data '{"model":"google/gemma-4-26b-a4b-it:free","messages":[{"role":"system","content":"Return only a valid JSON object."},{"role":"user","content":"Return exactly this JSON object with status set to READY and note set to JSON_OK."}],"max_tokens":128,"response_format":{"type":"json_object"}}')
+            --data '{"model":"dots-studio/dots-3-note-preview:free","messages":[{"role":"system","content":"Return only a valid JSON object."},{"role":"user","content":"Return exactly this JSON object with status set to READY and note set to JSON_OK."}],"max_tokens":128,"response_format":{"type":"json_object"}}')
 
           if [ "$code" != "200" ]; then
             echo "::error::OpenRouter free-model request failed (HTTP $code)"
