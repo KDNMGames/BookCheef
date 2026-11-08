@@ -119,7 +119,8 @@ jobs:
                     action: "generate_image",
                     provider,
                     prompt: task.prompt
-                  })
+                  }),
+                  signal: AbortSignal.timeout(90000)
                 });
                 const result = await response.json().catch(() => ({}));
                 return { response, result };
@@ -176,13 +177,14 @@ jobs:
                   path,
                   mime_type: image.mime_type,
                   base64: image.base64
-                })
+                }),
+                signal: AbortSignal.timeout(60000)
               });
               const uploadResult = await uploadResponse.json().catch(() => ({}));
               if (!uploadResponse.ok || !uploadResult.ok || !uploadResult.url) {
                 throw new Error(`Storage upload failed for ${task.label}: HTTP ${uploadResponse.status}; ${uploadResult.error || "no public URL"}`);
               }
-              const check = await fetch(uploadResult.url, { method: "HEAD" });
+              const check = await fetch(uploadResult.url, { method: "HEAD", signal: AbortSignal.timeout(30000) });
               if (!check.ok) throw new Error(`Uploaded image is not publicly accessible: ${task.label} (HTTP ${check.status})`);
               task.target.url = uploadResult.url;
               delete task.target.prompt;
