@@ -228,7 +228,7 @@ function normalizePackage(pkg) {
 
 
 function countWords(value) {
-  return (String(value || "").match(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu) || []).length;
+  return (String(value || "").match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu) || []).length;
 }
 
 async function expandPart({ title, age, genre, bookTitle, description, author, draft, priorContext, targetWords, partLabel, partIndex }) {
@@ -253,9 +253,9 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
             { role: "user", content:
               "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). " +
               "Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. " +
-              "Описание книги: " + description + "\\nКонтекст предыдущих событий (соблюдай непрерывность): " + (priorContext || "Это начало истории.") +
-              "\\nЧерновик этой части, который нужно развить и существенно расширить, сохранив все важные события и смысл: " + draft +
-              "\\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому."
+              "Описание книги: " + description + "\nКонтекст предыдущих событий (соблюдай непрерывность): " + (priorContext || "Это начало истории.") +
+              "\nЧерновик этой части, который нужно развить и существенно расширить, сохранив все важные события и смысл: " + draft +
+              "\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому."
             }
           ],
           temperature: 0.72,
@@ -266,8 +266,8 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error?.message || "OpenRouter HTTP " + response.status);
       const raw = body.choices?.[0]?.message?.content;
-      const text = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\\n") : "")
-        .trim().replace(/^\\x60{3}[^\\n]*\\n?/,"").replace(/\\n?\\x60{3}$/,"").trim();
+      const text = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\n") : "")
+        .trim().replace(/^\x60{3}[^\n]*\n?/,"").replace(/\n?\x60{3}$/,"").trim();
       const words = countWords(text);
       if (words < Math.floor(targetWords * 0.78)) throw new Error("Part too short: " + words + " words; target " + targetWords + ".");
       return text;
@@ -281,7 +281,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
 
 async function expandOrdinaryBook(pkg) {
   if (bookType !== "ordinary") return pkg;
-  const matches = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)];
+  const matches = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)];
   const age = String(pkg.age || "12+");
   const adult = age === "16+" || age === "18+";
   const minChapters = adult ? 10 : (age === "12+" || age === "14+" ? 6 : 5);
@@ -299,7 +299,7 @@ async function expandOrdinaryBook(pkg) {
     const start = matches[i].index + matches[i][0].length;
     const end = i + 1 < matches.length ? matches[i + 1].index : pkg.book_content.length;
     let draft = pkg.book_content.slice(start, end).trim();
-    const markerPattern = /\\{\\{illustration:[^}]+\\}\\}/g;
+    const markerPattern = /\{\{illustration:[^}]+\}\}/g;
     const markers = [...draft.matchAll(markerPattern)].map(x => x[0]);
     draft = draft.replace(markerPattern, "").trim();
     const currentWords = countWords(draft);
@@ -315,10 +315,10 @@ async function expandOrdinaryBook(pkg) {
     if (countWords(expanded) < minWords) throw new Error("Chapter " + heading + " is below the required word count.");
     const markerForChapter = pkg.illustrations.find(x => x.chapter === heading);
     const allMarkers = [...new Set([...markers, ...(markerForChapter ? ["{{illustration:" + heading + ":" + markerForChapter.number + "}}"] : [])])];
-    parts.push("## " + heading + "\\n\\n" + expanded + (allMarkers.length ? "\\n\\n" + allMarkers.join("\\n") : ""));
+    parts.push("## " + heading + "\n\n" + expanded + (allMarkers.length ? "\n\n" + allMarkers.join("\n") : ""));
     previous = expanded;
   }
-  pkg.book_content = parts.join("\\n\\n");
+  pkg.book_content = parts.join("\n\n");
   const total = countWords(pkg.book_content);
   if (total < totalMinimum) throw new Error("Book is too short after chapter expansion: " + total + " words; minimum " + totalMinimum + ".");
   console.log("Long-form ordinary book completed: " + total + " words, " + matches.length + " chapters.");
@@ -338,7 +338,7 @@ async function expandInteractiveBook(pkg) {
       console.log("Expanding interactive scene " + node.id + " (" + current + " words; target " + targetWords + ").");
       node.text = await expandPart({
         title: node.title, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
-        author: pkg.author, draft: node.text, priorContext: "Предыдущие события: " + (pkg.interactive_content.nodes.slice(0, i).map(x => x.title + ": " + x.text.slice(-500)).join("\\n") || "Начало истории."),
+        author: pkg.author, draft: node.text, priorContext: "Предыдущие события: " + (pkg.interactive_content.nodes.slice(0, i).map(x => x.title + ": " + x.text.slice(-500)).join("\n") || "Начало истории."),
         targetWords, partLabel: "Интерактивная сцена " + (i + 1) + " из 5", partIndex: i
       });
     }
