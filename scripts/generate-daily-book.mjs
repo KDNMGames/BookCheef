@@ -103,7 +103,7 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 ТРЕБОВАНИЯ К ТЕКСТУ:
 - Русский язык, естественный и грамотный, без повторов и искусственного растягивания.
 - Возраст выбирай по реальному содержанию. Текст должен соответствовать возрасту.
-- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ. Не выдавай рассказ, синопсис или короткий набросок вместо книги. Для взрослой аудитории (16+ и 18+) итоговый текст должен содержать не менее 18 000 слов (примерно 2–2,5 часа чтения); планируй 10–14 глав. Для детской/подростковой аудитории: 6+ — не менее 1 500 слов, 9+ — 1 800 слов, 12+ — 2 400 слов, 14+ — 2 700 слов; планируй 5–9 глав. Это ориентиры нижней границы: пиши естественно, без искусственного растягивания, повторов и воды. Сначала создай полноценную структуру, затем раскрой каждую главу в отдельной сцене с действиями, диалогами, деталями и развитием сюжета.
+- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ. Итоговая взрослая книга (16+/18+) — не менее 18 000 слов (примерно 2–2,5 часа чтения), 10–14 глав. Детская/подростковая: 6+ — не менее 1 500 слов; 9+ — 1 800; 12+ — 2 400; 14+ — 2 700 слов; 5–9 глав. Генерация проходит в два этапа: сейчас верни структурный JSON-черновик с полноценными сюжетными заготовками по 100–180 слов на главу; затем каждая глава будет отдельно расширена до требуемого объёма. Не пытайся уместить весь роман в один ответ. Не допускай повторов и искусственного растягивания.
 - Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена. Для 16+/18+ каждый узел должен содержать не менее 5 000 слов, чтобы каждый маршрут (scene-1 → ветка → финал) давал не менее 15 000 слов и около 2 часов чтения. Для детской/подростковой аудитории минимальный объём каждого узла: 6+ — 450 слов, 9+ — 550, 12+ — 650, 14+ — 750. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
 - В интерактивной книге choices — массив объектов {text,next}; next обязан ссылаться на существующий id.
 - Вопросы reader_questions: 3–5 содержательных пар question/answer, не помещай их в book_content.
@@ -122,7 +122,7 @@ async function generatePackage(attempt, previousError = "") {
   console.log("Using text model " + model + " (attempt " + attempt + ").");
   const retryInstruction = attempt > 1
     ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError +
-      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — скопируй word целиком из готовой главы/сцены, включая точную форму слова (падеж и число); не используй начальную форму, если в тексте стоит другая. Лучше выбрать простое слово, которое легко найти в тексте. Если ошибка Ordinary book is too short — создай полный текст не менее 7 000 символов, 4–6 глав по 1 300–1 800 символов каждая; не сокращай главы. Если ошибка Missing illustration marker — chapter в illustrations должен точно совпадать с заголовком главы; вставь соответствующий маркер в book_content. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
+      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — скопируй word целиком из готовой главы/сцены, включая точную форму слова (падеж и число); не используй начальную форму, если в тексте стоит другая. Лучше выбрать простое слово, которое легко найти в тексте. Если ошибка связана с объёмом — создай правильное число глав для выбранного возраста (взрослая 16+/18+: 10–14 глав; детская/подростковая: 5–9 глав) и дай каждой главе содержательный черновик; полный объём система нарастит отдельными последовательными запросами. Если ошибка Missing illustration marker — chapter в illustrations должен точно совпадать с заголовком главы; вставь соответствующий маркер в book_content. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
     : "";
   const requestBody = {
     model,
@@ -231,7 +231,7 @@ function countWords(value) {
   return (String(value || "").match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu) || []).length;
 }
 
-async function expandPart({ title, age, genre, bookTitle, description, author, draft, priorContext, targetWords, partLabel, partIndex }) {
+async function expandPart({ title, age, genre, bookTitle, description, author, draft, priorContext, targetWords, minimumWords, partLabel, partIndex }) {
   const provider = config.daily_book.text_provider || {};
   const models = [provider.model, ...(provider.fallback_models || [])].filter(Boolean);
   let lastError;
@@ -269,7 +269,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
       const text = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\n") : "")
         .trim().replace(/^\x60{3}[^\n]*\n?/,"").replace(/\n?\x60{3}$/,"").trim();
       const words = countWords(text);
-      if (words < Math.floor(targetWords * 0.78)) throw new Error("Part too short: " + words + " words; target " + targetWords + ".");
+      if (words < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Part too short: " + words + " words; minimum " + (Number(minimumWords) || Math.floor(targetWords * 0.78)) + ".");
       return text;
     } catch (error) {
       lastError = error;
@@ -308,14 +308,14 @@ async function expandOrdinaryBook(pkg) {
       console.log("Expanding chapter " + (i + 1) + "/" + matches.length + ": " + heading + " (" + currentWords + " words; target " + targetWords + ").");
       expanded = await expandPart({
         title: heading, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
-        author: pkg.author, draft, priorContext: previous.slice(-1800), targetWords,
+        author: pkg.author, draft, priorContext: previous.slice(-1800), targetWords, minimumWords: minWords,
         partLabel: "Глава " + (i + 1) + " из " + matches.length, partIndex: i
       });
     }
     if (countWords(expanded) < minWords) throw new Error("Chapter " + heading + " is below the required word count.");
     const markerForChapter = pkg.illustrations.find(x => x.chapter === heading);
     const allMarkers = [...new Set([...markers, ...(markerForChapter ? ["{{illustration:" + heading + ":" + markerForChapter.number + "}}"] : [])])];
-    parts.push("## " + heading + "\n\n" + expanded + (allMarkers.length ? "\n\n" + allMarkers.join("\n") : ""));
+    parts.push("## " + heading + "\n\n" + (allMarkers.length ? allMarkers.join("\n") + "\n\n" : "") + expanded);
     previous = expanded;
   }
   pkg.book_content = parts.join("\n\n");
@@ -323,6 +323,18 @@ async function expandOrdinaryBook(pkg) {
   if (total < totalMinimum) throw new Error("Book is too short after chapter expansion: " + total + " words; minimum " + totalMinimum + ".");
   console.log("Long-form ordinary book completed: " + total + " words, " + matches.length + " chapters.");
   return pkg;
+}
+
+function interactiveContext(nodes, nodeId) {
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  const ids = nodeId === "scene-1" ? [] :
+    nodeId === "scene-2a" || nodeId === "scene-2b" ? ["scene-1"] :
+    nodeId === "ending-a" ? ["scene-1", "scene-2a"] :
+    ["scene-1", "scene-2b"];
+  return ids.map(id => {
+    const node = byId.get(id);
+    return node ? node.title + ": " + node.text.slice(-700) : "";
+  }).filter(Boolean).join("\n") || "Начало истории.";
 }
 
 async function expandInteractiveBook(pkg) {
@@ -338,8 +350,8 @@ async function expandInteractiveBook(pkg) {
       console.log("Expanding interactive scene " + node.id + " (" + current + " words; target " + targetWords + ").");
       node.text = await expandPart({
         title: node.title, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
-        author: pkg.author, draft: node.text, priorContext: "Предыдущие события: " + (pkg.interactive_content.nodes.slice(0, i).map(x => x.title + ": " + x.text.slice(-500)).join("\n") || "Начало истории."),
-        targetWords, partLabel: "Интерактивная сцена " + (i + 1) + " из 5", partIndex: i
+        author: pkg.author, draft: node.text, priorContext: interactiveContext(pkg.interactive_content.nodes, node.id),
+        targetWords, minimumWords: minWords, partLabel: "Интерактивная сцена " + (i + 1) + " из 5", partIndex: i
       });
     }
     if (countWords(node.text) < minWords) throw new Error("Interactive scene " + node.id + " is too short.");
