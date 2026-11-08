@@ -157,10 +157,10 @@ function normalizePackage(pkg) {
       pkg.book_content = pkg.chapters.map((chapter, index) => {
         const title = String(chapter.title || chapter.name || ("Глава " + (index + 1))).trim();
         const text = String(chapter.content || chapter.text || "").trim();
-        return "## " + title + "\\n\\n" + text;
-      }).join("\\n\\n");
+        return "## " + title + "\n\n" + text;
+      }).join("\n\n");
     } else if (bookType === "interactive" && Array.isArray(pkg.interactive_content?.nodes)) {
-      pkg.book_content = "# " + String(pkg.title || "Интерактивная книга") + "\\n\\n" + String(pkg.description || "");
+      pkg.book_content = "# " + String(pkg.title || "Интерактивная книга") + "\n\n" + String(pkg.description || "");
     }
   }
   if (!Array.isArray(pkg.reader_questions) && Array.isArray(pkg.questions)) {
@@ -178,9 +178,9 @@ function normalizePackage(pkg) {
         const heading = "## " + item.chapter;
         const start = pkg.book_content.indexOf(heading);
         if (start >= 0) {
-          const next = pkg.book_content.indexOf("\\n## ", start + heading.length);
+          const next = pkg.book_content.indexOf("\n## ", start + heading.length);
           const insertAt = next >= 0 ? next : pkg.book_content.length;
-          pkg.book_content = pkg.book_content.slice(0, insertAt) + "\\n\\n" + marker + "\\n\\n" + pkg.book_content.slice(insertAt);
+          pkg.book_content = pkg.book_content.slice(0, insertAt) + "\n\n" + marker + "\n\n" + pkg.book_content.slice(insertAt);
         }
       }
     }
