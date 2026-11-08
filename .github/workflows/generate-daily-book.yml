@@ -52,7 +52,23 @@ jobs:
           git pull --rebase origin main
           git push
 
+      - name: Persist provider cooldown state
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f book-publications/provider-cooldown.json ]; then
+            git add book-publications/provider-cooldown.json
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Record BookCheef provider cooldown"
+            git pull --rebase origin main
+            git push
+          fi
+
       - name: Dispatch publisher
+        if: steps.book.outputs.package_path != ''
         env:
           GH_TOKEN: ${{ github.token }}
           PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
