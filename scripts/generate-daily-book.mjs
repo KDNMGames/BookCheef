@@ -260,8 +260,8 @@ function validate(pkg) {
     throw new Error("At least one valid footnote is required.");
   }
   const normalizeFootnoteToken = value => String(value || "").normalize("NFKC")
-    .toLocaleLowerCase("ru").replace(/ё/g, "е").replace(/^[^\\p{L}\\p{N}]+|[^\\p{L}\\p{N}]+$/gu, "");
-  const bookTokens = [...combinedText.matchAll(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu)].map(match => match[0]);
+    .toLocaleLowerCase("ru").replace(/ё/g, "е").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+  const bookTokens = [...combinedText.matchAll(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu)].map(match => match[0]);
   for (const note of pkg.footnotes) {
     if (!note?.word?.trim() || !note?.text?.trim()) {
       throw new Error("Each footnote must contain a word and its definition.");
