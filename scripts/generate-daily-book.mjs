@@ -128,7 +128,7 @@ async function generatePackage(attempt) {
         { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ. Сгенерируй полностью новый корректный вариант и внимательно соблюдай все ограничения." : "") }
       ],
       temperature: 0.75,
-      max_tokens: 14000,
+      max_tokens: 6000,
       response_format: { type: "json_object" }
     }),
     signal: AbortSignal.timeout(120000)
