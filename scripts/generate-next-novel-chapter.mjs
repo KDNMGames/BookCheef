@@ -33,7 +33,7 @@ const recentText = (await Promise.all(recent.map(async item =>
 ))).join("\n");
 
 if (!process.env.CURSOR_API_KEY) throw new Error("Missing CURSOR_API_KEY. Add it in GitHub Settings → Secrets and variables → Actions.");
-const model = process.env.CURSOR_MODEL || "gpt-5";
+const model = process.env.CURSOR_MODEL || "";
 const prompt = `
 Напиши полноценную художественную главу романа «Последний день Вселенной» на русском языке.
 Верни ТОЛЬКО Markdown-текст главы. Не возвращай JSON, пояснения, synopsis, кодовые ограждения или комментарии.
@@ -63,7 +63,9 @@ ${recentText}
 - Не обрывайся посреди предложения. Последняя строка должна быть полноценным завершением главы.
 `;
 
-const result = spawnSync("agent", ["-p", prompt, "--model", model, "--output-format", "text"], {
+const agentArgs = ["-p", prompt, "--output-format", "text"];
+if (model) agentArgs.push("--model", model);
+const result = spawnSync("agent", agentArgs, {
   encoding: "utf8",
   env: process.env,
   maxBuffer: 20 * 1024 * 1024,
@@ -104,8 +106,8 @@ manifest.completed_chapters.push({
 });
 manifest.current_word_count = (Number(manifest.current_word_count) || 0) + words;
 manifest.last_generated_at = new Date().toISOString();
-manifest.last_provider = `Cursor Agent CLI (${model})`;
+manifest.last_provider = model ? `Cursor Agent CLI (${model})` : "Cursor Agent CLI (account default model)";
 await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 console.log(`Saved chapter ${next}: ${title} (${words} words).`);
-console.log(`Provider: Cursor Agent CLI; model: ${model}.`);
+console.log(`Provider: Cursor Agent CLI; model: ${model || "account default"}.`);
 console.log("Saved as a draft only; it is not published to the website.");
