@@ -24,10 +24,18 @@ jobs:
           fetch-depth: 0
 
       - name: Publish promotion and prepare delivery report
+        id: publish
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
         run: node scripts/publish-bookcheef-promo.mjs
+
+      - name: Send publication report to BookCheef bot admins
+        if: steps.publish.outputs.report_file != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          REPORT_FILE: ${{ steps.publish.outputs.report_file }}
+        run: node scripts/send-marketing-report.mjs "$REPORT_FILE"
 
       - name: Commit publication report
         run: |
