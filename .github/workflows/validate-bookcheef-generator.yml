@@ -28,7 +28,7 @@ jobs:
           node --input-type=module -e '
             import fs from "node:fs";
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
-            const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
+            const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");\n            const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
             for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "await saveWork(pkg)", "Generation paused because the provider quota is exhausted", "process.exit(0);"]) {
               if (!source.includes(token)) throw new Error("Missing checkpoint feature: " + token);
             }
