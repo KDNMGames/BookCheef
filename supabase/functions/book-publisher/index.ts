@@ -305,7 +305,7 @@ Deno.serve(async (req: Request) => {
   if (payload.action === "upload_image") {
     try {
       const path = typeof payload.path === "string" ? payload.path : "";
-      if (!/^generated\/[a-z0-9-]{8,160}\/(?:cover|illustration-[1-5])\.(?:png|jpg|webp|gif)$/.test(path)) {
+      if (!/^generated\/[a-z0-9-]{8,160}\/[0-9]{6,20}\/(?:cover|illustration-[1-5])\.(?:png|jpg|webp|gif)$/.test(path)) {
         return Response.json({ ok: false, error: "Invalid generated image path" }, { status: 400 });
       }
       const image = { mime_type: String(payload.mime_type ?? ""), base64: String(payload.base64 ?? "") };
@@ -317,7 +317,7 @@ Deno.serve(async (req: Request) => {
       if (!secretKey) return Response.json({ ok: false, error: "Supabase server key is unavailable" }, { status: 503 });
       const supabase = createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
       const { error } = await supabase.storage.from("gallery").upload(path, bytes, {
-        contentType: image.mime_type, cacheControl: "3600", upsert: true,
+        contentType: image.mime_type, cacheControl: "3600", upsert: false,
       });
       if (error) throw new Error("Generated image upload failed");
       const { data } = supabase.storage.from("gallery").getPublicUrl(path);
