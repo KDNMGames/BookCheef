@@ -130,7 +130,8 @@ async function generatePackage(attempt) {
       temperature: 0.75,
       max_tokens: 14000,
       response_format: { type: "json_object" }
-    })
+    }),
+    signal: AbortSignal.timeout(120000)
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
