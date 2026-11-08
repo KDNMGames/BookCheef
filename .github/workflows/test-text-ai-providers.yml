@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Test OpenRouter free model
@@ -26,7 +26,7 @@ jobs:
             https://openrouter.ai/api/v1/chat/completions \
             --header "Authorization: Bearer $OPENROUTER_API_KEY" \
             --header "Content-Type: application/json" \
-            --data '{"model":"openrouter/free","messages":[{"role":"user","content":"Ответь одним словом: ГОТОВО"}],"max_tokens":20}')
+            --data '{"model":"openrouter/free","messages":[{"role":"user","content":"Ответь одним словом: ГОТОВО"}],"max_tokens":128}')
 
           if [ "$code" != "200" ]; then
             echo "::error::OpenRouter free-model request failed (HTTP $code)"
@@ -45,12 +45,29 @@ jobs:
 
           python - <<'PY'
           import json
-          d=json.load(open("/tmp/openrouter.json"))
-          choices=d.get("choices", [])
+          d=json.load(open("/tmp/openrouter.json", encoding="utf-8"))
+          choices=d.get("choices") or []
           if not choices:
-              raise SystemExit("No model response returned")
+              raise SystemExit("OpenRouter accepted the key but returned no choices")
+          message=choices[0].get("message") or {}
+          content=message.get("content")
+          if isinstance(content, str):
+              response=content.strip()
+          elif isinstance(content, list):
+              response=" ".join(str(part.get("text", "")) for part in content if isinstance(part, dict)).strip()
+          else:
+              response=""
+          if not response and message.get("refusal"):
+              response=str(message["refusal"]).strip()
+          if not response and isinstance(message.get("reasoning"), str):
+              response=message["reasoning"].strip()
+          if not response:
+              print("OpenRouter API key accepted.")
+              print("Free model selected:", d.get("model", "not reported"))
+              print("Finish reason:", choices[0].get("finish_reason", "not reported"))
+              raise SystemExit("The model returned an empty text field; authentication succeeded, but text generation was not confirmed")
           print("OpenRouter API key accepted.")
           print("Free model selected:", d.get("model", "not reported"))
-          print("Test response:", choices[0].get("message", {}).get("content", "").strip())
-          print("Tokens used:", d.get("usage", {}).get("total_tokens", "not reported"))
+          print("Test response:", response[:500])
+          print("Tokens used:", (d.get("usage") or {}).get("total_tokens", "not reported"))
           PY
