@@ -121,7 +121,7 @@ async function generatePackage(attempt, previousError = "") {
   const model = modelCandidates[modelIndex] || "openrouter/free";
   console.log("Using text model " + model + " (attempt " + attempt + ").");
   const retryInstruction = attempt > 1
-    ? "\\n\\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError +
+    ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError +
       ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — замени word на слово, дословно скопированное из текста книги, или исправь сам текст так, чтобы слово встречалось. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
     : "";
   const requestBody = {
@@ -223,7 +223,7 @@ function validate(pkg) {
   }
   if (pkg.title.length > 180) throw new Error("Title is too long.");
   if (!authors.some(author => author.author === pkg.author)) throw new Error("The selected author is not in the BookCheef author pool.");
-  const normalizeTitle = value => String(value).normalize("NFKC").toLocaleLowerCase("ru").replace(/[«»“”"'’]/g, "").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim().replace(/\\s+/g, " ");
+  const normalizeTitle = value => String(value).normalize("NFKC").toLocaleLowerCase("ru").replace(/[«»“”"'’]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim().replace(/\s+/g, " ");
   if (existingTitles.some(title => normalizeTitle(title) === normalizeTitle(pkg.title))) throw new Error("The generated title duplicates an existing inbox title. Choose a completely different title, not a variation.");
   if (!/^(6|9|12|14|16|18)\+$/.test(pkg.age.trim())) throw new Error("Age rating is not one of the supported categories.");
   if (pkg.is_interactive !== (bookType === "interactive")) throw new Error("Book type differs from rotation state.");
