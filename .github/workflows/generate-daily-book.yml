@@ -1,6 +1,10 @@
 name: Daily BookCheef book generation
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "book-publications/run-daily-book.json"
   schedule:
     # 01:10 Europe/Berlin in CET and CEST; local-time gate skips the duplicate slot.
     - cron: '10 0,23 * * *'
