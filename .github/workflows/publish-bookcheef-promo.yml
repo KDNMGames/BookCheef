@@ -1,0 +1,42 @@
+name: Publish BookCheef launch promotion
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "marketing/launch/*.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bookcheef-launch-promotion
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish promotion and prepare delivery report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/publish-bookcheef-promo.mjs
+
+      - name: Commit publication report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add marketing/outbox/
+          if git diff --cached --quiet; then
+            echo "No new publication report to commit."
+          else
+            git commit -m "Report BookCheef promotional publication"
+            git push
+          fi
