@@ -1,7 +1,7 @@
 {
-  "requested_at": "2026-11-08T21:21:00+03:00",
-  "requested_by": "User requested next BookCheef conveyor run after successful publication",
-  "requested_type": "next rotation slot",
+  "requested_at": "2026-11-08T21:30:00+03:00",
+  "requested_by": "User requested continuation of BookCheef conveyor; retry verification after repair",
+  "requested_type": "resume pending publication",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Start the next daily book cycle; preserve rotation until publication is fully verified"
+  "retry_reason": "Retry already-published pending package with corrected image URL verification; do not generate a duplicate book"
 }
