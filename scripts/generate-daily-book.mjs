@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createCheckpointStore } from "./book-checkpoint.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -39,20 +40,6 @@ if (pending) {
 
 
 const WORK_PATH = "book-publications/work-in-progress/current.json";
-async function saveWork(pkg) {
-  await fs.mkdir(path.dirname(WORK_PATH), { recursive: true });
-  await fs.writeFile(WORK_PATH, JSON.stringify({ book_type: bookType, updated_at: new Date().toISOString(), pkg }, null, 2) + "\n");
-}
-async function loadWork() {
-  try {
-    const state = JSON.parse(await fs.readFile(WORK_PATH, "utf8"));
-    if (state.book_type !== bookType || !state.pkg?.title || !state.pkg?.book_content) {
-      throw new Error("Saved work checkpoint does not match the current rotation or is incomplete.");
-    }
-    console.log("Resuming saved book: " + state.pkg.title);
-    return state.pkg;
-  } catch (error) { if (error.code === "ENOENT") return null; throw error; }
-}
 
 const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
 const cooldownSeconds = 21600;
@@ -70,6 +57,7 @@ if (!OPENROUTER_API_KEY) throw new Error("Missing OPENROUTER_API_KEY secret.");
 const position = Number(rotation.cycle_position) || 1;
 const cycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
 const bookType = cycle[(position - 1) % cycle.length];
+const { saveWork, loadWork } = createCheckpointStore({ workPath: WORK_PATH, bookType });
 const authorDir = "book-publications/authors";
 const authorFiles = (await fs.readdir(authorDir)).filter(x => x.endsWith(".json")).sort();
 const authors = [];
