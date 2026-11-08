@@ -1,13 +1,13 @@
 {
-  "cycle_position": 1,
-  "published_count": 2,
-  "updated_at": "2026-11-07",
+  "cycle_position": 2,
+  "published_count": 3,
+  "updated_at": "2026-11-08T03:06:11.410Z",
   "note": "New rotation order from the next publication: 1 interactive, 2 ordinary, 3 ordinary. Existing two published books retained; current pending interactive package is first.",
   "last_publication": {
-    "title": "Город на линии отлива",
-    "author": "Рувена Эст",
+    "title": "Голоса под чёрным льдом",
+    "author": "Астэр Неваль",
     "age": "14+",
-    "type": "ordinary",
-    "publication_key": "bookcheef-2026-11-07-city-on-the-tide-line"
+    "type": "interactive",
+    "publication_key": "bookcheef-2026-11-08-voices-beneath-black-ice"
   }
 }
