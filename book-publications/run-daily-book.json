@@ -1,6 +1,7 @@
 {
-  "requested_at": "2026-11-08T17:04:29.814Z",
-  "requested_by": "User requested immediate BookCheef pipeline run",
+  "requested_at": "2026-11-08T17:10:22.351Z",
+  "requested_by": "User requested conveyor retry after OpenRouter retry hardening",
   "requested_type": "next rotation slot",
-  "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain"
+  "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
+  "retry_reason": "Transient OpenRouter provider errors and empty content; generator now retries each configured model twice"
 }
