@@ -9,6 +9,12 @@ const sha = process.env.GITHUB_SHA || "HEAD";
 const changed = execFileSync("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", sha], { encoding: "utf8" });
 const launchFiles = changed.split(/\r?\n/).filter((file) => /^marketing\/launch\/[^/]+\.json$/.test(file));
 
+function exposeReportPath(reportFile) {
+  if (process.env.GITHUB_OUTPUT) {
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `report_file=${reportFile}\n`);
+  }
+}
+
 if (!launchFiles.length) {
   console.log("No launch campaign JSON changed in this commit.");
   process.exit(0);
@@ -24,6 +30,7 @@ for (const launchFile of launchFiles) {
   const reportFile = path.join("marketing", "outbox", `${new Date().toISOString().slice(0, 10)}-telegram-${slug}.json`);
   if (fs.existsSync(reportFile)) {
     console.log(`Already reported; skipping duplicate: ${reportFile}`);
+    exposeReportPath(reportFile);
     continue;
   }
 
@@ -57,5 +64,6 @@ for (const launchFile of launchFiles) {
 
   fs.mkdirSync(path.dirname(reportFile), { recursive: true });
   fs.writeFileSync(reportFile, JSON.stringify(report, null, 2) + "\n", "utf8");
+  exposeReportPath(reportFile);
   console.log(`Published ${campaign.campaign_id}; Telegram message ${messageId}; report: ${reportFile}`);
 }
