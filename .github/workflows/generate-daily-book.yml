@@ -6,8 +6,8 @@ on:
     paths:
       - "book-publications/run-daily-book.json"
   schedule:
-    # 01:10 Europe/Berlin in CET and CEST; local-time gate skips the duplicate slot.
-    - cron: '10 0,23 * * *'
+    # Poll for the next production task every 15 minutes.
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,31 +28,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check Europe/Berlin schedule
-        id: local_schedule
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == "schedule" && "$(TZ=Europe/Berlin date +%H)" != "01" ]]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping duplicate UTC slot; daily book generation is scheduled for 01:10 Europe/Berlin."
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Set up Node.js
-        if: steps.local_schedule.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Generate a book or resume the oldest pending package
-        if: steps.local_schedule.outputs.run == 'true'
         id: book
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node scripts/generate-daily-book.mjs
 
       - name: Commit generated package
-        if: steps.local_schedule.outputs.run == 'true' && steps.book.outputs.created == 'true'
+        if: steps.book.outputs.created == 'true'
         env:
           PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
         run: |
@@ -65,7 +53,6 @@ jobs:
           git push
 
       - name: Dispatch publisher
-        if: steps.local_schedule.outputs.run == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
