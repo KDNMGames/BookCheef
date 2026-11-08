@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { createCheckpointStore } from "./book-checkpoint.mjs";
 
 const ROOT = process.cwd();
@@ -7,6 +8,8 @@ const CONFIG_PATH = "book-publications/automation-config.json";
 const ROTATION_PATH = "book-publications/rotation-state.json";
 const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const CURSOR_API_KEY = process.env.CURSOR_API_KEY;
+let openRouterDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
 const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
@@ -47,13 +50,61 @@ try {
   const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
   const until = Date.parse(state.retry_after || "");
   if (Number.isFinite(until) && until > Date.now()) {
-    console.log("Provider cooldown active until " + new Date(until).toISOString() + "; skipping API calls.");
-    if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
-    process.exit(0);
+    openRouterDisabled = true;
+    console.log("OpenRouter is cooling down until " + new Date(until).toISOString() + "; other AI providers remain available.");
   }
 } catch (error) { if (error.code !== "ENOENT") throw error; }
 
-if (!OPENROUTER_API_KEY) throw new Error("Missing OPENROUTER_API_KEY secret.");
+if (!OPENROUTER_API_KEY && !CURSOR_API_KEY) {
+  throw new Error("No text AI provider credentials are configured. Add OPENROUTER_API_KEY or CURSOR_API_KEY.");
+}
+
+async function saveOpenRouterCooldown(reason) {
+  const retryAfter = new Date(Date.now() + cooldownSeconds * 1000).toISOString();
+  await fs.writeFile(COOLDOWN_PATH, JSON.stringify({
+    provider: "openrouter",
+    detected_at: new Date().toISOString(),
+    retry_after: retryAfter,
+    reason: String(reason || "OpenRouter quota exhausted").slice(0, 700)
+  }, null, 2) + "\n");
+  openRouterDisabled = true;
+  console.warn("OpenRouter paused until " + retryAfter + "; switching to the next AI provider.");
+}
+
+function runCursorAgent(prompt, { timeout = 600000 } = {}) {
+  if (!CURSOR_API_KEY) {
+    const error = new Error("Cursor fallback is unavailable: CURSOR_API_KEY is not configured.");
+    error.code = "NO_FALLBACK_PROVIDER";
+    throw error;
+  }
+  console.log("Switching text generation to Cursor Agent CLI.");
+  const args = ["-p", prompt, "--output-format", "text", "--trust"];
+  if (process.env.CURSOR_MODEL) args.push("--model", process.env.CURSOR_MODEL);
+  const result = spawnSync("agent", args, {
+    encoding: "utf8",
+    env: process.env,
+    maxBuffer: 40 * 1024 * 1024,
+    timeout
+  });
+  if (result.error) throw new Error("Cursor Agent could not run: " + result.error.message);
+  if (result.status !== 0) {
+    const details = (result.stderr || result.stdout || "").trim().slice(-2500);
+    const error = new Error("Cursor Agent failed (exit " + result.status + "): " + (details || "no diagnostic output"));
+    if (/rate.?limit|quota|usage limit|billing limit|out of credits/i.test(error.message)) error.code = "RATE_LIMIT";
+    throw error;
+  }
+  const output = String(result.stdout || "").trim().replace(/^\x60{3}(?:json|markdown)?\s*/i, "").replace(/\s*\x60{3}$/, "").trim();
+  if (!output) throw new Error("Cursor Agent returned an empty response.");
+  return output;
+}
+
+function parseModelJson(output) {
+  const cleaned = String(output).trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error("Cursor Agent did not return a JSON object.");
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
 const position = Number(rotation.cycle_position) || 1;
 const cycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
 const bookType = cycle[(position - 1) % cycle.length];
@@ -156,39 +207,52 @@ async function generatePackage(attempt, previousError = "") {
   if ((providerConfig.reasoning_off_models || []).includes(model)) {
     requestBody.reasoning = { enabled: false };
   }
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + OPENROUTER_API_KEY,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
-      "X-Title": "BookCheef Daily Publisher"
-    },
-    body: JSON.stringify(requestBody),
-    signal: AbortSignal.timeout(120000)
-  });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
-    const provider = body.error?.metadata?.provider_name || body.error?.provider || "";
-    const failure = new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
-    if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
-    throw failure;
+  if (openRouterDisabled || !OPENROUTER_API_KEY) {
+    return parseModelJson(runCursorAgent(systemPrompt + "\n\n" + userPrompt + retryInstruction +
+      "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { timeout: 900000 }));
   }
-  const choice = body.choices?.[0];
-  const rawContent = choice?.message?.content;
-  const content = typeof rawContent === "string"
-    ? rawContent
-    : Array.isArray(rawContent)
-      ? rawContent.map(part => typeof part === "string" ? part : (part?.text || "")).join("\n")
-      : "";
-  if (!content.trim()) {
-    const detail = choice?.finish_reason ? " (finish_reason: " + choice.finish_reason + ")" : "";
-    const providerError = body.error?.message || body.provider_error || "";
-    throw new Error(("OpenRouter returned empty content" + detail + (providerError ? ": " + providerError : ".")).slice(0, 700));
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + OPENROUTER_API_KEY,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
+        "X-Title": "BookCheef Daily Publisher"
+      },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(120000)
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
+      const provider = body.error?.metadata?.provider_name || body.error?.provider || "";
+      const failure = new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
+      if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
+      throw failure;
+    }
+    const choice = body.choices?.[0];
+    const rawContent = choice?.message?.content;
+    const content = typeof rawContent === "string"
+      ? rawContent
+      : Array.isArray(rawContent)
+        ? rawContent.map(part => typeof part === "string" ? part : (part?.text || "")).join("\n")
+        : "";
+    if (!content.trim()) {
+      const detail = choice?.finish_reason ? " (finish_reason: " + choice.finish_reason + ")" : "";
+      const providerError = body.error?.message || body.provider_error || "";
+      throw new Error(("OpenRouter returned empty content" + detail + (providerError ? ": " + providerError : ".")).slice(0, 700));
+    }
+    const cleaned = content.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "");
+    return JSON.parse(cleaned);
+  } catch (error) {
+    if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
+      await saveOpenRouterCooldown(error.message);
+      return parseModelJson(runCursorAgent(systemPrompt + "\n\n" + userPrompt + retryInstruction +
+        "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { timeout: 900000 }));
+    }
+    throw error;
   }
-  const cleaned = content.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "");
-  return JSON.parse(cleaned);
 }
 
 function slugify(value) {
@@ -257,41 +321,64 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
   for (let retry = 0; retry < 3; retry++) {
     const model = models[(partIndex + retry) % Math.max(1, models.length)] || "openrouter/free";
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + OPENROUTER_API_KEY,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
-          "X-Title": "BookCheef Long-form Chapter Writer"
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное." },
-            { role: "user", content:
-              "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). " +
-              "Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. " +
-              "Описание книги: " + description + "\nКонтекст предыдущих событий (соблюдай непрерывность): " + (priorContext || "Это начало истории.") +
-              "\nЧерновик этой части, который нужно развить и существенно расширить, сохранив все важные события и смысл: " + draft +
-              "\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому."
-            }
-          ],
-          temperature: 0.72,
-          max_tokens: 10000
-        }),
-        signal: AbortSignal.timeout(180000)
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error?.message || "OpenRouter HTTP " + response.status);
-      const raw = body.choices?.[0]?.message?.content;
-      const text = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\n") : "")
-        .trim().replace(/^\x60{3}[^\n]*\n?/,"").replace(/\n?\x60{3}$/,"").trim();
-      const words = countWords(text);
+      const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
+      const userText =
+        "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). " +
+        "Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. " +
+        "Описание книги: " + description + "\nКонтекст предыдущих событий (соблюдай непрерывность): " + (priorContext || "Это начало истории.") +
+        "\nЧерновик этой части, который нужно развить и существенно расширить, сохранив все важные события и смысл: " + draft +
+        "\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому.";
+      let generatedText;
+      if (openRouterDisabled || !OPENROUTER_API_KEY) {
+        generatedText = runCursorAgent(systemText + "\n\n" + userText, { timeout: 900000 });
+      } else {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + OPENROUTER_API_KEY,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
+            "X-Title": "BookCheef Long-form Chapter Writer"
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "system", content: systemText }, { role: "user", content: userText }],
+            temperature: 0.72,
+            max_tokens: 10000
+          }),
+          signal: AbortSignal.timeout(180000)
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const message = body.error?.message || "OpenRouter HTTP " + response.status;
+          const failure = new Error(message);
+          if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
+          throw failure;
+        }
+        const raw = body.choices?.[0]?.message?.content;
+        generatedText = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\n") : "")
+          .trim().replace(/^\x60{3}[^\n]*\n?/,"").replace(/\n?\x60{3}$/,"").trim();
+      }
+      const words = countWords(generatedText);
       if (words < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Part too short: " + words + " words; minimum " + (Number(minimumWords) || Math.floor(targetWords * 0.78)) + ".");
-      return text;
+      return generatedText;
     } catch (error) {
       lastError = error;
+      if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
+        await saveOpenRouterCooldown(error.message);
+        try {
+          const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
+          const userText = "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. Описание: " + description + "\\nКонтекст: " + (priorContext || "Начало истории.") + "\\nЧерновик: " + draft + "\\nСохрани события, напиши полноценную прозу, выведи только текст части.";
+          const fallbackText = runCursorAgent(systemText + "\\n\\n" + userText, { timeout: 900000 });
+          const fallbackWords = countWords(fallbackText);
+          if (fallbackWords < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Cursor fallback part too short: " + fallbackWords + " words.");
+          return fallbackText;
+        } catch (fallbackError) {
+          lastError = fallbackError;
+          console.warn("Cursor fallback also failed: " + fallbackError.message);
+          throw fallbackError;
+        }
+      }
       console.warn("Long-form expansion retry " + (retry + 1) + " for " + title + ": " + error.message);
     }
   }
@@ -518,7 +605,7 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
 }
 }
 if (!pkg && (lastError?.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit/i.test(lastError?.message || ""))) {
-  console.log("Generation paused because the provider quota is exhausted. The cooldown was saved; no book was published and rotation was not advanced.");
+  console.log("All configured text providers are unavailable or quota-limited. The checkpoint remains saved; no book was published and rotation was not advanced.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   process.exit(0);
 }
