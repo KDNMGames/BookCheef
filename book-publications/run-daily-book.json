@@ -1,7 +1,7 @@
 {
-  "requested_at": "2026-11-08T17:22:11.371Z",
-  "requested_by": "User requested BookCheef conveyor retry after generator validation fixes",
+  "requested_at": "2026-11-08T17:37:48.112Z",
+  "requested_by": "User requested retry after daily book generator fixes",
   "requested_type": "next rotation slot",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Hardened unique title generation, case-insensitive footnote matching, larger output budget and expanded free-model fallback"
+  "retry_reason": "Improved illustration marker normalization and explicit minimum book length/retry guidance"
 }
