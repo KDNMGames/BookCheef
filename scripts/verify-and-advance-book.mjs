@@ -64,5 +64,5 @@ const queuePath="book-publications/pending-publications.json";
 const queue=JSON.parse(await fs.readFile(queuePath,"utf8"));
 const before=Array.isArray(queue.packages)?queue.packages.length:0;
 queue.packages=(Array.isArray(queue.packages)?queue.packages:[]).filter(item=>item.publication_key!==payload.publication_key);
-if(queue.packages.length!==before){queue.updated_at=new Date().toISOString();await fs.writeFile(queuePath,JSON.stringify(queue,null,2)+"\\n");}
+if(queue.packages.length!==before){queue.updated_at=new Date().toISOString();await fs.writeFile(queuePath,JSON.stringify(queue,null,2)+"\n");}
 console.log("Verified Supabase row, "+urls.length+" public images, resolved reader content, and cleared this item from the retry queue.");
