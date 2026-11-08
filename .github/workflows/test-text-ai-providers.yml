@@ -1,0 +1,56 @@
+name: Test text AI provider keys
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check Groq API key
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo "::error::GROQ_API_KEY is missing"
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/groq.json -w "%{http_code}" \
+            https://api.groq.com/openai/v1/models \
+            -H "Authorization: Bearer $GROQ_API_KEY")
+          if [ "$code" != "200" ]; then
+            echo "::error::Groq authentication/API check failed (HTTP $code)"
+            cat /tmp/groq.json
+            exit 1
+          fi
+          count=$(python -c "import json; print(len(json.load(open('/tmp/groq.json')).get('data', [])))")
+          echo "Groq key accepted. Available model entries: $count"
+
+      - name: Check OpenRouter API key
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::error::OPENROUTER_API_KEY is missing"
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/openrouter.json -w "%{http_code}" \
+            https://openrouter.ai/api/v1/key \
+            -H "Authorization: Bearer $OPENROUTER_API_KEY")
+          if [ "$code" != "200" ]; then
+            echo "::error::OpenRouter authentication/API check failed (HTTP $code)"
+            cat /tmp/openrouter.json
+            exit 1
+          fi
+          python - <<'PY'
+          import json
+          data = json.load(open('/tmp/openrouter.json')).get('data', {})
+          print("OpenRouter key accepted.")
+          print("Free-tier account:", data.get("is_free_tier", "not reported"))
+          print("Usage:", data.get("usage", "not reported"))
+          print("Remaining key limit:", data.get("limit_remaining", "not reported"))
+          PY
