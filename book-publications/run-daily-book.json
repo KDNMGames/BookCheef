@@ -1,7 +1,7 @@
 {
-  "requested_at": "2026-11-08T17:37:48.112Z",
-  "requested_by": "User requested retry after daily book generator fixes",
+  "requested_at": "2026-11-08T18:00:47.282Z",
+  "requested_by": "User requested retry after footnote and truncation errors",
   "requested_type": "next rotation slot",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Improved illustration marker normalization and explicit minimum book length/retry guidance"
+  "retry_reason": "Footnote matching now handles Russian inflections and stores exact book spelling; increased response budget"
 }
