@@ -168,7 +168,7 @@ jobs:
               const suffix = task.label === "cover" ? "cover" : `illustration-${task.target.number}`;
               const extension = extByMime[image.mime_type];
               if (!extension) throw new Error(`Unsupported generated image type: ${image.mime_type}`);
-              const path = `generated/${payload.publication_key}/${process.env.GITHUB_RUN_ID}/${suffix}.${extension}`;
+              const path = `generated/${payload.publication_key}/${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT || "1"}/${suffix}.${extension}`;
               const uploadResponse = await fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "x-book-publisher-token": token },
