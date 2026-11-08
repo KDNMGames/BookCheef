@@ -64,7 +64,7 @@ for (const launchFile of launchFiles) {
     platform: "Telegram",
     community_name: campaign.community_name,
     community_url: campaign.community_url,
-    post_url: campaign.post_url_template ? `${campaign.post_url_template.replace(/\\/$/, "")}/${messageId}` : campaign.community_url,
+    post_url: campaign.post_url_template ? `${campaign.post_url_template.endsWith("/") ? campaign.post_url_template.slice(0, -1) : campaign.post_url_template}/${messageId}` : campaign.community_url,
     published_at: publishedAt,
     destination: campaign.destination || "Внешняя площадка",
     post_text: campaign.post_text,
