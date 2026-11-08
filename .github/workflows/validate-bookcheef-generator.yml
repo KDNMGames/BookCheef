@@ -1,0 +1,36 @@
+name: Validate BookCheef long-form generator
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/generate-daily-book.mjs"
+      - "book-publications/automation-config.json"
+      - ".github/workflows/validate-bookcheef-generator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check generator syntax
+        run: node --check scripts/generate-daily-book.mjs
+      - name: Validate automation configuration
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const config = JSON.parse(fs.readFileSync("book-publications/automation-config.json", "utf8"));
+            const length = config.daily_book.content_rules.reading_length;
+            if (length.adult_minimum_words < 18000) throw new Error("Adult minimum is below 18,000 words");
+            for (const age of ["6+", "9+", "12+", "14+"]) {
+              if (!length.child_minimum_words_by_age[age]) throw new Error("Missing child length for " + age);
+            }
+            console.log("Reading-length policy is valid.");
+          '
