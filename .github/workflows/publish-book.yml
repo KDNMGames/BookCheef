@@ -207,6 +207,30 @@ jobs:
           }
 
           fs.writeFileSync("publication-payload.json", JSON.stringify(payload));
+          fs.mkdirSync("book-publications/license-records", { recursive: true });
+          const licensedAssets = [
+            ...(payload.cover?.source_license ? [{ role: "cover", url: payload.cover.url, ...payload.cover.source_license }] : []),
+            ...(payload.illustrations || []).filter(item => item.source_license).map(item => ({
+              role: "illustration",
+              number: item.number,
+              chapter: item.chapter,
+              url: item.url,
+              ...item.source_license
+            }))
+          ];
+          if (licensedAssets.length) {
+            const safeKey = String(payload.publication_key).replace(/[^a-zA-Z0-9._-]/g, "-");
+            fs.writeFileSync(
+              "book-publications/license-records/" + safeKey + ".json",
+              JSON.stringify({
+                publication_key: payload.publication_key,
+                recorded_at: new Date().toISOString(),
+                policy: "Only machine-verified CC0/Public Domain files with no attribution requirement are accepted.",
+                assets: licensedAssets
+              }, null, 2) + "\n"
+            );
+            console.log("Saved a permanent license/provenance record for " + licensedAssets.length + " fallback image(s).");
+          }
           NODE
 
           HTTP_STATUS="$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
@@ -225,7 +249,7 @@ jobs:
           node scripts/verify-and-advance-book.mjs
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add book-publications/rotation-state.json book-publications/pending-publications.json
+          git add book-publications/rotation-state.json book-publications/pending-publications.json book-publications/license-records/
           if ! git diff --cached --quiet; then
             git commit -m "Advance BookCheef rotation after verified publication"
             git push
