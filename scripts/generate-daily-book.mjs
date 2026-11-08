@@ -37,6 +37,23 @@ if (pending) {
   process.exit(0);
 }
 
+
+const WORK_PATH = "book-publications/work-in-progress/current.json";
+async function saveWork(pkg) {
+  await fs.mkdir(path.dirname(WORK_PATH), { recursive: true });
+  await fs.writeFile(WORK_PATH, JSON.stringify({ book_type: bookType, updated_at: new Date().toISOString(), pkg }, null, 2) + "\n");
+}
+async function loadWork() {
+  try {
+    const state = JSON.parse(await fs.readFile(WORK_PATH, "utf8"));
+    if (state.book_type !== bookType || !state.pkg?.title || !state.pkg?.book_content) {
+      throw new Error("Saved work checkpoint does not match the current rotation or is incomplete.");
+    }
+    console.log("Resuming saved book: " + state.pkg.title);
+    return state.pkg;
+  } catch (error) { if (error.code === "ENOENT") return null; throw error; }
+}
+
 const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
 const cooldownSeconds = 21600;
 try {
@@ -330,6 +347,8 @@ async function expandOrdinaryBook(pkg) {
     const markerForChapter = pkg.illustrations.find(x => x.chapter === heading);
     const allMarkers = [...new Set([...markers, ...(markerForChapter ? ["{{illustration:" + heading + ":" + markerForChapter.number + "}}"] : [])])];
     parts.push("## " + heading + "\n\n" + (allMarkers.length ? allMarkers.join("\n") + "\n\n" : "") + expanded);
+    const remaining = i + 1 < matches.length ? pkg.book_content.slice(matches[i + 1].index) : "";
+    await saveWork({ ...pkg, book_content: parts.join("\n\n") + (remaining ? "\n\n" + remaining : "") });
     previous = expanded;
   }
   pkg.book_content = parts.join("\n\n");
@@ -369,6 +388,7 @@ async function expandInteractiveBook(pkg) {
       });
     }
     if (countWords(node.text) < minWords) throw new Error("Interactive scene " + node.id + " is too short.");
+    await saveWork(pkg);
   }
   const byId = new Map(pkg.interactive_content.nodes.map(n => [n.id, n]));
   const routeA = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2a").text) + countWords(byId.get("ending-a").text);
@@ -488,10 +508,13 @@ function validate(pkg) {
   return pkg;
 }
 
-let pkg, lastError;
+let pkg = await loadWork(), lastError;
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
+if (pkg) {
+  pkg = validate(await expandBook(pkg));
+} else {
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
-  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); pkg=validate(await expandBook(normalized)); break; }
+  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); await saveWork(normalized); pkg=validate(await expandBook(normalized)); break; }
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
@@ -505,6 +528,7 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
     if (attempt<maxAttempts) await new Promise(resolve=>setTimeout(resolve, Math.max(1,Number(config.daily_book.text_provider?.retry_delay_seconds)||30)*1000));
   }
 }
+}
 if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
 
 const fileName=today+"-"+slugify(pkg.title)+".json";
@@ -516,6 +540,7 @@ pendingQueue.packages=Array.isArray(pendingQueue.packages)?pendingQueue.packages
 pendingQueue.packages.push({path:filePath,title:pkg.title,publication_key:pkg.publication_key,created_at:new Date().toISOString()});
 pendingQueue.updated_at=new Date().toISOString();
 await fs.writeFile(pendingQueuePath,JSON.stringify(pendingQueue,null,2)+"\n");
+await fs.rm(WORK_PATH, { force: true });
 console.log("Created "+filePath+" ("+pkg.title+") and added it to the explicit retry queue.");
 console.log("Type: "+bookType+"; rotation position remains unchanged until verified publication.");
 if (process.env.GITHUB_OUTPUT) {
