@@ -1,8 +1,8 @@
 {
-  "requested_at": "2026-11-08T22:00:38.525Z",
-  "requested_by": "User requested continuation of BookCheef automation",
+  "requested_at": "2026-11-08T23:45:06.104Z",
+  "requested_by": "User confirmed GEMINI_API_KEY is configured; test provider failover",
   "requested_type": "generate next book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Retry after provider cooldown expired; verify real checkpoint creation and resumable generation. Do not publish duplicates or short books.",
+  "retry_reason": "Run a real generation attempt with Gemini available as fallback. Preserve checkpoint and do not publish incomplete books.",
   "reason": "Continue the next BookCheef conveyor item using current rotation. Preserve all existing publications and queue state until a complete validated book is ready."
 }
