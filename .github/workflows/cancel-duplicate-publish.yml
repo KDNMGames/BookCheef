@@ -17,7 +17,7 @@ jobs:
       - name: Cancel stalled generation attempt
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_ID: "42441402559"
+          RUN_ID: "42441594365"
         run: |
           set -euo pipefail
           curl --fail-with-body --silent --show-error \
