@@ -23,7 +23,7 @@ export default function BookDocument({url,fileName='',fileType=''}) {
     async function read(){
       setLoading(true);setError('');setHtml('');setText('');
       try{
-        if(type==='pdf'||['png','jpg','jpeg','webp','gif','bmp','avif'].includes(type)){setLoading(false);return;}
+        if(type==='pdf'||['png','jpg','jpeg','webp','gif','bmp','avif','svg'].includes(type)){setLoading(false);return;}
         const response=await fetch(url);
         if(!response.ok)throw new Error('Не удалось загрузить документ ('+response.status+').');
         if(type==='docx'){
@@ -50,7 +50,7 @@ export default function BookDocument({url,fileName='',fileType=''}) {
   },[url,type]);
 
   if(type==='pdf')return <div className="document-viewer pdf-viewer"><iframe title={fileName||'PDF книга'} src={url+'#toolbar=1&navpanes=0'} /><a href={url} target="_blank" rel="noreferrer">Открыть PDF в отдельной вкладке</a></div>;
-  if(['png','jpg','jpeg','webp','gif','bmp','avif'].includes(type))return <figure className="document-image-viewer"><img src={url} alt={fileName||'Иллюстрация книги'} onError={handleImageError}/></figure>;
+  if(['png','jpg','jpeg','webp','gif','bmp','avif','svg'].includes(type))return <figure className="document-image-viewer"><img src={url} alt={fileName||'Иллюстрация книги'} onError={handleImageError}/></figure>;
   if(loading)return <p className="document-status">Загружаем документ…</p>;
   if(error)return <div className="document-error">{error}<p><a href={url} target="_blank" rel="noreferrer">Скачать исходный файл</a></p></div>;
   if(type==='docx'||type==='html'||type==='htm')return <div className="docx-content" onErrorCapture={handleImageError} dangerouslySetInnerHTML={{__html:html}}/>;
