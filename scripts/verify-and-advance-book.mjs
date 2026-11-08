@@ -17,12 +17,23 @@ if (!response.ok || !result.ok || !result.published || !result.book) {
   throw new Error("The publication row could not be verified in Supabase.");
 }
 const book = result.book;
-const contentForImages = String(book.book_content||"") + JSON.stringify(book.interactive_content||{});
-const embeddedUrls = contentForImages.split(/[\s"'<>)}]+/).filter(value =>
-  value.startsWith("https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/")
-);
-const urls = [...new Set([book.cover_url, ...payload.illustrations.map(x=>x.url), ...embeddedUrls].filter(Boolean))];
-if (urls.length < payload.illustrations.length + 1) throw new Error("The published book is missing one or more image URLs.");
+const contentForImages = String(book.book_content||"") + " " + JSON.stringify(book.interactive_content||{});
+const galleryPrefix = "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/";
+const embeddedUrls = [...contentForImages.matchAll(/https:\/\/wendffewxxmnaglfksfg\.supabase\.co\/storage\/v1\/object\/public\/gallery\/[^\\s"'<>)}]+/g)]
+  .map(match => match[0].replace(/[.,;!?]+$/,""));
+const packageUrls = (payload.illustrations||[]).map(item=>item.url).filter(Boolean);
+const urls = [...new Set([book.cover_url, ...packageUrls, ...embeddedUrls].filter(Boolean))];
+const expectedIllustrations = (payload.illustrations||[]).length;
+console.log("Image verification: cover=" + Boolean(book.cover_url) +
+  ", embedded=" + embeddedUrls.length +
+  ", package URLs=" + packageUrls.length +
+  ", expected illustrations=" + expectedIllustrations +
+  ", unique total=" + urls.length);
+if (!book.cover_url) throw new Error("The published book has no cover URL.");
+if (embeddedUrls.length < expectedIllustrations && packageUrls.length < expectedIllustrations) {
+  throw new Error("The published book is missing one or more illustration URLs.");
+}
+if (urls.length < expectedIllustrations + 1) throw new Error("The published book is missing one or more image URLs.");
 for (const url of urls) {
   const parsed = new URL(url);
   if (parsed.hostname !== "wendffewxxmnaglfksfg.supabase.co" || !parsed.pathname.startsWith("/storage/v1/object/public/gallery/")) {
