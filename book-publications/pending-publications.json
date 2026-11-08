@@ -1,4 +1,11 @@
 {
-  "packages": [],
-  "updated_at": "2026-11-08"
+  "packages": [
+    {
+      "path": "book-publications/inbox/2026-11-08-tikhiy-signal-s-orbity-vega-9.json",
+      "title": "Тихий сигнал с орбиты «Вега-9»",
+      "publication_key": "bookcheef-2026-11-08-tikhiy-signal-s-orbity-vega-9",
+      "created_at": "2026-11-08T18:15:30.766Z"
+    }
+  ],
+  "updated_at": "2026-11-08T18:15:30.766Z"
 }
