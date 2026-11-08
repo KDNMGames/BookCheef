@@ -167,6 +167,10 @@ function validate(pkg) {
   for (const key of ["title","category","description","author","age","genre","book_content"]) {
     if (typeof pkg[key] !== "string" || !pkg[key].trim()) throw new Error("Missing required field: " + key);
   }
+  if (pkg.title.length > 180) throw new Error("Title is too long.");
+  if (!authors.some(author => author.author === pkg.author)) throw new Error("The selected author is not in the BookCheef author pool.");
+  if (existingTitles.some(title => title.trim().toLocaleLowerCase() === pkg.title.trim().toLocaleLowerCase())) throw new Error("The generated title duplicates an existing inbox title.");
+  if (!/^(6|9|12|14|16|18)\+$/.test(pkg.age.trim())) throw new Error("Age rating is not one of the supported categories.");
   if (pkg.is_interactive !== (bookType === "interactive")) throw new Error("Book type differs from rotation state.");
   if (pkg.is_free !== true) throw new Error("Daily books must be free.");
   if (!Array.isArray(pkg.reader_questions) || pkg.reader_questions.length < 3 || pkg.reader_questions.length > 5 ||
