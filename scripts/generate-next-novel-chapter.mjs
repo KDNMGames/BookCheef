@@ -63,7 +63,7 @@ ${recentText}
 - Не обрывайся посреди предложения. Последняя строка должна быть полноценным завершением главы.
 `;
 
-const agentArgs = ["-p", prompt, "--output-format", "text"];
+const agentArgs = ["-p", prompt, "--output-format", "text", "--trust"];
 if (model) agentArgs.push("--model", model);
 const result = spawnSync("agent", agentArgs, {
   encoding: "utf8",
