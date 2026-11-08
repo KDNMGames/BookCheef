@@ -72,7 +72,35 @@
       "interactive_one_image_per_scene": true,
       "no_unresolved_illustration_markers": true,
       "require_original_titles_and_plots": true,
-      "preserve_author_bibles_and_series_continuity": true
+      "preserve_author_bibles_and_series_continuity": true,
+      "reading_length": {
+        "adult_ages": [
+          "16+",
+          "18+"
+        ],
+        "adult_minimum_words": 18000,
+        "adult_target_words_per_chapter": 2100,
+        "adult_chapters_min": 10,
+        "adult_chapters_max": 14,
+        "child_reading_minutes_min": 15,
+        "child_reading_minutes_max": 30,
+        "child_minimum_words_by_age": {
+          "6+": 1500,
+          "9+": 1800,
+          "12+": 2400,
+          "14+": 2700
+        },
+        "child_interactive_minimum_words_per_scene_by_age": {
+          "6+": 450,
+          "9+": 550,
+          "12+": 650,
+          "14+": 750
+        },
+        "adult_interactive_minimum_words_per_route": 15000,
+        "adult_interactive_minimum_words_per_scene": 5000,
+        "generation_strategy": "structured draft followed by separate chapter or scene expansion requests",
+        "reject_short_books": true
+      }
     },
     "on_failure": {
       "preserve_package_and_state": true,
@@ -95,6 +123,6 @@
     "changes_may_be_requested_in_chat": true,
     "assistant_may_edit_repository_config_and_workflows": true,
     "require_successful_migration_test_before_disabling_chatgpt_automation": true,
-    "last_updated_by": "ChatGPT conversation instructions"
+    "last_updated_by": "ChatGPT conversation instructions - long-form reading length"
   }
 }
