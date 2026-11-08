@@ -13,7 +13,7 @@
     "advance_rotation_only_after_verified_publication": true,
     "text_provider": {
       "provider": "openrouter",
-      "model": "openrouter/free",
+      "model": "google/gemma-4-26b-a4b-it:free",
       "secret_name": "OPENROUTER_API_KEY",
       "max_attempts": 3,
       "retry_delay_seconds": 30
