@@ -33,7 +33,7 @@ jobs:
           import { findCommonsImage } from "./scripts/commons-image-fallback.mjs";
           const result = await findCommonsImage({
             label: "fallback smoke test",
-            prompt: "red fox in a natural forest habitat"
+            prompt: "tree bark texture in a forest"
           });
           if (!result.base64 || !result.mime_type || result.source?.attribution_required !== false ||
               result.source?.commercial_use !== true || !/public domain|cc0/i.test(result.source?.license_name || "")) {
