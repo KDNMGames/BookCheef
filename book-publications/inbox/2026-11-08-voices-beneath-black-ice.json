@@ -1,0 +1,155 @@
+{
+  "title": "Голоса под чёрным льдом",
+  "publication_key": "bookcheef-2026-11-08-voices-beneath-black-ice",
+  "category": "Интерактивные книги",
+  "description": "На спутнике Нерея автоматическая экспедиция обнаруживает под толщей льда повторяющийся сигнал. Выберите способ исследования: проследить за звуковым рисунком или прочитать историю океана по слоям минералов. От решений зависит, останется ли загадка нетронутой или получит ответ.",
+  "author": "Астэр Неваль",
+  "age": "14+",
+  "genre": "Интерактивная научная фантастика, планетарная геология, исследовательская загадка",
+  "series": "Сигналы Нереи",
+  "is_free": true,
+  "is_interactive": true,
+  "book_content": "# Голоса под чёрным льдом\n\nПод ледяной корой спутника Нерея автоматическая экспедиция обнаруживает повторяющийся сигнал. Выберите маршрут исследования и решите, стоит ли отвечать глубине.",
+  "reader_questions": [
+    {
+      "question": "Почему повторяющийся сигнал не доказывает разумную жизнь?",
+      "answer": "Периодические сигналы могут возникать из-за вращения, напряжения льда и резонанса полостей. Одной повторяемости недостаточно, чтобы доказать намерение."
+    },
+    {
+      "question": "Что показывает томография?",
+      "answer": "Она помогает восстановить внутреннюю структуру среды по прохождению и отражению волн."
+    },
+    {
+      "question": "Почему керн важен для изучения истории Нереи?",
+      "answer": "Слои льда и минералов сохраняют следы прежних температур, состава океана и геологических событий."
+    },
+    {
+      "question": "В чём риск контрольного импульса?",
+      "answer": "Даже слабое воздействие может изменить хрупкое равновесие ледяных каналов и повлиять на последующие наблюдения."
+    }
+  ],
+  "cover": {
+    "prompt": "Unified visual style anchor for the entire book: cinematic hard-science-fiction environment concept art, restrained painterly digital realism with fine etched technical linework, deep midnight navy and graphite palette with cold cyan and faint glacial turquoise light, high-contrast practical illumination, subtle crystalline surface texture, physically plausible materials, atmospheric precise composition, no lettering, labels, logos, watermark or collage. Vertical premium cover: immense dark ice shelf on moon Nerea, narrow luminous cyan fracture descending into a black subsurface ocean, concentric wave patterns beneath translucent ice, tiny unmanned research lander on distant ridge, shadowed planetary horizon, single clear focal point, no people, no text."
+  },
+  "illustrations": [
+    {
+      "chapter": "Сцена 1. Линия подо льдом",
+      "number": 1,
+      "prompt": "Unified visual style anchor for the entire book: cinematic hard-science-fiction environment concept art, restrained painterly digital realism with fine etched technical linework, deep midnight navy and graphite palette with cold cyan and faint glacial turquoise light, high-contrast practical illumination, subtle crystalline surface texture, physically plausible materials, atmospheric precise composition, no lettering, labels, logos, watermark or collage. Wide cinematic landscape of Nerea's frozen plain at polar twilight, long dark-blue ice fissure across a smooth glacial shelf, tiny unmanned research lander beside a sensor mast, faint cyan glow below translucent ice, immense empty horizon."
+    },
+    {
+      "chapter": "Сцена 2-А. Карта резонанса",
+      "number": 2,
+      "prompt": "Unified visual style anchor for the entire book: cinematic hard-science-fiction environment concept art, restrained painterly digital realism with fine etched technical linework, deep midnight navy and graphite palette with cold cyan and faint glacial turquoise light, high-contrast practical illumination, subtle crystalline surface texture, physically plausible materials, atmospheric precise composition, no lettering, labels, logos, watermark or collage. Scientific exploration scene inside an unmanned borehole chamber, suspended acoustic probe sending delicate cyan wavefronts through layered translucent blue ice, reflections reveal a vast hidden cavity below, precise instruments in silhouette, no people."
+    },
+    {
+      "chapter": "Сцена 2-Б. Кристаллический архив",
+      "number": 3,
+      "prompt": "Unified visual style anchor for the entire book: cinematic hard-science-fiction environment concept art, restrained painterly digital realism with fine etched technical linework, deep midnight navy and graphite palette with cold cyan and faint glacial turquoise light, high-contrast practical illumination, subtle crystalline surface texture, physically plausible materials, atmospheric precise composition, no lettering, labels, logos, watermark or collage. Detailed geological cross-section of a deep ice core in a dark laboratory cradle, alternating clear ice, dark mineral dust and turquoise crystal seams, cold light revealing trapped bubbles and ancient sediment, no people, no labels."
+    },
+    {
+      "chapter": "Сцена 3-А. Тихое сохранение",
+      "number": 4,
+      "prompt": "Unified visual style anchor for the entire book: cinematic hard-science-fiction environment concept art, restrained painterly digital realism with fine etched technical linework, deep midnight navy and graphite palette with cold cyan and faint glacial turquoise light, high-contrast practical illumination, subtle crystalline surface texture, physically plausible materials, atmospheric precise composition, no lettering, labels, logos, watermark or collage. Quiet wide view across Nerea's black-ice plain after instruments are powered down, research lander small beneath a star field, fracture faintly luminous but undisturbed, cyan reflections on ice, contemplative empty composition."
+    },
+    {
+      "chapter": "Сцена 3-Б. Ответ глубины",
+      "number": 5,
+      "prompt": "Unified visual style anchor for the entire book: cinematic hard-science-fiction environment concept art, restrained painterly digital realism with fine etched technical linework, deep midnight navy and graphite palette with cold cyan and faint glacial turquoise light, high-contrast practical illumination, subtle crystalline surface texture, physically plausible materials, atmospheric precise composition, no lettering, labels, logos, watermark or collage. Restrained dramatic view of a controlled cyan pulse traveling through branching submerged ice channels beneath a dark frozen surface, crystalline fractures lighting in sequence like a natural instrument, lander far above, no explosion, no people."
+    }
+  ],
+  "interactive_content": {
+    "start": "line",
+    "footnotes": [
+      {
+        "word": "резонанс",
+        "text": "Усиление колебаний, когда внешнее воздействие совпадает с собственной частотой системы."
+      },
+      {
+        "word": "керн",
+        "text": "Цилиндрический образец породы или льда, извлечённый для изучения последовательности слоёв."
+      }
+    ],
+    "nodes": [
+      {
+        "id": "line",
+        "title": "Сцена 1. Линия подо льдом",
+        "text": "Спутник Нерея казался неподвижным. Его поверхность была покрыта чёрно-синим льдом, а под многокилометровой корой скрывался солёный океан. Но орбита Нереи была вытянутой: притяжение далёкой планеты медленно сжимало и отпускало ледяную оболочку. Приборы фиксировали движение, которое человеческий глаз никогда бы не заметил.\n\nАвтоматический модуль «Север-9» прибыл сюда для измерения толщины льда и состава минеральной пыли. На девяносто второй день датчики обнаружили повторяющийся импульс. Он приходил из глубины каждые одиннадцать часов и семнадцать минут. Сигнал был слишком устойчивым для случайного треска, но слишком слабым, чтобы определить источник.\n\nСистема проверила собственные механизмы, вибрацию корпуса, температурные циклы и движение панелей. Ничто не объясняло точный интервал. В отчёте появилось осторожное слово «аномалия», а не «послание». Повторяемость сама по себе не доказывала наличие разума: сложные природные системы тоже создают ритмы.\n\nПод поверхностью могли существовать жидкие каналы и полости, где океан соприкасался с минералами. Если импульс проходил через них, он мог рассказать о внутренней структуре спутника. Но огромная ледяная плита могла работать и как природный резонатор, усиливая слабые колебания.\n\nУ модуля оставалось достаточно энергии для одного исследования. Можно было развернуть акустические датчики и построить карту скрытых полостей. Или пробурить узкий канал, извлечь керн и прочитать историю льда по слоям. Оба пути были безопасны при аккуратной работе, но давали разные знания.\n\nВ памяти «Севера-9» уже лежала запись сигнала. Исследование начиналось не с ответа, а с выбора способа задавать вопросы.\n\n{{illustration:Сцена 1. Линия подо льдом:1}}\n\nКакой маршрут открыть первым?",
+        "choices": [
+          {
+            "label": "Построить акустическую карту глубины",
+            "target": "resonance",
+            "buttonColor": "#356b70",
+            "textColor": "#ffffff"
+          },
+          {
+            "label": "Изучить слои льда и минералов",
+            "target": "core",
+            "buttonColor": "#806044",
+            "textColor": "#ffffff"
+          }
+        ],
+        "image_start": "{{illustration:Сцена 1. Линия подо льдом:1}}",
+        "image_start_alt": "Ледяная равнина Нереи с тонкой светящейся трещиной"
+      },
+      {
+        "id": "resonance",
+        "title": "Сцена 2-А. Карта резонанса",
+        "text": "Три датчика установили на расстоянии двух километров друг от друга. Они не посылали мощных импульсов, а слушали естественные колебания льда. Первые записи казались хаотичными: щелчки, низкий гул, протяжные волны. После обработки выяснилось, что один диапазон частот проходил через равнину почти без потерь.\n\nТомография раскрыла сеть полостей. Они соединялись узкими каналами, уходили вниз и снова поднимались к ледяному потолку. Одни камеры были заполнены рассолом, другие содержали смесь льда и солей. Когда приливное напряжение менялось, каналы сжимались в разной последовательности. Возникал сложный рисунок, похожий на музыкальную фразу, хотя никакого исполнителя для неё не требовалось.\n\nВ центре карты обнаружилась округлая камера. Её размеры менялись на доли процента в течение каждого цикла. Вероятно, именно она усиливала сигнал. Но почему частота оставалась стабильной? Модель предположила, что форма камеры и ответвлений удерживает колебание в узком диапазоне. Это мог быть редкий геологический резонанс.\n\nМежду двумя импульсами приборы заметили короткую паузу, медленно смещавшуюся относительно приливного цикла. Возможно, двигался рассол; возможно, менялась форма одного из каналов. Слабый контрольный сигнал помог бы проверить реакцию сети, но после него исходное состояние уже нельзя было бы считать нетронутым.\n\nДругой вариант — отключить передатчик, оставить пассивные датчики и накопить данные за несколько циклов. Так можно отделить естественные изменения от реакции на эксперимент. На экране остались две команды: сохранить неизвестную систему в её состоянии или рискнуть ради более ясного ответа.\n\n{{illustration:Сцена 2-А. Карта резонанса:2}}\n\nЧто выбрать?",
+        "choices": [
+          {
+            "label": "Отключить передатчик и наблюдать",
+            "target": "quiet",
+            "buttonColor": "#356b70",
+            "textColor": "#ffffff"
+          },
+          {
+            "label": "Отправить слабый контрольный импульс",
+            "target": "reply",
+            "buttonColor": "#806044",
+            "textColor": "#ffffff"
+          }
+        ],
+        "image_start": "{{illustration:Сцена 2-А. Карта резонанса:2}}",
+        "image_start_alt": "Акустические волны раскрывают сеть полостей подо льдом"
+      },
+      {
+        "id": "core",
+        "title": "Сцена 2-Б. Кристаллический архив",
+        "text": "Буровая установка прошла первые сорок метров без осложнений. Лёд менялся от прозрачного до тёмного, насыщенного минеральной пылью. В нескольких слоях встречались тонкие бирюзовые прожилки неизвестного солевого соединения. Они не походили на трещины: узор повторялся, словно вещество оседало по определённым границам.\n\nИзвлечённый керн разделили на секции и просветили сканером. Пузырьки газа, кристаллы и частицы пыли складывались в последовательность древних событий. Глубокие участки хранили признаки более тёплого океана. Выше располагались слои, появившиеся после длительного охлаждения. Между ними проходили минеральные полосы, совпадавшие по возрасту с периодами сильного приливного напряжения.\n\nАнализ показал, что состав льда менялся неравномерно. Одни слои образовались из воды глубинных областей, другие — из поверхностного инея. Нерея не была мёртвым ледяным шаром: её оболочка медленно перерабатывала себя, пропуская рассол через трещины и запечатывая старые каналы новыми отложениями.\n\nСамое странное обнаружилось в прослойке на глубине тридцати восьми метров. Там повторялись микроскопические кристаллические узоры. Их расположение совпадало с интервалами сигнала, хотя прямая связь не была доказана. Возможно, кристаллы усиливали механические колебания. Возможно, они просто возникали в тех же условиях.\n\nЧтобы проверить гипотезу, можно направить через буровой канал слабый импульс и посмотреть на отклик. Это даст экспериментальное подтверждение, но внесёт энергию в систему. Альтернатива — запечатать образцы и продолжить измерения без воздействия. Тогда выводы будут осторожнее, зато будущие исследователи получат исходный материал.\n\n{{illustration:Сцена 2-Б. Кристаллический архив:3}}\n\nКак поступить с находкой?",
+        "choices": [
+          {
+            "label": "Сохранить образцы и не воздействовать на лёд",
+            "target": "quiet",
+            "buttonColor": "#356b70",
+            "textColor": "#ffffff"
+          },
+          {
+            "label": "Проверить гипотезу контрольным импульсом",
+            "target": "reply",
+            "buttonColor": "#806044",
+            "textColor": "#ffffff"
+          }
+        ],
+        "image_start": "{{illustration:Сцена 2-Б. Кристаллический архив:3}}",
+        "image_start_alt": "Ледяной керн с древними слоями и кристаллическими прожилками"
+      },
+      {
+        "id": "quiet",
+        "title": "Сцена 3-А. Тихое сохранение",
+        "text": "Оператор выбрал наблюдение. Передатчики отключили, буровой канал закрыли герметичной пробкой, а образцы поместили в изолированный контейнер. На поверхности остались только пассивные датчики, которые не посылали сигналов и не меняли температуру льда.\n\nЗа следующие циклы выяснилось, что импульс немного менял силу, но сохранял общий ритм. Его амплитуда зависела от положения Нереи на орбите. В периоды максимального приливного напряжения звук становился отчётливее, а затем постепенно ослабевал. Это укрепляло гипотезу о природном резонаторе, хотя не объясняло всех особенностей кристаллических слоёв.\n\nКоманда составила карту каналов и отметила участки для будущих измерений. В отчёте указали: неизвестная структура не является доказательством жизни или разума. Это редкое геологическое явление, достойное длительного наблюдения. Такой вывод оказался менее эффектным, чем открытие чужого сигнала, но гораздо честнее.\n\nПозже модуль записал ещё один слабый звук. Он отличался от прежнего и мог означать, что подлёдный канал изменил форму. Нерея продолжала меняться без участия наблюдателей. Сохранение исходного состояния не означало остановку природы — оно лишь позволяло видеть перемены, не смешивая их с последствиями эксперимента.\n\nПеред уходом «Север-9» передал на орбиту необработанные записи, карты, образцы и перечень неизвестных факторов. Последняя строка отчёта гласила: «Мы не получили окончательного ответа. Мы сохранили возможность задать следующий вопрос, не стирая предыдущий».\n\nПод чёрным льдом продолжал звучать медленный ритм. Теперь у будущей экспедиции был точный способ его услышать.\n\n{{illustration:Сцена 3-А. Тихое сохранение:4}}\n\nКонец истории.",
+        "choices": [],
+        "image_start": "{{illustration:Сцена 3-А. Тихое сохранение:4}}",
+        "image_start_alt": "Непотревоженная ледяная равнина Нереи под звёздами"
+      },
+      {
+        "id": "reply",
+        "title": "Сцена 3-Б. Ответ глубины",
+        "text": "Контрольный импульс отправили на минимальной мощности. Он прошёл по ледяному каналу, отразился от центральной камеры и вернулся с задержкой, которую модели не предсказывали. Затем под поверхностью последовательно вспыхнули слабые линии датчиков: сначала ближайшие ответвления, потом дальние. Приборы фиксировали движение заряженных частиц в кристаллических прослойках.\n\nСеть ответила не повторением исходного сигнала, а новым рисунком. Несколько каналов изменили частоту колебаний, словно вся система перераспределила напряжение. На поверхности появилась тонкая трещина длиной в несколько метров. Она не раскрылась и не привела к выбросу воды, но показала: даже малое воздействие способно менять хрупкое равновесие подлёдной структуры.\n\nИсследователи остановили передачу. В следующие часы сеть постепенно вернулась к прежнему ритму, однако одна камера осталась немного смещённой. Теперь у команды было доказательство связи между сигналом и внутренней геометрией льда. Но нельзя было утверждать, что получен ответ от живого существа. Возможно, импульс просто запустил цепочку механических реакций.\n\nВ отчёте появились две версии. Нерея могла обладать редкой структурой, преобразующей приливную энергию в устойчивые колебания. Или неизвестный процесс внутри океана поддерживал сеть каналов, используя минералы как проводники механического сигнала. Ни одна версия не требовала разумного создателя.\n\nКоманда оставила передатчик заблокированным и добавила на карту место, где эксперимент изменил структуру. Будущие исследователи должны были знать не только то, что удалось измерить, но и то, что наблюдатели сами сделали с объектом изучения.\n\nКогда модуль передал последнюю запись, под чёрным льдом снова прозвучал исходный ритм. Он был почти прежним, но теперь в нём навсегда осталась крошечная разница. Наука получила новый факт — и новую ответственность.\n\n{{illustration:Сцена 3-Б. Ответ глубины:5}}\n\nКонец истории.",
+        "choices": [],
+        "image_start": "{{illustration:Сцена 3-Б. Ответ глубины:5}}",
+        "image_start_alt": "Слабый импульс проходит по кристаллической сети под ледяной корой"
+      }
+    ]
+  }
+}
