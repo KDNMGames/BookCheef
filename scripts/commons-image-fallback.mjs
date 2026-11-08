@@ -67,6 +67,8 @@ async function findOpenverseImage(task, usedFiles) {
       if (!item?.id || usedFiles.has(item.id) || item.license !== "cc0") continue;
       if (!/^https:\/\/creativecommons\.org\/publicdomain\/zero\/1\.0\/?$/i.test(item.license_url || "")) continue;
       if (item.mature === true || Number(item.width || 0) < 512 || Number(item.height || 0) < 512) continue;
+      const descriptiveText = [item.title || "", ...(item.tags || []).map(tag => tag?.name || tag || "")].join(" ");
+      if (/\\b(logo|trademark|brand|celebrity|portrait|headshot|selfie|model|person|people|man|woman|child|children|painting|sculpture|poster)\\b/i.test(descriptiveText)) continue;
       if (!item.url || Number(item.filesize || 0) > MAX_BYTES || Number(item.filesize || 0) < 20000) continue;
       const ext = String(item.filetype || "").toLowerCase();
       const expectedMime = ({ jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" })[ext];
