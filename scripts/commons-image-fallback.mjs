@@ -194,12 +194,26 @@ export async function findCommonsImage(task, usedFiles = new Set()) {
 }
 
 export async function findCommonsImageSet(tasks) {
-  const usedFiles = new Set();
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const openverseFiles = new Set();
+  try {
+    const images = [];
+    for (let i = 0; i < tasks.length; i++) {
+      console.log("Searching Openverse CC0 for " + tasks[i].label + " (" + (i + 1) + "/" + tasks.length + ")");
+      images.push(await findOpenverseImage(tasks[i], openverseFiles));
+      if (i < tasks.length - 1) await wait(1500);
+    }
+    return images;
+  } catch (error) {
+    console.log("Openverse could not supply the complete image set; discarding that partial set and restarting with Wikimedia Commons: " + error.message);
+  }
+
+  const commonsFiles = new Set();
   const images = [];
   for (let i = 0; i < tasks.length; i++) {
-    console.log("Searching Openverse CC0, then Wikimedia Commons Public Domain: " + tasks[i].label);
-    images.push(await findCommonsImage(tasks[i], usedFiles));
-    if (i < tasks.length - 1) await new Promise(resolve => setTimeout(resolve, 1200));
+    console.log("Searching Wikimedia Commons Public Domain for " + tasks[i].label + " (" + (i + 1) + "/" + tasks.length + ")");
+    images.push(await findCommonsPublicDomainImage(tasks[i], commonsFiles));
+    if (i < tasks.length - 1) await wait(1500);
   }
   return images;
 }
