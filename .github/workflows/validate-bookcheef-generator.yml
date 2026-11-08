@@ -6,6 +6,7 @@ on:
     paths:
       - "scripts/generate-daily-book.mjs"
       - "book-publications/automation-config.json"
+      - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/validate-bookcheef-generator.yml"
   workflow_dispatch:
 
@@ -22,6 +23,18 @@ jobs:
           node-version: 22
       - name: Check generator syntax
         run: node --check scripts/generate-daily-book.mjs
+      - name: Verify resumable checkpoint lifecycle
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
+            const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
+            for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "await saveWork(pkg)"]) {
+              if (!source.includes(token)) throw new Error("Missing checkpoint feature: " + token);
+            }
+            if (!workflow.includes("git add -A book-publications/work-in-progress")) throw new Error("Workflow does not persist checkpoint changes and deletions");
+            console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
+          '
       - name: Validate automation configuration
         run: |
           node --input-type=module -e '
