@@ -112,7 +112,7 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 
 Верни полный JSON. Не добавляй publication_key — он будет назначен системой.`;
 
-async function generatePackage(attempt) {
+async function generatePackage(attempt, previousError = "") {
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -125,7 +125,7 @@ async function generatePackage(attempt) {
       model: config.daily_book.text_provider?.model || "openrouter/free",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ. Сгенерируй полностью новый корректный вариант и внимательно соблюдай все ограничения." : "") }
+        { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError + ". Исправь именно эту ошибку. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters." : "") }
       ],
       temperature: 0.75,
       max_tokens: 6000,
@@ -147,6 +147,45 @@ async function generatePackage(attempt) {
 function slugify(value) {
   const map = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"yo",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",щ:"shch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
   return value.toLowerCase().replace(/[а-яё]/g,c=>map[c]??c).normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,70) || "book";
+}
+
+function normalizePackage(pkg) {
+  if (!pkg || typeof pkg !== "object") return pkg;
+  if (typeof pkg.book_content !== "string" || !pkg.book_content.trim()) {
+    if (typeof pkg.content === "string" && pkg.content.trim()) pkg.book_content = pkg.content;
+    else if (Array.isArray(pkg.chapters) && pkg.chapters.length) {
+      pkg.book_content = pkg.chapters.map((chapter, index) => {
+        const title = String(chapter.title || chapter.name || ("Глава " + (index + 1))).trim();
+        const text = String(chapter.content || chapter.text || "").trim();
+        return "## " + title + "\\n\\n" + text;
+      }).join("\\n\\n");
+    } else if (bookType === "interactive" && Array.isArray(pkg.interactive_content?.nodes)) {
+      pkg.book_content = "# " + String(pkg.title || "Интерактивная книга") + "\\n\\n" + String(pkg.description || "");
+    }
+  }
+  if (!Array.isArray(pkg.reader_questions) && Array.isArray(pkg.questions)) {
+    pkg.reader_questions = pkg.questions.map(q => ({ question: q.question || q.q, answer: q.answer || q.a }));
+  }
+  if (!Array.isArray(pkg.footnotes) && Array.isArray(pkg.interactive_content?.footnotes)) {
+    pkg.footnotes = pkg.interactive_content.footnotes;
+  }
+  if (typeof pkg.is_interactive !== "boolean") pkg.is_interactive = bookType === "interactive";
+  if (pkg.series == null) pkg.series = "";
+  if (Array.isArray(pkg.illustrations) && typeof pkg.book_content === "string" && bookType === "ordinary") {
+    for (const item of pkg.illustrations) {
+      const marker = "{{illustration:" + item.chapter + ":" + item.number + "}}";
+      if (item.chapter && item.number && !pkg.book_content.includes(marker)) {
+        const heading = "## " + item.chapter;
+        const start = pkg.book_content.indexOf(heading);
+        if (start >= 0) {
+          const next = pkg.book_content.indexOf("\\n## ", start + heading.length);
+          const insertAt = next >= 0 ? next : pkg.book_content.length;
+          pkg.book_content = pkg.book_content.slice(0, insertAt) + "\\n\\n" + marker + "\\n\\n" + pkg.book_content.slice(insertAt);
+        }
+      }
+    }
+  }
+  return pkg;
 }
 
 function validate(pkg) {
@@ -226,7 +265,7 @@ function validate(pkg) {
 let pkg, lastError;
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 3);
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
-  try { pkg=validate(await generatePackage(attempt)); break; }
+  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); pkg=validate(normalizePackage(candidate)); break; }
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
