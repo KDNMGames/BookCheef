@@ -5,45 +5,31 @@ const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
 const ROTATION_PATH = "book-publications/rotation-state.json";
 const INBOX = "book-publications/inbox";
-const PUBLISHER_URL = process.env.PUBLISHER_URL || "https://wendffewxxmnaglfksfg.supabase.co/functions/v1/book-publisher";
-const PUBLISHER_TOKEN = process.env.PUBLISHER_TOKEN;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-if (!PUBLISHER_TOKEN) throw new Error("Missing BOOK_PUBLISHER_TOKEN secret.");
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
 const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
 
-async function publisherAction(payload) {
-  const response = await fetch(PUBLISHER_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-book-publisher-token": PUBLISHER_TOKEN },
-    body: JSON.stringify(payload)
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok || !result.ok) {
-    throw new Error("Publisher status check failed: HTTP " + response.status + " " + (result.error || "unknown error"));
-  }
-  return result;
-}
-
 async function findPendingPackage() {
-  const files = (await fs.readdir(INBOX)).filter(name => name.endsWith(".json")).sort();
-  const pending = [];
-  for (const name of files) {
-    const filePath = path.join(INBOX, name);
-    let pkg;
-    try { pkg = JSON.parse(await fs.readFile(filePath, "utf8")); }
-    catch { throw new Error("Invalid existing inbox package; refusing to skip it: " + filePath); }
-    if (!pkg.publication_key) continue;
-    const status = await publisherAction({ action: "check_publication", publication_key: pkg.publication_key });
-    if (!status.published) pending.push({ path: filePath, title: pkg.title, publication_key: pkg.publication_key });
+  const queuePath = "book-publications/pending-publications.json";
+  const queue = JSON.parse(await fs.readFile(queuePath, "utf8"));
+  const entries = Array.isArray(queue.packages) ? queue.packages : [];
+  if (!entries.length) return null;
+  const entry = entries[0];
+  const filePath = String(entry.path || "");
+  if (!filePath.startsWith(INBOX + "/") || !filePath.endsWith(".json")) {
+    throw new Error("Pending queue contains an invalid package path.");
   }
-  return pending[0] || null;
+  const pkg = JSON.parse(await fs.readFile(filePath, "utf8"));
+  if (!pkg.publication_key || pkg.publication_key !== entry.publication_key) {
+    throw new Error("Pending queue publication key does not match its package.");
+  }
+  return { path: filePath, title: pkg.title, publication_key: pkg.publication_key };
 }
 
 const pending = await findPendingPackage();
 if (pending) {
-  console.log("Found an unpublished package; retrying it before generating another book.");
+  console.log("Found a package in the explicit pending queue; retrying it before generating another book.");
   console.log(JSON.stringify(pending));
   if (process.env.GITHUB_OUTPUT) {
     await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=" + pending.path + "\ncreated=false\n");
@@ -251,7 +237,13 @@ if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastE
 const fileName=today+"-"+slugify(pkg.title)+".json";
 const filePath=path.join(INBOX,fileName);
 await fs.writeFile(filePath,JSON.stringify(pkg,null,2)+"\n",{flag:"wx"});
-console.log("Created "+filePath+" ("+pkg.title+").");
+const pendingQueuePath="book-publications/pending-publications.json";
+const pendingQueue=JSON.parse(await fs.readFile(pendingQueuePath,"utf8"));
+pendingQueue.packages=Array.isArray(pendingQueue.packages)?pendingQueue.packages:[];
+pendingQueue.packages.push({path:filePath,title:pkg.title,publication_key:pkg.publication_key,created_at:new Date().toISOString()});
+pendingQueue.updated_at=new Date().toISOString();
+await fs.writeFile(pendingQueuePath,JSON.stringify(pendingQueue,null,2)+"\n");
+console.log("Created "+filePath+" ("+pkg.title+") and added it to the explicit retry queue.");
 console.log("Type: "+bookType+"; rotation position remains unchanged until verified publication.");
 if (process.env.GITHUB_OUTPUT) {
   await fs.appendFile(process.env.GITHUB_OUTPUT,"package_path="+filePath+"\ncreated=true\n");
