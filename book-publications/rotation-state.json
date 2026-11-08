@@ -1,13 +1,13 @@
 {
-  "cycle_position": 3,
-  "published_count": 4,
-  "updated_at": "2026-11-08T20:05:10.643Z",
+  "cycle_position": 1,
+  "published_count": 5,
+  "updated_at": "2026-11-08T20:07:10.135Z",
   "note": "New rotation order from the next publication: 1 interactive, 2 ordinary, 3 ordinary. Existing two published books retained; current pending interactive package is first.",
   "last_publication": {
-    "title": "Тихий сигнал с орбиты «Вега-9»",
+    "title": "Комpass в пустом отсеке",
     "author": "Астэр Неваль",
     "age": "14+",
     "type": "ordinary",
-    "publication_key": "bookcheef-2026-11-08-tikhiy-signal-s-orbity-vega-9"
+    "publication_key": "bookcheef-2026-11-08-kompass-v-pustom-otseke"
   }
 }
