@@ -106,7 +106,7 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
     throw error;
   }
   console.log("Switching text generation to Google Gemini (" + GEMINI_MODEL + ").");
-  const generationConfig = { temperature: 0.7, maxOutputTokens: 16000 };
+  const generationConfig = { maxOutputTokens: 16000 };
   if (json) generationConfig.responseMimeType = "application/json";
   const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(GEMINI_MODEL) + ":generateContent", {
     method: "POST",
