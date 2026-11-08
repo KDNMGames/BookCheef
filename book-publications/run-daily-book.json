@@ -1,7 +1,7 @@
 {
-  "requested_at": "2026-11-08T18:00:47.282Z",
-  "requested_by": "User requested retry after footnote and truncation errors",
+  "requested_at": "2026-11-08T18:01:03.499Z",
+  "requested_by": "User requested retry after footnote validator repair",
   "requested_type": "next rotation slot",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Footnote matching now handles Russian inflections and stores exact book spelling; increased response budget"
+  "retry_reason": "Fixed Unicode-aware Russian token matching for inflected footnote words; output budget increased to 16000"
 }
