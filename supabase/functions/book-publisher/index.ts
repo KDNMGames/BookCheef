@@ -120,9 +120,15 @@ async function resolveImage(input: any): Promise<ImageInput> {
 
 function replaceIllustrationTokens(value: unknown, urls: Map<string, string>): unknown {
   if (typeof value === "string") {
-    return value.replace(/\{\{illustration:([^:}]+):(\d+)\}\}/g, (_match, chapter, number) =>
-      urls.get(`${String(chapter)}:${Number(number)}`) ?? _match
-    );
+    return value.replace(/\{\{illustration:([^:}]+):(\d+)\}\}/g, (_match, chapter, number) => {
+      const exact = urls.get(`${String(chapter).trim()}:${Number(number)}`);
+      if (exact) return exact;
+      // The model may omit the "Глава N." prefix in the marker while the
+      // illustration metadata contains the full heading. Illustration
+      // numbers are unique within a publication, so use that safe fallback.
+      const matches = [...urls.entries()].filter(([key]) => key.endsWith(`:${Number(number)}`));
+      return matches.length === 1 ? matches[0][1] : "";
+    }).replace(/\{\{illustration:[^}]*\}\}/g, "");
   }
   if (Array.isArray(value)) return value.map((item) => replaceIllustrationTokens(item, urls));
   if (value && typeof value === "object") {
