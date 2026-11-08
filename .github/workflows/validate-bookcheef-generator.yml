@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "scripts/generate-daily-book.mjs"
+      - "scripts/generate-daily-book.mjs"\n      - "scripts/book-checkpoint.mjs"\n      - "scripts/book-checkpoint.test.mjs"
       - "book-publications/automation-config.json"
       - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/validate-bookcheef-generator.yml"
