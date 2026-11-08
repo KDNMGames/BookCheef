@@ -127,8 +127,8 @@ async function generatePackage(attempt, previousError = "") {
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError + ". Исправь именно эту ошибку. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters." : "") }
       ],
-      temperature: 0.75,
-      max_tokens: 6000,
+      temperature: 0.65,
+      max_tokens: 4500,
       response_format: { type: "json_object" }
     }),
     signal: AbortSignal.timeout(120000)
