@@ -35,7 +35,20 @@
       "require_complete_consistent_set": true,
       "max_internal_illustrations": 5,
       "ovh_delay_between_requests_seconds": 31,
-      "ovh_retry_429_after_seconds": 65
+      "ovh_retry_429_after_seconds": 65,
+      "fallback_after_generation_limits": "wikimedia_commons_cc0_public_domain",
+      "fallback_license_policy": {
+        "commercial_use_required": true,
+        "attribution_required": false,
+        "accepted_licenses": [
+          "CC0 1.0",
+          "Public Domain",
+          "Public Domain Mark"
+        ],
+        "require_machine_readable_license_metadata": true,
+        "reject_unknown_or_restricted_licenses": true,
+        "preserve_source_and_license_record": true
+      }
     },
     "publication": {
       "inbox": "book-publications/inbox",
