@@ -183,11 +183,15 @@ function validate(pkg) {
     item.prompt = anchor + " " + item.prompt.replace(anchor,"").trim();
     if (item.prompt.length > 1800) throw new Error("Illustration prompt is too long.");
   }
+  if (!Array.isArray(pkg.footnotes) && Array.isArray(pkg.interactive_content?.footnotes)) {
+    pkg.footnotes = pkg.interactive_content.footnotes;
+  }
   const combinedText = [pkg.book_content, ...(pkg.interactive_content?.nodes||[]).map(n=>n.text||"")].join("\n");
   if (!Array.isArray(pkg.footnotes) || pkg.footnotes.length < 1 ||
       pkg.footnotes.some(f=>!f.word?.trim() || !f.text?.trim() || !combinedText.includes(f.word))) {
     throw new Error("Footnotes must define words that actually appear in the book.");
   }
+  if (pkg.cover.prompt.length > 1800) throw new Error("Cover prompt is too long.");
   const tokens = [...combinedText.matchAll(/\{\{illustration:([^:}]+):(\d+)\}\}/g)];
   if (bookType === "ordinary") {
     if (pkg.book_content.length < 5000) throw new Error("Ordinary book is too short.");
