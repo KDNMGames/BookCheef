@@ -1,0 +1,44 @@
+name: Test Cursor Cloud Agents API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify Cursor API key
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${CURSOR_API_KEY:-}" ]; then
+            echo "::error::CURSOR_API_KEY secret is missing"
+            exit 1
+          fi
+
+          code=$(curl --silent --show-error --output /tmp/cursor-response.json --write-out "%{http_code}" \
+            --user "$CURSOR_API_KEY:" \
+            --header "Accept: application/json" \
+            https://api.cursor.com/v1/agents)
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Cursor API authentication/check failed (HTTP $code)"
+            # Do not print response bodies; keep logs free of provider diagnostics or sensitive data.
+            exit 1
+          fi
+
+          python - <<'PY'
+          import json
+          with open("/tmp/cursor-response.json", encoding="utf-8") as f:
+              data = json.load(f)
+          items = data.get("items", [])
+          print("Cursor API key accepted.")
+          print("Visible Cloud Agents:", len(items))
+          print("API endpoint: GET /v1/agents")
+          PY
