@@ -21,7 +21,7 @@ concurrency:
 jobs:
   generate-or-resume:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 120
     steps:
       - name: Checkout BookCheef
         uses: actions/checkout@v4
@@ -33,10 +33,18 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install Cursor Agent fallback
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          agent --version
+
       - name: Generate a book or resume the oldest pending package
         id: book
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
         run: node scripts/generate-daily-book.mjs
 
       - name: Commit generated package
