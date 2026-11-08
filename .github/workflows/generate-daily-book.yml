@@ -45,6 +45,8 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: node scripts/generate-daily-book.mjs
 
       - name: Commit generated package
@@ -72,6 +74,9 @@ jobs:
           fi
           if [ -f book-publications/cursor-cooldown.json ]; then
             git add book-publications/cursor-cooldown.json
+          fi
+          if [ -f book-publications/gemini-cooldown.json ]; then
+            git add book-publications/gemini-cooldown.json
           fi
           git add -A book-publications/work-in-progress
           if ! git diff --cached --quiet; then
