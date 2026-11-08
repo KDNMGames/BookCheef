@@ -1,6 +1,10 @@
 name: Test OpenRouter free text generation
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "book-publications/automation-config.json"
   workflow_dispatch:
 
 permissions:
