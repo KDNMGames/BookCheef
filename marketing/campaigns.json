@@ -24,9 +24,9 @@
       },
       "last_research_at": "2026-11-08",
       "research_report": "marketing/reports/2026-11-08-external-scan.md",
-      "platforms_checked": 12,
+      "platforms_checked": 16,
       "third_party_auto_allowed": 0,
-      "third_party_manual_or_review": 7,
+      "third_party_manual_or_review": 9,
       "third_party_blocked": 7,
       "external_publications": [],
       "historical_non_acquisition_publications": [
