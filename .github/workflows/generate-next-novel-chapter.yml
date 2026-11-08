@@ -20,9 +20,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate one chapter with OpenRouter free model
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+
+      - name: Generate one chapter with Cursor Agent
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CURSOR_MODEL: gpt-5
         run: node scripts/generate-next-novel-chapter.mjs
 
       - name: Commit generated draft and manifest
