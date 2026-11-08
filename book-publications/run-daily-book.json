@@ -1,8 +1,8 @@
 {
-  "requested_at": "2026-11-08T21:57:26.450Z",
-  "requested_by": "User requested next-stage checkpoint recovery verification",
+  "requested_at": "2026-11-08T22:00:38.525Z",
+  "requested_by": "User requested continuation of BookCheef automation",
   "requested_type": "generate next book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Run one real generation attempt using the current rotation; persist checkpoints and verify recovery without publishing duplicates.",
-  "reason": "Start the next BookCheef conveyor item now. Rotation state determines the book type; do not create duplicates, do not publish short books, and preserve all existing publications."
+  "retry_reason": "Retry after provider cooldown expired; verify real checkpoint creation and resumable generation. Do not publish duplicates or short books.",
+  "reason": "Continue the next BookCheef conveyor item using current rotation. Preserve all existing publications and queue state until a complete validated book is ready."
 }
