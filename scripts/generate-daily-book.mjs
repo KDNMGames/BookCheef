@@ -10,6 +10,7 @@ const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const CURSOR_API_KEY = process.env.CURSOR_API_KEY;
 let openRouterDisabled = false;
+let cursorDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
 const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
@@ -45,6 +46,7 @@ if (pending) {
 const WORK_PATH = "book-publications/work-in-progress/current.json";
 
 const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
+const CURSOR_COOLDOWN_PATH = "book-publications/cursor-cooldown.json";
 const cooldownSeconds = 21600;
 try {
   const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
@@ -54,9 +56,35 @@ try {
     console.log("OpenRouter is cooling down until " + new Date(until).toISOString() + "; other AI providers remain available.");
   }
 } catch (error) { if (error.code !== "ENOENT") throw error; }
+try {
+  const state = JSON.parse(await fs.readFile(CURSOR_COOLDOWN_PATH, "utf8"));
+  const until = Date.parse(state.retry_after || "");
+  if (Number.isFinite(until) && until > Date.now()) {
+    cursorDisabled = true;
+    console.log("Cursor Agent is cooling down until " + new Date(until).toISOString() + ".");
+  }
+} catch (error) { if (error.code !== "ENOENT") throw error; }
+
+if (openRouterDisabled && cursorDisabled) {
+  console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  process.exit(0);
+}
 
 if (!OPENROUTER_API_KEY && !CURSOR_API_KEY) {
   throw new Error("No text AI provider credentials are configured. Add OPENROUTER_API_KEY or CURSOR_API_KEY.");
+}
+
+async function saveCursorCooldown(reason) {
+  const retryAfter = new Date(Date.now() + cooldownSeconds * 1000).toISOString();
+  await fs.writeFile(CURSOR_COOLDOWN_PATH, JSON.stringify({
+    provider: "cursor-agent",
+    detected_at: new Date().toISOString(),
+    retry_after: retryAfter,
+    reason: String(reason || "Cursor usage limit reached").slice(0, 700)
+  }, null, 2) + "\n");
+  cursorDisabled = true;
+  console.warn("Cursor Agent paused until " + retryAfter + ".");
 }
 
 async function saveOpenRouterCooldown(reason) {
@@ -72,6 +100,11 @@ async function saveOpenRouterCooldown(reason) {
 }
 
 function runCursorAgent(prompt, { timeout = 600000 } = {}) {
+  if (cursorDisabled) {
+    const error = new Error("Cursor Agent is in cooldown.");
+    error.code = "ALL_PROVIDERS_COOLDOWN";
+    throw error;
+  }
   if (!CURSOR_API_KEY) {
     const error = new Error("Cursor fallback is unavailable: CURSOR_API_KEY is not configured.");
     error.code = "NO_FALLBACK_PROVIDER";
@@ -364,7 +397,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
       return generatedText;
     } catch (error) {
       lastError = error;
-      if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
+      if ((error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) && !openRouterDisabled && OPENROUTER_API_KEY) {
         await saveOpenRouterCooldown(error.message);
         try {
           const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
@@ -379,6 +412,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
           throw fallbackError;
         }
       }
+      if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN") throw error;
       console.warn("Long-form expansion retry " + (retry + 1) + " for " + title + ": " + error.message);
     }
   }
@@ -593,18 +627,19 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
-    if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit/i.test(error.message)) {
-      const retryAfter = new Date(Date.now() + cooldownSeconds * 1000).toISOString();
-      await fs.writeFile(COOLDOWN_PATH, JSON.stringify({ detected_at: new Date().toISOString(), retry_after: retryAfter, reason: error.message }, null, 2) + "\n");
+    if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
+        /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
+      if (openRouterDisabled || !OPENROUTER_API_KEY) await saveCursorCooldown(error.message);
+      else await saveOpenRouterCooldown(error.message);
       if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
-      console.error("Quota reached; pausing generation until " + retryAfter + ".");
+      console.error("No available AI provider for this attempt. The partial checkpoint, if any, is preserved for the next run.");
       break;
     }
     if (attempt<maxAttempts) await new Promise(resolve=>setTimeout(resolve, Math.max(1,Number(config.daily_book.text_provider?.retry_delay_seconds)||30)*1000));
   }
 }
 }
-if (!pkg && (lastError?.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit/i.test(lastError?.message || ""))) {
+if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVIDERS_COOLDOWN" || /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(lastError?.message || ""))) {
   console.log("All configured text providers are unavailable or quota-limited. The checkpoint remains saved; no book was published and rotation was not advanced.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   process.exit(0);
