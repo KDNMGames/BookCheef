@@ -305,7 +305,7 @@ Deno.serve(async (req: Request) => {
   if (payload.action === "upload_image") {
     try {
       const path = typeof payload.path === "string" ? payload.path : "";
-      if (!/^generated\/[a-z0-9-]{8,160}\/[0-9]{6,20}\/(?:cover|illustration-[1-5])\.(?:png|jpg|webp|gif)$/.test(path)) {
+      if (!/^generated\/[a-z0-9-]{8,160}\/[0-9]{6,20}-[0-9]{1,3}\/(?:cover|illustration-[1-5])\.(?:png|jpg|webp|gif)$/.test(path)) {
         return Response.json({ ok: false, error: "Invalid generated image path" }, { status: 400 });
       }
       const image = { mime_type: String(payload.mime_type ?? ""), base64: String(payload.base64 ?? "") };
