@@ -103,8 +103,8 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 ТРЕБОВАНИЯ К ТЕКСТУ:
 - Русский язык, естественный и грамотный, без повторов и искусственного растягивания.
 - Возраст выбирай по реальному содержанию. Текст должен соответствовать возрасту.
-- Обычная книга: не менее 7 000 символов book_content (абсолютный минимум 5 000); 4–6 глав с заголовками ## Глава N. Название. Каждая глава — полноценная сцена примерно 1 300–1 800 символов, а не краткий пересказ. Обязательно проверь длину book_content до ответа. Вставь маркеры иллюстраций вида {{illustration:ТОЧНЫЙ ЗАГОЛОВОК ГЛАВЫ:1}} в подходящих местах. 1–5 иллюстраций; поле chapter должно содержать точный заголовок соответствующей главы без префикса «Глава N.».
-- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена не менее 700 символов. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
+- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ. Не выдавай рассказ, синопсис или короткий набросок вместо книги. Для взрослой аудитории (16+ и 18+) итоговый текст должен содержать не менее 18 000 слов (примерно 2–2,5 часа чтения); планируй 10–14 глав. Для детской/подростковой аудитории: 6+ — не менее 1 500 слов, 9+ — 1 800 слов, 12+ — 2 400 слов, 14+ — 2 700 слов; планируй 5–9 глав. Это ориентиры нижней границы: пиши естественно, без искусственного растягивания, повторов и воды. Сначала создай полноценную структуру, затем раскрой каждую главу в отдельной сцене с действиями, диалогами, деталями и развитием сюжета.
+- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена. Для 16+/18+ каждый узел должен содержать не менее 5 000 слов, чтобы каждый маршрут (scene-1 → ветка → финал) давал не менее 15 000 слов и около 2 часов чтения. Для детской/подростковой аудитории минимальный объём каждого узла: 6+ — 450 слов, 9+ — 550, 12+ — 650, 14+ — 750. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
 - В интерактивной книге choices — массив объектов {text,next}; next обязан ссылаться на существующий id.
 - Вопросы reader_questions: 3–5 содержательных пар question/answer, не помещай их в book_content.
 - Сноски: минимум одна для возраста 6+ и старше; слово в word должно дословно встречаться в тексте сцен/глав, текст определения соответствует возрасту.
@@ -226,6 +226,138 @@ function normalizePackage(pkg) {
   return pkg;
 }
 
+
+function countWords(value) {
+  return (String(value || "").match(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu) || []).length;
+}
+
+async function expandPart({ title, age, genre, bookTitle, description, author, draft, priorContext, targetWords, partLabel, partIndex }) {
+  const provider = config.daily_book.text_provider || {};
+  const models = [provider.model, ...(provider.fallback_models || [])].filter(Boolean);
+  let lastError;
+  for (let retry = 0; retry < 3; retry++) {
+    const model = models[(partIndex + retry) % Math.max(1, models.length)] || "openrouter/free";
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + OPENROUTER_API_KEY,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
+          "X-Title": "BookCheef Long-form Chapter Writer"
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное." },
+            { role: "user", content:
+              "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). " +
+              "Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. " +
+              "Описание книги: " + description + "\\nКонтекст предыдущих событий (соблюдай непрерывность): " + (priorContext || "Это начало истории.") +
+              "\\nЧерновик этой части, который нужно развить и существенно расширить, сохранив все важные события и смысл: " + draft +
+              "\\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому."
+            }
+          ],
+          temperature: 0.72,
+          max_tokens: 10000
+        }),
+        signal: AbortSignal.timeout(180000)
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error?.message || "OpenRouter HTTP " + response.status);
+      const raw = body.choices?.[0]?.message?.content;
+      const text = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\\n") : "")
+        .trim().replace(/^\\x60{3}[^\\n]*\\n?/,"").replace(/\\n?\\x60{3}$/,"").trim();
+      const words = countWords(text);
+      if (words < Math.floor(targetWords * 0.78)) throw new Error("Part too short: " + words + " words; target " + targetWords + ".");
+      return text;
+    } catch (error) {
+      lastError = error;
+      console.warn("Long-form expansion retry " + (retry + 1) + " for " + title + ": " + error.message);
+    }
+  }
+  throw new Error("Could not expand " + title + ": " + (lastError?.message || "unknown error"));
+}
+
+async function expandOrdinaryBook(pkg) {
+  if (bookType !== "ordinary") return pkg;
+  const matches = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)];
+  const age = String(pkg.age || "12+");
+  const adult = age === "16+" || age === "18+";
+  const minChapters = adult ? 10 : (age === "12+" || age === "14+" ? 6 : 5);
+  const maxChapters = adult ? 14 : 9;
+  if (matches.length < minChapters || matches.length > maxChapters) {
+    throw new Error("Chapter count does not fit the selected reading age: " + matches.length + "; expected " + minChapters + "-" + maxChapters + ".");
+  }
+  const targetWords = adult ? 1900 : age === "6+" ? 300 : age === "9+" ? 350 : age === "12+" ? 400 : 450;
+  const minWords = adult ? 1800 : age === "6+" ? 250 : age === "9+" ? 300 : age === "12+" ? 350 : 400;
+  const totalMinimum = adult ? 18000 : age === "6+" ? 1500 : age === "9+" ? 1800 : age === "12+" ? 2400 : 2700;
+  const parts = [];
+  let previous = "";
+  for (let i = 0; i < matches.length; i++) {
+    const heading = matches[i][1].trim();
+    const start = matches[i].index + matches[i][0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : pkg.book_content.length;
+    let draft = pkg.book_content.slice(start, end).trim();
+    const markerPattern = /\\{\\{illustration:[^}]+\\}\\}/g;
+    const markers = [...draft.matchAll(markerPattern)].map(x => x[0]);
+    draft = draft.replace(markerPattern, "").trim();
+    const currentWords = countWords(draft);
+    let expanded = draft;
+    if (currentWords < minWords) {
+      console.log("Expanding chapter " + (i + 1) + "/" + matches.length + ": " + heading + " (" + currentWords + " words; target " + targetWords + ").");
+      expanded = await expandPart({
+        title: heading, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
+        author: pkg.author, draft, priorContext: previous.slice(-1800), targetWords,
+        partLabel: "Глава " + (i + 1) + " из " + matches.length, partIndex: i
+      });
+    }
+    if (countWords(expanded) < minWords) throw new Error("Chapter " + heading + " is below the required word count.");
+    const markerForChapter = pkg.illustrations.find(x => x.chapter === heading);
+    const allMarkers = [...new Set([...markers, ...(markerForChapter ? ["{{illustration:" + heading + ":" + markerForChapter.number + "}}"] : [])])];
+    parts.push("## " + heading + "\\n\\n" + expanded + (allMarkers.length ? "\\n\\n" + allMarkers.join("\\n") : ""));
+    previous = expanded;
+  }
+  pkg.book_content = parts.join("\\n\\n");
+  const total = countWords(pkg.book_content);
+  if (total < totalMinimum) throw new Error("Book is too short after chapter expansion: " + total + " words; minimum " + totalMinimum + ".");
+  console.log("Long-form ordinary book completed: " + total + " words, " + matches.length + " chapters.");
+  return pkg;
+}
+
+async function expandInteractiveBook(pkg) {
+  if (bookType !== "interactive") return pkg;
+  const age = String(pkg.age || "12+");
+  const adult = age === "16+" || age === "18+";
+  const targetWords = adult ? 5600 : age === "6+" ? 520 : age === "9+" ? 620 : age === "12+" ? 720 : 820;
+  const minWords = adult ? 5000 : age === "6+" ? 450 : age === "9+" ? 550 : age === "12+" ? 650 : 750;
+  for (let i = 0; i < pkg.interactive_content.nodes.length; i++) {
+    const node = pkg.interactive_content.nodes[i];
+    const current = countWords(node.text);
+    if (current < minWords) {
+      console.log("Expanding interactive scene " + node.id + " (" + current + " words; target " + targetWords + ").");
+      node.text = await expandPart({
+        title: node.title, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
+        author: pkg.author, draft: node.text, priorContext: "Предыдущие события: " + (pkg.interactive_content.nodes.slice(0, i).map(x => x.title + ": " + x.text.slice(-500)).join("\\n") || "Начало истории."),
+        targetWords, partLabel: "Интерактивная сцена " + (i + 1) + " из 5", partIndex: i
+      });
+    }
+    if (countWords(node.text) < minWords) throw new Error("Interactive scene " + node.id + " is too short.");
+  }
+  const byId = new Map(pkg.interactive_content.nodes.map(n => [n.id, n]));
+  const routeA = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2a").text) + countWords(byId.get("ending-a").text);
+  const routeB = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2b").text) + countWords(byId.get("ending-b").text);
+  const routeMinimum = adult ? 15000 : minWords * 3;
+  if (routeA < routeMinimum || routeB < routeMinimum) throw new Error("Interactive route is below its reading-length minimum.");
+  console.log("Long-form interactive routes: " + routeA + " and " + routeB + " words.");
+  return pkg;
+}
+
+async function expandBook(pkg) {
+  if (bookType === "ordinary") return expandOrdinaryBook(pkg);
+  return expandInteractiveBook(pkg);
+}
+
 function validate(pkg) {
   if (!pkg || typeof pkg !== "object") throw new Error("Model output is not an object.");
   for (const key of ["title","category","description","author","age","genre","book_content"]) {
@@ -292,7 +424,7 @@ function validate(pkg) {
   if (pkg.cover.prompt.length > 1800) throw new Error("Cover prompt is too long.");
   const tokens = [...combinedText.matchAll(/\{\{illustration:([^:}]+):(\d+)\}\}/g)];
   if (bookType === "ordinary") {
-    if (pkg.book_content.length < 5000) throw new Error("Ordinary book is too short (" + pkg.book_content.length + " characters; minimum 5000). Regenerate the complete story with 4-6 substantial chapters.");
+    const ordinaryWords=countWords(pkg.book_content); const adult=pkg.age==="16+"||pkg.age==="18+"; const minimum=adult?18000:pkg.age==="6+"?1500:pkg.age==="9+"?1800:pkg.age==="12+"?2400:2700; if(ordinaryWords<minimum) throw new Error("Ordinary book is too short ("+ordinaryWords+" words; minimum "+minimum+").");
     for (const item of pkg.illustrations) {
       if (!pkg.book_content.includes("{{illustration:" + item.chapter + ":" + item.number + "}}")) throw new Error("Missing illustration marker for " + item.chapter);
     }
@@ -305,7 +437,7 @@ function validate(pkg) {
     if (ids.size!==5 || !["scene-1","scene-2a","scene-2b","ending-a","ending-b"].every(id=>ids.has(id))) throw new Error("Interactive scene IDs are invalid.");
     const byId=new Map(data.nodes.map(n=>[n.id,n]));
     for (const node of data.nodes) {
-      if (!node.title?.trim() || typeof node.text!=="string" || node.text.length<700 || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete: "+node.id);
+      const ageMinimum=pkg.age==="16+"||pkg.age==="18+"?5000:pkg.age==="6+"?450:pkg.age==="9+"?550:pkg.age==="12+"?650:750; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or too short: "+node.id);
       for (const choice of node.choices) if (!choice.text?.trim() || !ids.has(choice.next)) throw new Error("Invalid branch in "+node.id);
       const index=Number(node.id==="scene-1"?1:node.id==="scene-2a"?2:node.id==="scene-2b"?3:node.id==="ending-a"?4:5);
       const illustration=pkg.illustrations.find(x=>x.number===index && x.chapter===node.title);
@@ -333,7 +465,7 @@ function validate(pkg) {
 let pkg, lastError;
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
-  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); pkg=validate(normalizePackage(candidate)); break; }
+  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); pkg=validate(await expandBook(normalized)); break; }
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
