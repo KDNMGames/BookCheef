@@ -47,7 +47,7 @@ const authors = [];
 for (const name of authorFiles) {
   authors.push(JSON.parse(await fs.readFile(path.join(authorDir, name), "utf8")));
 }
-const existingFiles = (await fs.readdir(INBOX)).filter(x => x.endsWith(".json")).sort().slice(-40);
+const existingFiles = (await fs.readdir(INBOX)).filter(x => x.endsWith(".json")).sort();
 const existingTitles = [];
 for (const name of existingFiles) {
   try {
@@ -115,7 +115,8 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 async function generatePackage(attempt, previousError = "") {
   const providerConfig = config.daily_book.text_provider || {};
   const modelCandidates = [providerConfig.model, ...(providerConfig.fallback_models || [])].filter(Boolean);
-  const model = modelCandidates[(attempt - 1) % modelCandidates.length] || "openrouter/free";
+  const modelIndex = Math.min(modelCandidates.length - 1, Math.floor((attempt - 1) / 2));
+  const model = modelCandidates[modelIndex] || "openrouter/free";
   console.log("Using text model " + model + " (attempt " + attempt + ").");
   const requestBody = {
     model,
@@ -124,7 +125,7 @@ async function generatePackage(attempt, previousError = "") {
       { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError + ". Исправь именно эту ошибку. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters." : "") }
     ],
     temperature: 0.65,
-    max_tokens: 4500
+    max_tokens: 7000
   };
   if ((providerConfig.json_mode_models || []).includes(model)) {
     requestBody.response_format = { type: "json_object" };
@@ -145,11 +146,22 @@ async function generatePackage(attempt, previousError = "") {
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = body.error?.message || "OpenRouter HTTP " + response.status;
-    throw new Error(message.slice(0, 700));
+    const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
+    const provider = body.error?.metadata?.provider_name || body.error?.provider || "";
+    throw new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
   }
-  const content = body.choices?.[0]?.message?.content;
-  if (typeof content !== "string" || !content.trim()) throw new Error("OpenRouter returned empty content.");
+  const choice = body.choices?.[0];
+  const rawContent = choice?.message?.content;
+  const content = typeof rawContent === "string"
+    ? rawContent
+    : Array.isArray(rawContent)
+      ? rawContent.map(part => typeof part === "string" ? part : (part?.text || "")).join("\n")
+      : "";
+  if (!content.trim()) {
+    const detail = choice?.finish_reason ? " (finish_reason: " + choice.finish_reason + ")" : "";
+    const providerError = body.error?.message || body.provider_error || "";
+    throw new Error(("OpenRouter returned empty content" + detail + (providerError ? ": " + providerError : ".")).slice(0, 700));
+  }
   const cleaned = content.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "");
   return JSON.parse(cleaned);
 }
@@ -273,7 +285,7 @@ function validate(pkg) {
 }
 
 let pkg, lastError;
-const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 3);
+const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 6);
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
   try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); pkg=validate(normalizePackage(candidate)); break; }
   catch(error) {
