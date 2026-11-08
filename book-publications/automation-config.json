@@ -15,11 +15,12 @@
       "provider": "openrouter",
       "model": "dots-studio/dots-3-note-preview:free",
       "secret_name": "OPENROUTER_API_KEY",
-      "max_attempts": 6,
+      "max_attempts": 8,
       "retry_delay_seconds": 45,
       "fallback_models": [
         "google/gemma-4-26b-a4b-it:free",
-        "nvidia/nemotron-3.5-lightning:free"
+        "nvidia/nemotron-3.5-lightning:free",
+        "openrouter/free"
       ],
       "json_mode_models": [
         "dots-studio/dots-3-note-preview:free",
