@@ -148,12 +148,37 @@ jobs:
               generated = await generateBatch("ovh");
               selectedProvider = "OVHcloud AI Endpoints (free anonymous SDXL)";
             }
+            const extByMime = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
             for (let i = 0; i < tasks.length; i++) {
-              tasks[i].target.mime_type = generated[i].mime_type;
-              tasks[i].target.base64 = generated[i].base64;
-              delete tasks[i].target.prompt;
+              const image = generated[i];
+              const task = tasks[i];
+              const suffix = task.label === "cover" ? "cover" : `illustration-${task.target.number}`;
+              const extension = extByMime[image.mime_type];
+              if (!extension) throw new Error(`Unsupported generated image type: ${image.mime_type}`);
+              const path = `generated/${payload.publication_key}/${suffix}.${extension}`;
+              const uploadResponse = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-book-publisher-token": token },
+                body: JSON.stringify({
+                  action: "upload_image",
+                  path,
+                  mime_type: image.mime_type,
+                  base64: image.base64
+                })
+              });
+              const uploadResult = await uploadResponse.json().catch(() => ({}));
+              if (!uploadResponse.ok || !uploadResult.ok || !uploadResult.url) {
+                throw new Error(`Storage upload failed for ${task.label}: HTTP ${uploadResponse.status}; ${uploadResult.error || "no public URL"}`);
+              }
+              const check = await fetch(uploadResult.url, { method: "HEAD" });
+              if (!check.ok) throw new Error(`Uploaded image is not publicly accessible: ${task.label} (HTTP ${check.status})`);
+              task.target.url = uploadResult.url;
+              delete task.target.prompt;
+              delete task.target.base64;
+              delete task.target.mime_type;
+              console.log(`Uploaded and verified ${task.label}.`);
             }
-            console.log(`All ${generated.length} images generated with ${selectedProvider}.`);
+            console.log(`All ${generated.length} images generated with ${selectedProvider} and uploaded separately.`);
           } else {
             console.log("Package already contains image data or a cover URL; no generation needed.");
           }
