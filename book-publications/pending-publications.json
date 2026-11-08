@@ -1,4 +1,11 @@
 {
-  "packages": [],
-  "updated_at": "2026-11-08T20:07:10.141Z"
+  "packages": [
+    {
+      "path": "book-publications/inbox/2026-11-09-ekho-vneshnego-kontura.json",
+      "title": "Эхо внешнего контура",
+      "publication_key": "bookcheef-2026-11-09-ekho-vneshnego-kontura",
+      "created_at": "2026-11-08T23:59:51.411Z"
+    }
+  ],
+  "updated_at": "2026-11-08T23:59:51.411Z"
 }
