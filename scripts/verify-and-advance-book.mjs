@@ -38,8 +38,13 @@ if (String(book.publication_key) !== String(payload.publication_key)) throw new 
 const statePath="book-publications/rotation-state.json";
 const state=JSON.parse(await fs.readFile(statePath,"utf8"));
 if (state.last_publication?.publication_key !== payload.publication_key) {
-  const cycle=["interactive","ordinary","ordinary"];
+  const config=JSON.parse(await fs.readFile("book-publications/automation-config.json","utf8"));
+  const cycle=config.daily_book.rotation;
+  if (!Array.isArray(cycle) || cycle.length < 1) throw new Error("Daily rotation configuration is invalid.");
   const current=Math.max(1,Math.min(cycle.length,Number(state.cycle_position)||1));
+  const expectedType=cycle[(current-1)%cycle.length];
+  const actualType=payload.is_interactive===true?"interactive":"ordinary";
+  if (expectedType!==actualType) throw new Error("Published book type does not match the configured rotation slot.");
   state.cycle_position=(current % cycle.length)+1;
   state.published_count=(Number(state.published_count)||0)+1;
   state.updated_at=new Date().toISOString();
@@ -55,4 +60,9 @@ if (state.last_publication?.publication_key !== payload.publication_key) {
 } else {
   console.log("Rotation state already records this publication; no duplicate increment.");
 }
-console.log("Verified Supabase row, "+urls.length+" public images, and resolved reader content.");
+const queuePath="book-publications/pending-publications.json";
+const queue=JSON.parse(await fs.readFile(queuePath,"utf8"));
+const before=Array.isArray(queue.packages)?queue.packages.length:0;
+queue.packages=(Array.isArray(queue.packages)?queue.packages:[]).filter(item=>item.publication_key!==payload.publication_key);
+if(queue.packages.length!==before){queue.updated_at=new Date().toISOString();await fs.writeFile(queuePath,JSON.stringify(queue,null,2)+"\\n");}
+console.log("Verified Supabase row, "+urls.length+" public images, resolved reader content, and cleared this item from the retry queue.");
