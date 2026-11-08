@@ -23,12 +23,21 @@
         "notes": "Сбор статистики подключается отдельно; исходные показатели нужно зафиксировать перед первой публикацией."
       },
       "last_research_at": "2026-11-08",
-      "research_report": "marketing/reports/2026-11-08-initial-scan.md",
+      "research_report": "marketing/reports/2026-11-08-external-scan.md",
       "platforms_checked": 12,
       "third_party_auto_allowed": 0,
-      "third_party_manual_or_review": 5,
+      "third_party_manual_or_review": 7,
       "third_party_blocked": 7,
-      "external_publications": []
+      "external_publications": [],
+      "historical_non_acquisition_publications": [
+        {
+          "platform": "Telegram",
+          "community_name": "@BookCheef",
+          "post_url": "https://t.me/BookCheef/7",
+          "published_at": "2026-11-08",
+          "note": "Размещён ошибочно в собственном канале; не считать рекламным привлечением и не повторять. Сохранён в истории, не удалять без отдельного указания владельца."
+        }
+      ]
     }
   ]
 }
