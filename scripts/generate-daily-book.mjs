@@ -8,6 +8,17 @@ const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
+const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
+const cooldownSeconds = 21600;
+try {
+  const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
+  const until = Date.parse(state.retry_after || "");
+  if (Number.isFinite(until) && until > Date.now()) {
+    console.log("Provider cooldown active until " + new Date(until).toISOString() + "; skipping API calls.");
+    if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\\ncreated=false\\n");
+    process.exit(0);
+  }
+} catch (error) { if (error.code !== "ENOENT") throw error; }
 const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
 
 async function findPendingPackage() {
@@ -154,7 +165,9 @@ async function generatePackage(attempt, previousError = "") {
   if (!response.ok) {
     const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
     const provider = body.error?.metadata?.provider_name || body.error?.provider || "";
-    throw new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
+    const failure = new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
+    if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
+    throw failure;
   }
   const choice = body.choices?.[0];
   const rawContent = choice?.message?.content;
@@ -481,6 +494,13 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
+    if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit/i.test(error.message)) {
+      const retryAfter = new Date(Date.now() + cooldownSeconds * 1000).toISOString();
+      await fs.writeFile(COOLDOWN_PATH, JSON.stringify({ detected_at: new Date().toISOString(), retry_after: retryAfter, reason: error.message }, null, 2) + "\\n");
+      if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\\ncreated=false\\n");
+      console.error("Quota reached; pausing generation until " + retryAfter + ".");
+      break;
+    }
     if (attempt<maxAttempts) await new Promise(resolve=>setTimeout(resolve, Math.max(1,Number(config.daily_book.text_provider?.retry_delay_seconds)||30)*1000));
   }
 }
