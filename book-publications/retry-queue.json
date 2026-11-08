@@ -1,3 +1,5 @@
 {
-  "package_path": "book-publications/inbox/2026-11-08-voices-beneath-black-ice.json"
+  "package_path": "book-publications/inbox/2026-11-08-voices-beneath-black-ice.json",
+  "retry_requested_at": "2026-11-08T03:06:00Z",
+  "reason": "Run post-publication verification only; publication key already exists."
 }
