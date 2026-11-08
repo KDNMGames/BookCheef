@@ -1,7 +1,7 @@
 {
-  "requested_at": "2026-11-08T18:01:03.499Z",
-  "requested_by": "User requested retry after footnote validator repair",
+  "requested_at": "2026-11-08T21:21:00+03:00",
+  "requested_by": "User requested next BookCheef conveyor run after successful publication",
   "requested_type": "next rotation slot",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Fixed Unicode-aware Russian token matching for inflected footnote words; output budget increased to 16000"
+  "retry_reason": "Start the next daily book cycle; preserve rotation until publication is fully verified"
 }
