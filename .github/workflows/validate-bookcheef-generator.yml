@@ -36,15 +36,16 @@ jobs:
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
             const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
-            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "CURSOR_COOLDOWN_PATH", "switching to the next AI provider"]) {
+            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider"]) {
               if (!source.includes(token)) throw new Error("Missing generator feature: " + token);
             }
             for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "version: 1"]) {
               if (!checkpoint.includes(token)) throw new Error("Missing checkpoint storage feature: " + token);
             }
-            if (!workflow.includes("git add -A book-publications/work-in-progress") || !workflow.includes("book-publications/cursor-cooldown.json")) throw new Error("Workflow does not persist checkpoint or provider cooldown state");
+            if (!workflow.includes("git add -A book-publications/work-in-progress") || !workflow.includes("book-publications/cursor-cooldown.json") || !workflow.includes("book-publications/gemini-cooldown.json")) throw new Error("Workflow does not persist checkpoint or provider cooldown state");
             const generationWorkflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
+            if (!generationWorkflow.includes("secrets.GEMINI_API_KEY")) throw new Error("Gemini API key is not passed to the generation workflow");
             console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
           '
       - name: Validate automation configuration
