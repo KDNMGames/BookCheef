@@ -11,7 +11,7 @@ const blank={title:'',description:'',cover_url:'',author:'',age:'',genre:'',seri
 const base='/BookCheef';
 const IMAGE_FALLBACK='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420"><rect width="640" height="420" fill="#211d29"/><g fill="none" stroke="#a98b5d" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"><rect x="220" y="105" width="200" height="180" rx="14"/><circle cx="275" cy="160" r="18"/><path d="m235 260 65-65 42 42 30-30 33 53"/></g><text x="320" y="345" fill="#d7c6a7" font-family="sans-serif" font-size="22" text-anchor="middle">Изображение недоступно</text></svg>');
 function SafeImage({src,alt='',...props}){
- return <SafeImage {...props} src={src||IMAGE_FALLBACK} alt={alt} loading={props.loading||'lazy'} decoding="async" onError={e=>{if(e.currentTarget.dataset.imageFallback==='true')return;e.currentTarget.dataset.imageFallback='true';e.currentTarget.src=IMAGE_FALLBACK;e.currentTarget.alt=alt?'Изображение недоступно: '+alt:'Изображение недоступно';}}/>;
+ return <img {...props} src={src||IMAGE_FALLBACK} alt={alt} loading={props.loading||'lazy'} decoding="async" onError={e=>{if(e.currentTarget.dataset.imageFallback==='true')return;e.currentTarget.dataset.imageFallback='true';e.currentTarget.src=IMAGE_FALLBACK;e.currentTarget.alt=alt?'Изображение недоступно: '+alt:'Изображение недоступно';}}/>;
 }
 function isImageUrl(value){
  try{const url=new URL(String(value).trim());if(!/^https?:$/.test(url.protocol))return false;return /\.(?:png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(url.pathname)||/\/storage\/v1\/object\/(?:public|sign)\/gallery\//i.test(url.pathname)||/[?&](?:fm|format)=(?:png|jpe?g|webp|gif|avif|auto)/i.test(url.search);}
@@ -31,13 +31,13 @@ function renderTextWithImages(value,notes=[],style={},onFootnoteOpen){
  while((match=pattern.exec(source))!==null){
   const markdown=Boolean(match[1]!==undefined),url=(markdown?match[2]:match[0]).replace(/[.,!?;:]+$/,'');
   if(!markdown&&!isImageUrl(url))continue;
-  if(match.index>last)result.push(renderFootnotedText(source.slice(last,match.index),notes,style,onFootnoteOpen));
+  if(match.index>last)result.push(<p key={'text-'+index++}>{renderFootnotedText(source.slice(last,match.index),notes,style,onFootnoteOpen)}</p>);
   const alt=markdown?(match[1]||'Иллюстрация'):'Иллюстрация';
   result.push(<figure className="reader-figure chapter-illustration" key={'image-'+index++}><SafeImage src={url} alt={alt}/>{markdown&&match[1]&&<figcaption>{match[1]}</figcaption>}</figure>);
   last=match.index+match[0].length;
  }
- if(last<source.length)result.push(renderFootnotedText(source.slice(last),notes,style,onFootnoteOpen));
- return result.length?result:renderFootnotedText(source,notes,style,onFootnoteOpen);
+ if(last<source.length)result.push(<p key={'text-'+index++}>{renderFootnotedText(source.slice(last),notes,style,onFootnoteOpen)}</p>);
+ return result.length?result:<p>{renderFootnotedText(source,notes,style,onFootnoteOpen)}</p>;
 }
 
 const sampleInteractive={start:'start',nodes:[{id:'start',text:'Начало истории. Выбери путь.',choices:[{label:'В лес',target:'forest',buttonColor:'#563b78',textColor:'#ffffff'},{label:'В дом',target:'house',buttonColor:'#b88b42',textColor:'#17120b'}]},{id:'forest',text:'Ты вошёл в лес. Конец ветки.',choices:[]},{id:'house',text:'Ты вошёл в дом. Конец ветки.',choices:[]}]};
