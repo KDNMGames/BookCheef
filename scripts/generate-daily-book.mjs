@@ -103,7 +103,7 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 ТРЕБОВАНИЯ К ТЕКСТУ:
 - Русский язык, естественный и грамотный, без повторов и искусственного растягивания.
 - Возраст выбирай по реальному содержанию. Текст должен соответствовать возрасту.
-- Обычная книга: не менее 5 000 символов book_content; 3–6 глав с заголовками ## Глава N. Название. Каждая глава — полноценная сцена, а не абзац. Вставь маркеры иллюстраций вида {{illustration:ТОЧНЫЙ ЗАГОЛОВОК ГЛАВЫ:1}} в подходящих местах. 1–5 иллюстраций, у каждой chapter совпадает с заголовком главы.
+- Обычная книга: не менее 7 000 символов book_content (абсолютный минимум 5 000); 4–6 глав с заголовками ## Глава N. Название. Каждая глава — полноценная сцена примерно 1 300–1 800 символов, а не краткий пересказ. Обязательно проверь длину book_content до ответа. Вставь маркеры иллюстраций вида {{illustration:ТОЧНЫЙ ЗАГОЛОВОК ГЛАВЫ:1}} в подходящих местах. 1–5 иллюстраций; поле chapter должно содержать точный заголовок соответствующей главы без префикса «Глава N.».
 - Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена не менее 700 символов. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
 - В интерактивной книге choices — массив объектов {text,next}; next обязан ссылаться на существующий id.
 - Вопросы reader_questions: 3–5 содержательных пар question/answer, не помещай их в book_content.
@@ -200,16 +200,26 @@ function normalizePackage(pkg) {
   if (typeof pkg.is_interactive !== "boolean") pkg.is_interactive = bookType === "interactive";
   if (pkg.series == null) pkg.series = "";
   if (Array.isArray(pkg.illustrations) && typeof pkg.book_content === "string" && bookType === "ordinary") {
-    for (const item of pkg.illustrations) {
+    const headings = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)].map(match => ({
+      title: match[1].trim(),
+      index: match.index,
+      end: match.index + match[0].length
+    }));
+    const norm = value => String(value || "").normalize("NFKC").toLocaleLowerCase("ru")
+      .replace(/^глава\\s+\\d+[.:\\s-]*/i, "")
+      .replace(/[«»“”"'’]/g, "").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+    for (let i = 0; i < pkg.illustrations.length; i++) {
+      const item = pkg.illustrations[i];
+      if (!item || !item.chapter || !item.number || !headings.length) continue;
+      const wanted = norm(item.chapter);
+      let heading = headings.find(h => norm(h.title) === wanted) ||
+        headings.find(h => norm(h.title).includes(wanted) || wanted.includes(norm(h.title)));
+      if (!heading) heading = headings[Math.min(i, headings.length - 1)];
+      item.chapter = heading.title;
       const marker = "{{illustration:" + item.chapter + ":" + item.number + "}}";
-      if (item.chapter && item.number && !pkg.book_content.includes(marker)) {
-        const heading = "## " + item.chapter;
-        const start = pkg.book_content.indexOf(heading);
-        if (start >= 0) {
-          const next = pkg.book_content.indexOf("\n## ", start + heading.length);
-          const insertAt = next >= 0 ? next : pkg.book_content.length;
-          pkg.book_content = pkg.book_content.slice(0, insertAt) + "\n\n" + marker + "\n\n" + pkg.book_content.slice(insertAt);
-        }
+      if (!pkg.book_content.includes(marker)) {
+        const insertAt = heading.end;
+        pkg.book_content = pkg.book_content.slice(0, insertAt) + "\\n\\n" + marker + "\\n\\n" + pkg.book_content.slice(insertAt);
       }
     }
   }
@@ -253,7 +263,7 @@ function validate(pkg) {
   if (pkg.cover.prompt.length > 1800) throw new Error("Cover prompt is too long.");
   const tokens = [...combinedText.matchAll(/\{\{illustration:([^:}]+):(\d+)\}\}/g)];
   if (bookType === "ordinary") {
-    if (pkg.book_content.length < 5000) throw new Error("Ordinary book is too short.");
+    if (pkg.book_content.length < 5000) throw new Error("Ordinary book is too short (" + pkg.book_content.length + " characters; minimum 5000). Regenerate the complete story with 4-6 substantial chapters.");
     for (const item of pkg.illustrations) {
       if (!pkg.book_content.includes("{{illustration:" + item.chapter + ":" + item.number + "}}")) throw new Error("Missing illustration marker for " + item.chapter);
     }
