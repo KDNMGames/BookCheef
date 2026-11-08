@@ -23,12 +23,12 @@ jobs:
       - name: Install Cursor CLI
         run: |
           curl https://cursor.com/install -fsS | bash
-          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          agent --version
 
       - name: Generate one chapter with Cursor Agent
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          CURSOR_MODEL: gpt-5
         run: node scripts/generate-next-novel-chapter.mjs
 
       - name: Commit generated draft and manifest
