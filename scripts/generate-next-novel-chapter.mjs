@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const ROOT = "book-publications/drafts/last-day-of-universe";
 const manifestPath = path.join(ROOT, "manifest.json");
@@ -31,8 +32,8 @@ const recentText = (await Promise.all(recent.map(async item =>
   `\n--- Chapter ${item.chapter}: ${item.title} ---\n${await fs.readFile(item.path, "utf8")}`
 ))).join("\n");
 
-const apiKey = process.env.OPENROUTER_API_KEY;
-if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY.");
+if (!process.env.CURSOR_API_KEY) throw new Error("Missing CURSOR_API_KEY. Add it in GitHub Settings → Secrets and variables → Actions.");
+const model = process.env.CURSOR_MODEL || "gpt-5";
 const prompt = `
 Напиши полноценную художественную главу романа «Последний день Вселенной» на русском языке.
 Верни ТОЛЬКО Markdown-текст главы. Не возвращай JSON, пояснения, synopsis, кодовые ограждения или комментарии.
@@ -62,46 +63,20 @@ ${recentText}
 - Не обрывайся посреди предложения. Последняя строка должна быть полноценным завершением главы.
 `;
 
-let data;
-let lastError = "";
-for (let attempt = 1; attempt <= 3; attempt++) {
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
-      "X-Title": "BookCheef Novel Writer"
-    },
-    body: JSON.stringify({
-      model: "openrouter/free",
-      messages: [
-        { role: "system", content: "Ты пишешь качественную русскую научную фантастику. Возвращай только законченный Markdown-текст главы." },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.82,
-      max_tokens: 8192
-    })
-  });
-  data = await res.json().catch(() => ({}));
-  if (res.ok) break;
-  lastError = `HTTP ${res.status}: ${data?.error?.message || JSON.stringify(data)}`;
-  if (![429, 500, 502, 503, 504].includes(res.status) || attempt === 3) break;
-  const delay = 5000 * attempt;
-  console.log(`Temporary provider error; retrying in ${delay / 1000}s (attempt ${attempt}/3).`);
-  await new Promise(resolve => setTimeout(resolve, delay));
+const result = spawnSync("agent", ["-p", prompt, "--model", model, "--output-format", "text"], {
+  encoding: "utf8",
+  env: process.env,
+  maxBuffer: 20 * 1024 * 1024,
+  timeout: 20 * 60 * 1000
+});
+if (result.error) throw new Error(`Cursor Agent could not start: ${result.error.message}`);
+if (result.status !== 0) {
+  const details = (result.stderr || result.stdout || "").trim().slice(-5000);
+  throw new Error(`Cursor Agent failed (exit ${result.status}): ${details || "no diagnostic output"}`);
 }
-if (!data || data.error) throw new Error(`OpenRouter request failed: ${lastError || data?.error?.message || "unknown error"}`);
-
-const choice = data.choices?.[0];
-let markdown = choice?.message?.content;
-if (typeof markdown !== "string" || !markdown.trim()) {
-  throw new Error(`Model returned no text. finish_reason=${choice?.finish_reason || "unknown"}`);
-}
-markdown = markdown.trim().replace(/^\x60{3}(?:markdown)?\s*/i, "").replace(/\s*\x60{3}$/, "").trim();
-if (choice.finish_reason === "length") {
-  throw new Error("Model hit its output-token limit and cut off the chapter. No files were changed; reduce chapter size or use a model with a larger output limit.");
-}
+let markdown = (result.stdout || "").trim();
+markdown = markdown.replace(/^\x60{3}(?:markdown)?\s*/i, "").replace(/\s*\x60{3}$/, "").trim();
+if (!markdown) throw new Error("Cursor Agent returned an empty chapter.");
 const heading = markdown.match(/^#\s+(.+)$/m);
 if (!heading || !heading[1].includes(`Глава ${next}`)) {
   throw new Error(`Missing or incorrect chapter heading. Expected chapter ${next}; no files were changed.`);
@@ -129,8 +104,8 @@ manifest.completed_chapters.push({
 });
 manifest.current_word_count = (Number(manifest.current_word_count) || 0) + words;
 manifest.last_generated_at = new Date().toISOString();
-manifest.last_provider = data.model || "OpenRouter (free routing)";
+manifest.last_provider = `Cursor Agent CLI (${model})`;
 await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 console.log(`Saved chapter ${next}: ${title} (${words} words).`);
-console.log(`Provider model: ${data.model || "openrouter/free"}; finish: ${choice.finish_reason || "unknown"}; tokens: ${data.usage?.total_tokens ?? "not reported"}.`);
+console.log(`Provider: Cursor Agent CLI; model: ${model}.`);
 console.log("Saved as a draft only; it is not published to the website.");
