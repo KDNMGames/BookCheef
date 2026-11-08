@@ -2,6 +2,9 @@ name: Generate next Last Day of the Universe chapter
 
 on:
   workflow_dispatch:
+  schedule:
+    # 01:10 Europe/Berlin in both CET and CEST; the second UTC slot is gated below.
+    - cron: '10 0,23 * * *'
 
 permissions:
   contents: write
@@ -20,18 +23,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Europe/Berlin schedule
+        id: local_schedule
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "schedule" && "$(TZ=Europe/Berlin date +%H)" != "01" ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping the duplicate UTC slot; Cursor runs once daily at 01:10 Europe/Berlin."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install Cursor CLI
+        if: steps.local_schedule.outputs.run == 'true'
         run: |
           curl https://cursor.com/install -fsS | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           agent --version
 
       - name: Generate one chapter with Cursor Agent
+        if: steps.local_schedule.outputs.run == 'true'
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: node scripts/generate-next-novel-chapter.mjs
 
       - name: Commit generated draft and manifest
+        if: steps.local_schedule.outputs.run == 'true'
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
