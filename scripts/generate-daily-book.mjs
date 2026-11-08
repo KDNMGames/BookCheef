@@ -620,7 +620,19 @@ function validate(pkg) {
 let pkg = await loadWork(), lastError;
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 if (pkg) {
-  pkg = validate(await expandBook(pkg));
+  try {
+    pkg = validate(await expandBook(pkg));
+  } catch (error) {
+    lastError = error;
+    console.error("Resumed book expansion stopped: " + error.message);
+    if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
+        /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
+      if (openRouterDisabled || !OPENROUTER_API_KEY) await saveCursorCooldown(error.message);
+      else await saveOpenRouterCooldown(error.message);
+    } else {
+      throw error;
+    }
+  }
 } else {
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
   try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); await saveWork(normalized); pkg=validate(await expandBook(normalized)); break; }
