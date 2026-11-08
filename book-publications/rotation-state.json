@@ -1,13 +1,13 @@
 {
-  "cycle_position": 2,
-  "published_count": 3,
-  "updated_at": "2026-11-08T03:06:11.410Z",
+  "cycle_position": 3,
+  "published_count": 4,
+  "updated_at": "2026-11-08T20:05:10.643Z",
   "note": "New rotation order from the next publication: 1 interactive, 2 ordinary, 3 ordinary. Existing two published books retained; current pending interactive package is first.",
   "last_publication": {
-    "title": "Голоса под чёрным льдом",
+    "title": "Тихий сигнал с орбиты «Вега-9»",
     "author": "Астэр Неваль",
     "age": "14+",
-    "type": "interactive",
-    "publication_key": "bookcheef-2026-11-08-voices-beneath-black-ice"
+    "type": "ordinary",
+    "publication_key": "bookcheef-2026-11-08-tikhiy-signal-s-orbity-vega-9"
   }
 }
