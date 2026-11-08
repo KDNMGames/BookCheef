@@ -70,6 +70,9 @@ jobs:
           if [ -f book-publications/provider-cooldown.json ]; then
             git add book-publications/provider-cooldown.json
           fi
+          if [ -f book-publications/cursor-cooldown.json ]; then
+            git add book-publications/cursor-cooldown.json
+          fi
           git add -A book-publications/work-in-progress
           if ! git diff --cached --quiet; then
             git commit -m "Record BookCheef provider cooldown"
