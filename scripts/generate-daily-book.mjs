@@ -624,6 +624,7 @@ if (pkg) {
     pkg = validate(await expandBook(pkg));
   } catch (error) {
     lastError = error;
+    pkg = null;
     console.error("Resumed book expansion stopped: " + error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
