@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "scripts/generate-daily-book.mjs"\n      - "scripts/book-checkpoint.mjs"\n      - "scripts/book-checkpoint.test.mjs"
+      - "scripts/generate-daily-book.mjs"
+      - "scripts/book-checkpoint.mjs"
+      - "scripts/book-checkpoint.test.mjs"
       - "book-publications/automation-config.json"
       - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/validate-bookcheef-generator.yml"
@@ -21,16 +23,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check generator syntax
-        run: node --check scripts/generate-daily-book.mjs
+      - name: Check generator and checkpoint syntax
+        run: |
+          node --check scripts/generate-daily-book.mjs
+          node --check scripts/book-checkpoint.mjs
+      - name: Exercise checkpoint save and recovery
+        run: node --test scripts/book-checkpoint.test.mjs
       - name: Verify resumable checkpoint lifecycle
         run: |
           node --input-type=module -e '
             import fs from "node:fs";
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
-            const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");\n            const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
-            for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "await saveWork(pkg)", "Generation paused because the provider quota is exhausted", "process.exit(0);"]) {
-              if (!source.includes(token)) throw new Error("Missing checkpoint feature: " + token);
+            const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
+            const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
+            for (const token of ["createCheckpointStore", "Resuming saved book", "await saveWork(pkg)", "Generation paused because the provider quota is exhausted", "process.exit(0);"]) {
+              if (!source.includes(token)) throw new Error("Missing generator feature: " + token);
+            }
+            for (const token of ["async function saveWork", "async function loadWork", "version: 1"]) {
+              if (!checkpoint.includes(token)) throw new Error("Missing checkpoint storage feature: " + token);
             }
             if (!workflow.includes("git add -A book-publications/work-in-progress")) throw new Error("Workflow does not persist checkpoint changes and deletions");
             console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
