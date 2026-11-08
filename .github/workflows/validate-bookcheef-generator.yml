@@ -42,7 +42,9 @@ jobs:
             for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "version: 1"]) {
               if (!checkpoint.includes(token)) throw new Error("Missing checkpoint storage feature: " + token);
             }
-            if (!workflow.includes("git add -A book-publications/work-in-progress")) throw new Error("Workflow does not persist checkpoint changes and deletions");\n            const generationWorkflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");\n            if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
+            if (!workflow.includes("git add -A book-publications/work-in-progress")) throw new Error("Workflow does not persist checkpoint changes and deletions");
+            const generationWorkflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
+            if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
             console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
           '
       - name: Validate automation configuration
