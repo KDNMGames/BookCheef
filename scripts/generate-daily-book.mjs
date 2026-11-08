@@ -9,8 +9,11 @@ const ROTATION_PATH = "book-publications/rotation-state.json";
 const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const CURSOR_API_KEY = process.env.CURSOR_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 let openRouterDisabled = false;
 let cursorDisabled = false;
+let geminiDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
 const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
@@ -47,6 +50,7 @@ const WORK_PATH = "book-publications/work-in-progress/current.json";
 
 const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
 const CURSOR_COOLDOWN_PATH = "book-publications/cursor-cooldown.json";
+const GEMINI_COOLDOWN_PATH = "book-publications/gemini-cooldown.json";
 const cooldownSeconds = 21600;
 try {
   const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
@@ -64,15 +68,85 @@ try {
     console.log("Cursor Agent is cooling down until " + new Date(until).toISOString() + ".");
   }
 } catch (error) { if (error.code !== "ENOENT") throw error; }
+try {
+  const state = JSON.parse(await fs.readFile(GEMINI_COOLDOWN_PATH, "utf8"));
+  const until = Date.parse(state.retry_after || "");
+  if (Number.isFinite(until) && until > Date.now()) {
+    geminiDisabled = true;
+    console.log("Gemini is cooling down until " + new Date(until).toISOString() + ".");
+  }
+} catch (error) { if (error.code !== "ENOENT") throw error; }
 
-if (openRouterDisabled && cursorDisabled) {
+if (openRouterDisabled && cursorDisabled && geminiDisabled) {
   console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   process.exit(0);
 }
 
-if (!OPENROUTER_API_KEY && !CURSOR_API_KEY) {
-  throw new Error("No text AI provider credentials are configured. Add OPENROUTER_API_KEY or CURSOR_API_KEY.");
+if (!OPENROUTER_API_KEY && !CURSOR_API_KEY && !GEMINI_API_KEY) {
+  throw new Error("No text AI provider credentials are configured. Add OPENROUTER_API_KEY, CURSOR_API_KEY, or GEMINI_API_KEY.");
+}
+
+async function saveGeminiCooldown(reason) {
+  const retryAfter = new Date(Date.now() + cooldownSeconds * 1000).toISOString();
+  await fs.writeFile(GEMINI_COOLDOWN_PATH, JSON.stringify({
+    provider: "gemini",
+    detected_at: new Date().toISOString(),
+    retry_after: retryAfter,
+    reason: String(reason || "Gemini quota exhausted").slice(0, 700)
+  }, null, 2) + "\n");
+  geminiDisabled = true;
+  console.warn("Gemini paused until " + retryAfter + ".");
+}
+
+async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {}) {
+  if (!GEMINI_API_KEY || geminiDisabled) {
+    const error = new Error(geminiDisabled ? "Gemini is in cooldown." : "GEMINI_API_KEY is not configured.");
+    error.code = geminiDisabled ? "ALL_PROVIDERS_COOLDOWN" : "NO_FALLBACK_PROVIDER";
+    throw error;
+  }
+  console.log("Switching text generation to Google Gemini (" + GEMINI_MODEL + ").");
+  const generationConfig = { temperature: 0.7, maxOutputTokens: 16000 };
+  if (json) generationConfig.responseMimeType = "application/json";
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(GEMINI_MODEL) + ":generateContent", {
+    method: "POST",
+    headers: { "x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: "Ты — профессиональный автор и редактор BookCheef. Следуй инструкции пользователя точно." }] },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig
+    }),
+    signal: AbortSignal.timeout(timeout)
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = body.error?.message || "Gemini HTTP " + response.status;
+    const error = new Error(message.slice(0, 1000));
+    if (response.status === 429 || response.status === 503 || /quota|rate.?limit|resource exhausted|daily limit|billing/i.test(message)) {
+      error.code = "RATE_LIMIT";
+      await saveGeminiCooldown(message);
+    }
+    throw error;
+  }
+  const text = (body.candidates?.[0]?.content?.parts || []).map(part => part.text || "").join("\n").trim();
+  if (!text) {
+    const reason = body.candidates?.[0]?.finishReason || body.promptFeedback?.blockReason || "empty response";
+    throw new Error("Gemini returned no text: " + reason);
+  }
+  return text;
+}
+
+async function generateWithFallback(prompt, { json = false, timeout = 900000 } = {}) {
+  if (GEMINI_API_KEY && !geminiDisabled) {
+    try {
+      const output = await generateWithGemini(prompt, { json, timeout });
+      return json ? parseModelJson(output) : output;
+    } catch (error) {
+      if (error.code !== "RATE_LIMIT" && error.code !== "ALL_PROVIDERS_COOLDOWN") throw error;
+      console.warn("Gemini quota unavailable; trying Cursor Agent next.");
+    }
+  }
+  return json ? parseModelJson(runCursorAgent(prompt, { timeout })) : runCursorAgent(prompt, { timeout });
 }
 
 async function saveCursorCooldown(reason) {
@@ -241,8 +315,8 @@ async function generatePackage(attempt, previousError = "") {
     requestBody.reasoning = { enabled: false };
   }
   if (openRouterDisabled || !OPENROUTER_API_KEY) {
-    return parseModelJson(runCursorAgent(systemPrompt + "\n\n" + userPrompt + retryInstruction +
-      "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { timeout: 900000 }));
+    return await generateWithFallback(systemPrompt + "\n\n" + userPrompt + retryInstruction +
+      "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
   }
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -281,8 +355,8 @@ async function generatePackage(attempt, previousError = "") {
   } catch (error) {
     if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
       await saveOpenRouterCooldown(error.message);
-      return parseModelJson(runCursorAgent(systemPrompt + "\n\n" + userPrompt + retryInstruction +
-        "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { timeout: 900000 }));
+      return await generateWithFallback(systemPrompt + "\n\n" + userPrompt + retryInstruction +
+        "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
     }
     throw error;
   }
@@ -363,7 +437,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
         "\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому.";
       let generatedText;
       if (openRouterDisabled || !OPENROUTER_API_KEY) {
-        generatedText = runCursorAgent(systemText + "\n\n" + userText, { timeout: 900000 });
+        generatedText = await generateWithFallback(systemText + "\n\n" + userText, { timeout: 900000 });
       } else {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
@@ -402,7 +476,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
         try {
           const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
           const userText = "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. Описание: " + description + "\nКонтекст: " + (priorContext || "Начало истории.") + "\nЧерновик: " + draft + "\nСохрани события, напиши полноценную прозу, выведи только текст части.";
-          const fallbackText = runCursorAgent(systemText + "\n\n" + userText, { timeout: 900000 });
+          const fallbackText = await generateWithFallback(systemText + "\n\n" + userText, { timeout: 900000 });
           const fallbackWords = countWords(fallbackText);
           if (fallbackWords < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Cursor fallback part too short: " + fallbackWords + " words.");
           return fallbackText;
@@ -628,7 +702,7 @@ if (pkg) {
     console.error("Resumed book expansion stopped: " + error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
-      if (openRouterDisabled || !OPENROUTER_API_KEY) await saveCursorCooldown(error.message);
+      if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
       else await saveOpenRouterCooldown(error.message);
     } else {
       throw error;
@@ -642,7 +716,7 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
-      if (openRouterDisabled || !OPENROUTER_API_KEY) await saveCursorCooldown(error.message);
+      if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
       else await saveOpenRouterCooldown(error.message);
       if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
       console.error("No available AI provider for this attempt. The partial checkpoint, if any, is preserved for the next run.");
