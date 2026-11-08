@@ -17,7 +17,7 @@
   "volume_count": 5,
   "planned_chapters": 160,
   "average_chapter_words": 3500,
-  "current_word_count": 38779,
+  "current_word_count": 40473,
   "completed_chapters": [
     {
       "chapter": 1,
@@ -220,6 +220,16 @@
       "synopsis": "В исследовательской мастерской Илья наблюдает неожиданный режим обратной связи в модели и спорит о критериях жизни и сознания. Единый останавливает эксперимент до проверки, а Илья выбирает сначала посетить настоящий архив Эйр-Та.",
       "status": "draft",
       "continuity_note": "Непредусмотренное поведение объяснено возможной обратной связью; сознание и естественная жизнь не заявлены."
+    },
+    {
+      "chapter": 23,
+      "volume": 1,
+      "path": "book-publications/drafts/last-day-of-universe/chapters/volume-01-chapter-023.md",
+      "title": "Сад невозможных форм: Познание",
+      "word_count": 1694,
+      "synopsis": "Сад невозможных форм: Познание — Реконструкции экосистем и вопрос: может ли копия считаться живой жизнью. Конфликт: Проверка новой истины личным опытом. Поворот: Илья получает конкретное свидетельство, которое усложняет его первоначальный вывод.",
+      "status": "draft",
+      "continuity_note": "Сохранить события и изменения персонажей главы 23; продолжить сюжет согласно следующему пункту плана."
     }
   ],
   "next_chapter": 23,
@@ -271,5 +281,7 @@
       "status": "planned"
     }
   ],
-  "chapter_path_pattern": "chapters/volume-{NN}-chapter-{NNN}.md; том I: главы 001–032, том II: 033–064, том III: 065–096, том IV: 097–128, том V: 129–160"
+  "chapter_path_pattern": "chapters/volume-{NN}-chapter-{NNN}.md; том I: главы 001–032, том II: 033–064, том III: 065–096, том IV: 097–128, том V: 129–160",
+  "last_generated_at": "2026-11-08T02:36:04.052Z",
+  "last_provider": "Cursor Agent CLI (account default model)"
 }
