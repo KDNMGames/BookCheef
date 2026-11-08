@@ -26,20 +26,20 @@ if (!outlineLine) throw new Error(`Outline entry for chapter ${next} not found.`
 
 const bibleFiles = ["characters.md", "style.md", "world.md", "timeline.md", "plotlines.md"];
 const bible = (await Promise.all(bibleFiles.map(async name =>
-  `\\n--- ${name} ---\\n${await fs.readFile(path.join(ROOT, "bible", name), "utf8")}`
-))).join("\\n");
+  `\n--- ${name} ---\n${await fs.readFile(path.join(ROOT, "bible", name), "utf8")}`
+))).join("\n");
 
 const recent = chapters.slice(-3);
 const recentText = (await Promise.all(recent.map(async item =>
-  `\\n--- Chapter ${item.chapter}: ${item.title} ---\\n${await fs.readFile(item.path, "utf8")}`
-))).join("\\n");
+  `\n--- Chapter ${item.chapter}: ${item.title} ---\n${await fs.readFile(item.path, "utf8")}`
+))).join("\n");
 
 const apiKey = process.env.OPENROUTER_API_KEY;
 if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY.");
 const prompt = `
 Ты — профессиональный русский романист и редактор. Напиши следующую полноценную главу романа «Последний день Вселенной».
 Верни СТРОГО JSON без Markdown-ограждений в формате:
-{"title":"...","synopsis":"...","continuity_note":"...","markdown":"# Глава N. Название\\n\\nПолный текст главы..."}
+{"title":"...","synopsis":"...","continuity_note":"...","markdown":"# Глава N. Название\n\nПолный текст главы..."}
 
 ЗАДАНИЕ ИЗ ПЛАНА:
 ${outlineLine}
@@ -114,16 +114,16 @@ if (!result.title || !result.synopsis || !result.continuity_note ||
 if (!result.markdown.includes(`Глава ${next}.`) && !result.markdown.includes(`Глава ${next} `)) {
   throw new Error("Chapter heading does not match the expected chapter number; no files were changed.");
 }
-const words = result.markdown.match(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu)?.length || 0;
+const words = result.markdown.match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu)?.length || 0;
 if (words < 1800) throw new Error(`Chapter too short (${words} words); refusing to save an incomplete draft.`);
 if (words > 6500) throw new Error(`Chapter unexpectedly long (${words} words); refusing to save.`);
 
 await fs.mkdir(path.dirname(chapterPath), { recursive: true });
-await fs.writeFile(chapterPath, result.markdown.trim() + "\\n", { flag: "wx" });
+await fs.writeFile(chapterPath, result.markdown.trim() + "\n", { flag: "wx" });
 manifest.completed_chapters.push({
   chapter: next,
   volume,
-  path: chapterPath.replaceAll("\\\\", "/"),
+  path: chapterPath,
   title: result.title,
   word_count: words,
   synopsis: result.synopsis,
@@ -133,7 +133,7 @@ manifest.completed_chapters.push({
 manifest.current_word_count = (Number(manifest.current_word_count) || 0) + words;
 manifest.last_generated_at = new Date().toISOString();
 manifest.last_provider = "OpenRouter (free routing)";
-await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
+await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 console.log(`Saved chapter ${next}: ${result.title} (${words} words).`);
 console.log(`Provider model: ${response.model || "openrouter/free"}; tokens: ${response.usage?.total_tokens ?? "not reported"}.`);
 console.log("The chapter is saved as a draft only; it is not published to the website.");
