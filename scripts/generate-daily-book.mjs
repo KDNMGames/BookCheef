@@ -122,7 +122,7 @@ async function generatePackage(attempt, previousError = "") {
   console.log("Using text model " + model + " (attempt " + attempt + ").");
   const retryInstruction = attempt > 1
     ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError +
-      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — замени word на слово, дословно скопированное из текста книги, или исправь сам текст так, чтобы слово встречалось. Если ошибка Ordinary book is too short — создай полный текст не менее 7 000 символов, 4–6 глав по 1 300–1 800 символов каждая; не сокращай главы. Если ошибка Missing illustration marker — chapter в illustrations должен точно совпадать с заголовком главы; вставь соответствующий маркер в book_content. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
+      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — скопируй word целиком из готовой главы/сцены, включая точную форму слова (падеж и число); не используй начальную форму, если в тексте стоит другая. Лучше выбрать простое слово, которое легко найти в тексте. Если ошибка Ordinary book is too short — создай полный текст не менее 7 000 символов, 4–6 глав по 1 300–1 800 символов каждая; не сокращай главы. Если ошибка Missing illustration marker — chapter в illustrations должен точно совпадать с заголовком главы; вставь соответствующий маркер в book_content. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
     : "";
   const requestBody = {
     model,
@@ -131,7 +131,7 @@ async function generatePackage(attempt, previousError = "") {
       { role: "user", content: userPrompt + retryInstruction }
     ],
     temperature: 0.65,
-    max_tokens: 12000
+    max_tokens: 16000
   };
   if ((providerConfig.json_mode_models || []).includes(model)) {
     requestBody.response_format = { type: "json_object" };
@@ -256,9 +256,38 @@ function validate(pkg) {
     pkg.footnotes = pkg.interactive_content.footnotes;
   }
   const combinedText = [pkg.book_content, ...(pkg.interactive_content?.nodes||[]).map(n=>n.text||"")].join("\n");
-  if (!Array.isArray(pkg.footnotes) || pkg.footnotes.length < 1 ||
-      pkg.footnotes.some(f=>!f.word?.trim() || !f.text?.trim() || !combinedText.toLocaleLowerCase("ru").includes(f.word.toLocaleLowerCase("ru")))) {
-    throw new Error("Footnotes must define words that actually appear in the book.");
+  if (!Array.isArray(pkg.footnotes) || pkg.footnotes.length < 1) {
+    throw new Error("At least one valid footnote is required.");
+  }
+  const normalizeFootnoteToken = value => String(value || "").normalize("NFKC")
+    .toLocaleLowerCase("ru").replace(/ё/g, "е").replace(/^[^\\p{L}\\p{N}]+|[^\\p{L}\\p{N}]+$/gu, "");
+  const bookTokens = [...combinedText.matchAll(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu)].map(match => match[0]);
+  for (const note of pkg.footnotes) {
+    if (!note?.word?.trim() || !note?.text?.trim()) {
+      throw new Error("Each footnote must contain a word and its definition.");
+    }
+    const wanted = normalizeFootnoteToken(note.word);
+    if (!wanted) throw new Error("Footnote word is empty after normalization.");
+    const exact = bookTokens.find(token => normalizeFootnoteToken(token) === wanted);
+    if (exact) {
+      note.word = exact;
+      continue;
+    }
+    // Russian words often appear in the story in an inflected form.
+    // Match only a strong shared stem, then store the exact surface form from the text.
+    const stemMatch = bookTokens.find(token => {
+      const actual = normalizeFootnoteToken(token);
+      let common = 0;
+      while (common < actual.length && common < wanted.length && actual[common] === wanted[common]) common++;
+      return Math.min(actual.length, wanted.length) >= 5 &&
+        common >= Math.max(5, Math.ceil(Math.min(actual.length, wanted.length) * 0.7));
+    });
+    if (stemMatch) {
+      note.word = stemMatch;
+      console.log("Adjusted footnote word to its exact form in the book: " + note.word);
+      continue;
+    }
+    throw new Error("Footnote word \"" + note.word + "\" does not appear in book text. Copy an exact word from a chapter or scene.");
   }
   if (pkg.cover.prompt.length > 1800) throw new Error("Cover prompt is too long.");
   const tokens = [...combinedText.matchAll(/\{\{illustration:([^:}]+):(\d+)\}\}/g)];
