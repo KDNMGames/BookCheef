@@ -71,6 +71,8 @@ const systemPrompt = [
 
 const userPrompt = `Создай ОДНУ полностью готовую бесплатную книгу для каталога BookCheef.
 
+ВАЖНО: перед финальным ответом проверь, что title уникален и не совпадает ни с одним названием ниже даже после изменения регистра и знаков препинания. Придумай совершенно новое название, не вариацию существующего. Для каждой сноски скопируй в поле word точное слово из book_content или текста узлов, сохранив написание; после написания текста проверь каждую сноску поиском по готовому тексту. Не придумывай слова для сносок.
+
 ТИП: ${bookType === "interactive" ? "ИНТЕРАКТИВНАЯ" : "ОБЫЧНАЯ"}.
 Дата публикации: ${today}.
 Авторы, уже заведённые в BookCheef (выбери одного подходящего и сохрани его точное имя и голос):
@@ -118,14 +120,18 @@ async function generatePackage(attempt, previousError = "") {
   const modelIndex = Math.min(modelCandidates.length - 1, Math.floor((attempt - 1) / 2));
   const model = modelCandidates[modelIndex] || "openrouter/free";
   console.log("Using text model " + model + " (attempt " + attempt + ").");
+  const retryInstruction = attempt > 1
+    ? "\\n\\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError +
+      ". Исправь именно эту ошибку. Не повторяй прежнее название. Если ошибка связана с названием — придумай полностью новое название, не похожее на перечисленные. Если ошибка связана со сноской — замени word на слово, дословно скопированное из текста книги, или исправь сам текст так, чтобы слово встречалось. Если ответ был обрезан — сократи необязательные описания и промпты, сохранив полный текст книги и все обязательные поля. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters."
+    : "";
   const requestBody = {
     model,
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt + (attempt > 1 ? "\n\nПРЕДЫДУЩАЯ ПОПЫТКА НЕ ПРОШЛА ПРОВЕРКУ: " + previousError + ". Исправь именно эту ошибку. Обязательно верни book_content как полный текст книги; не заменяй его полем content или chapters." : "") }
+      { role: "user", content: userPrompt + retryInstruction }
     ],
     temperature: 0.65,
-    max_tokens: 7000
+    max_tokens: 12000
   };
   if ((providerConfig.json_mode_models || []).includes(model)) {
     requestBody.response_format = { type: "json_object" };
@@ -217,7 +223,8 @@ function validate(pkg) {
   }
   if (pkg.title.length > 180) throw new Error("Title is too long.");
   if (!authors.some(author => author.author === pkg.author)) throw new Error("The selected author is not in the BookCheef author pool.");
-  if (existingTitles.some(title => title.trim().toLocaleLowerCase() === pkg.title.trim().toLocaleLowerCase())) throw new Error("The generated title duplicates an existing inbox title.");
+  const normalizeTitle = value => String(value).normalize("NFKC").toLocaleLowerCase("ru").replace(/[«»“”"'’]/g, "").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim().replace(/\\s+/g, " ");
+  if (existingTitles.some(title => normalizeTitle(title) === normalizeTitle(pkg.title))) throw new Error("The generated title duplicates an existing inbox title. Choose a completely different title, not a variation.");
   if (!/^(6|9|12|14|16|18)\+$/.test(pkg.age.trim())) throw new Error("Age rating is not one of the supported categories.");
   if (pkg.is_interactive !== (bookType === "interactive")) throw new Error("Book type differs from rotation state.");
   if (pkg.is_free !== true) throw new Error("Daily books must be free.");
@@ -240,7 +247,7 @@ function validate(pkg) {
   }
   const combinedText = [pkg.book_content, ...(pkg.interactive_content?.nodes||[]).map(n=>n.text||"")].join("\n");
   if (!Array.isArray(pkg.footnotes) || pkg.footnotes.length < 1 ||
-      pkg.footnotes.some(f=>!f.word?.trim() || !f.text?.trim() || !combinedText.includes(f.word))) {
+      pkg.footnotes.some(f=>!f.word?.trim() || !f.text?.trim() || !combinedText.toLocaleLowerCase("ru").includes(f.word.toLocaleLowerCase("ru")))) {
     throw new Error("Footnotes must define words that actually appear in the book.");
   }
   if (pkg.cover.prompt.length > 1800) throw new Error("Cover prompt is too long.");
@@ -285,7 +292,7 @@ function validate(pkg) {
 }
 
 let pkg, lastError;
-const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 6);
+const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
   try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); pkg=validate(normalizePackage(candidate)); break; }
   catch(error) {
