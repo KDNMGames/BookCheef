@@ -1,4 +1,4 @@
 {
-  "run_id": 42441402559,
-  "reason": "Generation step remained stalled; retry with bounded OpenRouter timeout and smaller output budget."
+  "run_id": 42441594365,
+  "reason": "Re-run with latest generator and rebase-safe commit step."
 }
