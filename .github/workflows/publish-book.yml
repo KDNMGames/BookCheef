@@ -64,6 +64,7 @@ jobs:
 
           node --input-type=module <<'NODE'
           import fs from "node:fs";
+          import { findCommonsImageSet } from "./scripts/commons-image-fallback.mjs";
           const file = process.env.FILE;
           const payload = JSON.parse(fs.readFileSync(file, "utf8"));
           const qs = payload.reader_questions;
@@ -157,9 +158,16 @@ jobs:
               selectedProvider = "Cloudflare Workers AI";
             } catch (cloudflareError) {
               console.log(`Cloudflare could not complete the full image set: ${cloudflareError.message}`);
-              console.log("Restarting the complete image set with free OVHcloud SDXL to keep one consistent visual style.");
-              generated = await generateBatch("ovh");
-              selectedProvider = "OVHcloud AI Endpoints (free anonymous SDXL)";
+              try {
+                console.log("Restarting the complete image set with free OVHcloud SDXL to keep one consistent visual style.");
+                generated = await generateBatch("ovh");
+                selectedProvider = "OVHcloud AI Endpoints (free anonymous SDXL)";
+              } catch (ovhError) {
+                console.log(`OVHcloud could not complete the full image set: ${ovhError.message}`);
+                console.log("Searching Wikimedia Commons for a complete set of verified CC0/Public Domain images with no attribution requirement.");
+                generated = await findCommonsImageSet(tasks);
+                selectedProvider = "Wikimedia Commons (verified CC0/Public Domain; no attribution required)";
+              }
             }
             const extByMime = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
             for (let i = 0; i < tasks.length; i++) {
@@ -187,6 +195,7 @@ jobs:
               const check = await fetch(uploadResult.url, { method: "HEAD", signal: AbortSignal.timeout(30000) });
               if (!check.ok) throw new Error(`Uploaded image is not publicly accessible: ${task.label} (HTTP ${check.status})`);
               task.target.url = uploadResult.url;
+              if (image.source) task.target.source_license = image.source;
               delete task.target.prompt;
               delete task.target.base64;
               delete task.target.mime_type;
