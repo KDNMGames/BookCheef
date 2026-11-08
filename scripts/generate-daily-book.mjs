@@ -529,6 +529,11 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
   }
 }
 }
+if (!pkg && (lastError?.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit/i.test(lastError?.message || ""))) {
+  console.log("Generation paused because the provider quota is exhausted. The cooldown was saved; no book was published and rotation was not advanced.");
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  process.exit(0);
+}
 if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
 
 const fileName=today+"-"+slugify(pkg.title)+".json";
