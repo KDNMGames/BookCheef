@@ -1,8 +1,8 @@
 {
-  "requested_at": "2026-11-08T20:05:40.404Z",
-  "requested_by": "User requested continuation of BookCheef conveyor; retry verification after repair",
-  "requested_type": "resume pending publication",
+  "requested_at": "2026-11-08T21:36:24.414Z",
+  "requested_by": "User explicitly requested to start BookCheef book generation",
+  "requested_type": "generate next book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Retry already-published pending package with corrected image URL verification; do not generate a duplicate book",
-  "reason": "Continue daily BookCheef conveyor after successful verification and queue cleanup; generate next ordinary book according to rotation slot 3"
+  "retry_reason": "Fresh user-requested generation; use current rotation slot and enforce long-form reading-length validation",
+  "reason": "Start the next BookCheef conveyor item now. Rotation state determines the book type; do not create duplicates, do not publish short books, and preserve all existing publications."
 }
