@@ -105,6 +105,9 @@ manifest.completed_chapters.push({
   continuity_note: continuityNote
 });
 manifest.current_word_count = (Number(manifest.current_word_count) || 0) + words;
+manifest.next_chapter = next + 1;
+const currentVolume = manifest.volumes?.find(item => item.volume === volume);
+if (currentVolume) currentVolume.completed_chapters = (Number(currentVolume.completed_chapters) || 0) + 1;
 manifest.last_generated_at = new Date().toISOString();
 manifest.last_provider = model ? `Cursor Agent CLI (${model})` : "Cursor Agent CLI (account default model)";
 await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
