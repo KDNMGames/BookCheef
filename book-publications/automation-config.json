@@ -13,10 +13,18 @@
     "advance_rotation_only_after_verified_publication": true,
     "text_provider": {
       "provider": "openrouter",
-      "model": "google/gemma-4-26b-a4b-it:free",
+      "model": "dots-studio/dots-3-note-preview:free",
       "secret_name": "OPENROUTER_API_KEY",
       "max_attempts": 3,
-      "retry_delay_seconds": 30
+      "retry_delay_seconds": 30,
+      "fallback_models": [
+        "google/gemma-4-26b-a4b-it:free",
+        "nvidia/nemotron-3.5-lightning:free"
+      ],
+      "json_mode_models": [
+        "dots-studio/dots-3-note-preview:free",
+        "google/gemma-4-26b-a4b-it:free"
+      ]
     },
     "image_providers": {
       "primary": "cloudflare",
