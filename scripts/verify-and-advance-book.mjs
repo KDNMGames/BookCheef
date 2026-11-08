@@ -19,7 +19,7 @@ if (!response.ok || !result.ok || !result.published || !result.book) {
 const book = result.book;
 const contentForImages = String(book.book_content||"") + " " + JSON.stringify(book.interactive_content||{});
 const galleryPrefix = "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/";
-const embeddedUrls = [...contentForImages.matchAll(/https:\/\/wendffewxxmnaglfksfg\.supabase\.co\/storage\/v1\/object\/public\/gallery\/[^\\s"'<>)}]+/g)]
+const embeddedUrls = [...contentForImages.matchAll(/https:\/\/wendffewxxmnaglfksfg\.supabase\.co\/storage\/v1\/object\/public\/gallery\/[^\s"'<>)}]+/g)]
   .map(match => match[0].replace(/[.,;!?]+$/,""));
 const packageUrls = (payload.illustrations||[]).map(item=>item.url).filter(Boolean);
 const urls = [...new Set([book.cover_url, ...packageUrls, ...embeddedUrls].filter(Boolean))];
