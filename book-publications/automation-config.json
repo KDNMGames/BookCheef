@@ -24,6 +24,9 @@
       "json_mode_models": [
         "dots-studio/dots-3-note-preview:free",
         "google/gemma-4-26b-a4b-it:free"
+      ],
+      "reasoning_off_models": [
+        "dots-studio/dots-3-note-preview:free"
       ]
     },
     "image_providers": {
