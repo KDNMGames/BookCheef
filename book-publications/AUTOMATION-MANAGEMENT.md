@@ -8,6 +8,7 @@ The user continues to manage the system by describing changes in the BookCheef c
 
 - `book-publications/automation-config.json` — schedules, rotation, provider selection, image limits, validation and failure policy.
 - `book-publications/rotation-state.json` — current rotation position and last verified publication.
+- `book-publications/pending-publications.json` — explicit retry queue; only packages listed here are eligible for automatic retry. Old inbox files and test packages are never auto-published.
 - `book-publications/authors/*.json` — author voice and series continuity.
 - `book-publications/drafts/last-day-of-universe/` — the separate Cursor-only long novel.
 - `.github/workflows/generate-daily-book.yml` — daily book orchestration.
@@ -17,13 +18,13 @@ The user continues to manage the system by describing changes in the BookCheef c
 ## Daily book flow
 
 1. GitHub Actions starts the daily workflow at 01:10 Europe/Berlin.
-2. The workflow scans the inbox and checks each publication key against Supabase. An unpublished package is resumed before creating a new book.
+2. The workflow checks the explicit pending queue. A queued package is resumed before creating a new book; unrelated old inbox files and test packages are ignored.
 3. If there is no pending package, OpenRouter's free router generates one book using the current rotation slot and existing author bibles.
 4. The package is validated and committed to the inbox.
 5. The publisher generates the complete image set with Cloudflare Workers AI, falling back to OVHcloud SDXL if necessary.
 6. Each image is uploaded to Supabase Storage in a separate request. The final publication request contains public image URLs rather than a large base64 payload.
 7. The publisher inserts the book. A separate verification step checks the Supabase row, all public image URLs, and that no illustration markers remain in reader content.
-8. Only after verification does the workflow advance `rotation-state.json`.
+8. Only after verification does the workflow advance `rotation-state.json` and remove the package from the pending queue.
 
 ## Failure behavior
 
