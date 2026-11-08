@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "book-publications/automation-config.json"
+      - ".github/workflows/test-text-ai-providers.yml"
   workflow_dispatch:
 
 permissions:
