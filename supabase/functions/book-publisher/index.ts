@@ -293,7 +293,7 @@ Deno.serve(async (req: Request) => {
       if (!secretKey) return Response.json({ ok: false, error: "Supabase server key is unavailable" }, { status: 503 });
       const supabase = createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
       const { data, error } = await supabase.from("books")
-        .select("id,title,publication_key,cover_url,created_at")
+        .select(payload.include_content === true ? "id,title,publication_key,cover_url,created_at,book_content,interactive_content" : "id,title,publication_key,cover_url,created_at")
         .eq("publication_key", publicationKey).maybeSingle();
       if (error) throw new Error("Publication lookup failed");
       return Response.json({ ok: true, published: Boolean(data), book: data ?? null });
