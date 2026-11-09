@@ -50,6 +50,7 @@ jobs:
           CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
           CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_FREE_INCLUDED: ${{ vars.GEMINI_FREE_INCLUDED }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
