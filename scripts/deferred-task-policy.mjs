@@ -1,0 +1,22 @@
+export function selectDeferredTask(tasks, now = Date.now()) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return { status: "none", task: null };
+
+  const ordered = tasks
+    .filter(task => task && ["interactive", "ordinary"].includes(task.book_type) &&
+      typeof task.checkpoint_path === "string" && task.checkpoint_path.length > 0)
+    .slice()
+    .sort((a, b) => {
+      const left = Date.parse(a.created_at || "") || 0;
+      const right = Date.parse(b.created_at || "") || 0;
+      return left - right;
+    });
+
+  if (!ordered.length) {
+    throw new Error("Deferred queue contains tasks without a valid checkpoint path; refusing to start another book.");
+  }
+
+  const task = ordered[0];
+  const retryAt = Date.parse(task.retry_after || "");
+  if (!Number.isFinite(retryAt) || retryAt <= now) return { status: "resume", task };
+  return { status: "wait", task, retryAfter: new Date(retryAt).toISOString() };
+}
