@@ -31,13 +31,13 @@ export class ProviderQuotaWaitError extends Error {
 
 export function createProviderQuotaCoordinator({
   supabaseUrl = process.env.SUPABASE_URL,
-  serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY,
+  serviceRoleKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
   workerType = process.env.BOOKCHEEF_WORKER_TYPE || "ordinary",
   defaultCooldownSeconds = 21600,
   fetchImpl = globalThis.fetch
 } = {}) {
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Shared provider quota is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets.");
+    throw new Error("Shared provider quota is not configured. Set SUPABASE_URL and SUPABASE_SECRET_KEY (or the legacy SUPABASE_SERVICE_ROLE_KEY) in GitHub Actions secrets.");
   }
   if (!["ordinary", "interactive", "novel"].includes(workerType)) {
     throw new Error("Invalid BookCheef worker type for quota coordinator.");
@@ -54,7 +54,6 @@ export function createProviderQuotaCoordinator({
       method: "POST",
       headers: {
         apikey: serviceRoleKey,
-        Authorization: "Bearer " + serviceRoleKey,
         "Content-Type": "application/json",
         Accept: "application/json"
       },
