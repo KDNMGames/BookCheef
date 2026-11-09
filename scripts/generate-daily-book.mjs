@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createCheckpointStore } from "./book-checkpoint.mjs";
+import { createBookWorkerState } from "./book-worker-state.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -17,6 +18,12 @@ let geminiDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
 const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
+const configuredCycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
+const configuredPosition = Number(rotation.cycle_position) || 1;
+const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
+const workerState = createBookWorkerState({ workerType: requestedWorkerType });
+await workerState.acquireLease();
+console.log("Using isolated " + requestedWorkerType + " worker storage at " + workerState.workerDir + ".");
 
 async function findPendingPackage() {
   const queuePath = "book-publications/pending-publications.json";
@@ -46,13 +53,13 @@ if (pending) {
 }
 
 
-const WORK_DIR = "book-publications/work-in-progress";
-const WORK_PATH = path.join(WORK_DIR, "current.json");
-const DEFERRED_QUEUE_PATH = "book-publications/deferred-books.json";
+const WORK_DIR = workerState.workerDir;
+const WORK_PATH = workerState.checkpointPath("current");
+const DEFERRED_QUEUE_PATH = path.join(workerState.workerDir, "deferred-books.json");
 
-const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
-const CURSOR_COOLDOWN_PATH = "book-publications/cursor-cooldown.json";
-const GEMINI_COOLDOWN_PATH = "book-publications/gemini-cooldown.json";
+const COOLDOWN_PATH = path.join(workerState.workerDir, "openrouter-cooldown.json");
+const CURSOR_COOLDOWN_PATH = path.join(workerState.workerDir, "cursor-cooldown.json");
+const GEMINI_COOLDOWN_PATH = path.join(workerState.workerDir, "gemini-cooldown.json");
 const cooldownSeconds = 21600;
 try {
   const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
@@ -214,8 +221,8 @@ function parseModelJson(output) {
   if (start < 0 || end <= start) throw new Error("Cursor Agent did not return a JSON object.");
   return JSON.parse(cleaned.slice(start, end + 1));
 }
-const cycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
-const position = Number(rotation.cycle_position) || 1;
+const cycle = configuredCycle;
+const position = configuredPosition;
 let deferredQueue = { tasks: [], updated_at: null };
 try {
   deferredQueue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8"));
@@ -786,7 +793,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   let deferredEntry = deferredTask;
   if (!deferredEntry) {
     const taskId = "book-" + Date.now() + "-" + bookType;
-    const deferredPath = path.join(WORK_DIR, "deferred-" + taskId + ".json");
+    const deferredPath = workerState.deferredPath(taskId);
     try { await fs.rename(workPath, deferredPath); } catch (error) { if (error.code !== "ENOENT") throw error; }
     deferredEntry = { task_id: taskId, book_type: bookType, checkpoint_path: deferredPath, created_at: new Date().toISOString() };
     deferredQueue.tasks.push(deferredEntry);
@@ -807,7 +814,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
 }
 if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
 
-const fileName=today+"-"+slugify(pkg.title)+".json";
+const fileName=today+"-"+slugify(pkg.title)+"-"+requestedWorkerType+".json";
 const filePath=path.join(INBOX,fileName);
 await fs.writeFile(filePath,JSON.stringify(pkg,null,2)+"\n",{flag:"wx"});
 const pendingQueuePath="book-publications/pending-publications.json";
@@ -817,6 +824,12 @@ pendingQueue.packages.push({path:filePath,title:pkg.title,publication_key:pkg.pu
 pendingQueue.updated_at=new Date().toISOString();
 await fs.writeFile(pendingQueuePath,JSON.stringify(pendingQueue,null,2)+"\n");
 await fs.rm(workPath, { force: true });
+await workerState.atomicWriteJson(workerState.queuePath, {
+  worker_type: requestedWorkerType,
+  updated_at: new Date().toISOString(),
+  last_completed: { title: pkg.title, publication_key: pkg.publication_key, package_path: filePath }
+});
+await workerState.releaseLease();
 if (deferredTask) {
   deferredQueue.tasks = deferredQueue.tasks.filter(task => task.task_id !== deferredTask.task_id);
   deferredQueue.updated_at = new Date().toISOString();
