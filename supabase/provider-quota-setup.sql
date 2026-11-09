@@ -208,7 +208,7 @@ begin
 
   if p_outcome = 'rate_limited' then
     update bookcheef_private.provider_quota_state
-    set cooldown_until = pg_catalog.greatest(
+    set cooldown_until = greatest(
           coalesce(cooldown_until, v_now),
           v_now + pg_catalog.make_interval(secs => p_cooldown_seconds)
         ),
