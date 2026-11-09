@@ -59,6 +59,10 @@ test("merges a valid chapter and updates manifest exactly once", async () => {
     assert.equal(updated.completed_chapters.length, 2);
     assert.equal(updated.current_word_count, 10000 + wordCount);
     assert.equal(updated.volumes[0].completed_chapters, 26);
+    const checkpoint = JSON.parse(await fs.readFile(path.join(f.root, "book-publications/workers/novel/checkpoints/last-day-of-universe.json"), "utf8"));
+    assert.equal(checkpoint.status, "completed");
+    assert.equal(checkpoint.completed_chapter, 26);
+    assert.equal(checkpoint.chapter_path, TARGET);
     assert.equal(await fs.readFile(path.join(f.root, TARGET), "utf8"), markdown + "\n");
     await assert.rejects(() => fs.access(source), { code: "ENOENT" });
   } finally { await fs.rm(f.root, { recursive: true, force: true }); }
