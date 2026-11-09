@@ -379,6 +379,30 @@
       "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве/кросс-промо; платное размещение не запрашивалось. Ожидаем ответ; публикаций без разрешения не делать.",
       "last_checked": "2026-11-09",
       "evidence": "https://bombora.ru/about/"
+    },
+    {
+      "id": "litres-pr-email",
+      "name": "ЛитРес — пресс-служба и информационное сотрудничество",
+      "url": "https://www.litres.ru/company/press-service/",
+      "contact": "pr@litres.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве; платное размещение не запрашивалось. Ожидаем ответ. Использование бренда/материалов и публикации — только после согласования.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://www.litres.ru/company/press-service/"
+    },
+    {
+      "id": "booksi-partnership-email",
+      "name": "Букси — предложения о сотрудничестве",
+      "url": "https://booksi.org/contacts/",
+      "contact": "partners@booksi.org",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве/взаимной рекомендации; платное размещение не запрашивалось. Ожидаем ответ; публикаций без согласования не делать.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://booksi.org/contacts/"
     }
   ]
 }
