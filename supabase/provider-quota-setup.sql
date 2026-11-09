@@ -197,7 +197,7 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(v_provider, 0));
 
   update bookcheef_private.provider_quota_reservations
-  set status = case when p_outcome = 'rate_limited' then 'rate_limited' else p_outcome end,
+  set status = case when p_outcome = 'success' then 'completed' else p_outcome end,
       finished_at = v_now,
       reason = pg_catalog.left(coalesce(p_reason, ''), 700)
   where id = p_reservation_id and status = 'active';
