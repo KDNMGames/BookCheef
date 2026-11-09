@@ -27,7 +27,7 @@ Each worker owns `book-publications/workers/<type>/`: lease, queue, checkpoints,
 - A manual, single-worker workflow (available for execution from `main` after review/merge) can run one selected worker, upload its worker directory as an artifact, and hand it to a downstream coordinator job. The coordinator restores worker-scoped checkpoints/deferred/cooldown state, imports outbox packages sequentially, commits the resulting queue/state, and dispatches the existing publisher for each accepted package. It intentionally does not run both worker types concurrently until provider-wide throttling is implemented.
 - `coordinate-worker-packages.mjs` validates package structure, deduplicates by `publication_key`, updates the pending queue, records worker handoff, and moves packages to the publication inbox.
 - `coordinate-worker-artifacts.mjs` accepts a downloaded artifact tree shaped as `<artifact-root>/<worker-type>/outbox/*.json`. It processes ordinary, interactive, then novel packages sequentially through the existing coordinator. It emits the resulting inbox paths as a GitHub Actions multiline output. Re-running after a partial handoff is safe because already-imported source files have been moved and package keys are deduplicated.
-- The novel generator now acquires a `novel` lease and writes a worker-scoped completion checkpoint. Its chapter and shared manifest are still committed by its own serialized workflow.
+- The novel generator acquires a `novel` lease and writes a worker-scoped completion checkpoint. Its scheduled/manual workflow now stops before installing or invoking Cursor unless `CURSOR_FREE_INCLUDED=true`; the script independently enforces the same guard. Its chapter and shared manifest are still committed by its own serialized workflow.
 - CI checks syntax and tests worker leases, package coordination, and artifact coordination.
 
 ## Not enabled / remaining work
@@ -35,7 +35,7 @@ Each worker owns `book-publications/workers/<type>/`: lease, queue, checkpoints,
 - The existing daily workflow is still single-worker. No automatic or matrix parallel generation is active.
 - The manual artifact-only workflow runs exactly one selected worker at a time and uploads its isolated state/outbox. It does not publish or commit the artifact.
 - The artifact coordinator is connected to the manual workflow's downstream artifact-download job. This workflow is still manual and serial; it does not change the existing scheduled daily generator.
-- A provider-wide throttle and coordinated quota budget are still required before running ordinary and interactive workers concurrently.
+- A provider-wide throttle and coordinated quota budget are still required before running ordinary and interactive workers concurrently. Cursor is conservatively gated by the explicit included-free entitlement flag in the novel and isolated workflows.
 - Novel chapter/manifest changes still target the shared draft tree. Novel output needs artifact handoff and a serialized manifest merge; the manual isolated workflow currently runs ordinary or interactive only.
 - Legacy deferred tasks still need a safe migration.
 - Provider-wide throttling and cross-workflow publisher/queue serialization are required before any parallel run.
