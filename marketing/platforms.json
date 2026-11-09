@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-08",
+  "updated_at": "2026-11-09",
   "language": "ru",
   "platforms": [
     {
@@ -259,6 +259,54 @@
       "notes": "По опубликованным правилам ссылки на внешние сервисы размещаются в профиле, примечаниях автора или закреплённом комментарии; реклама сторонних платформ в тексте глав запрещена. Нужно уточнить у администрации, допускается ли отдельная публикация о BookCheef. Автоматизация не разрешена.",
       "last_checked": "2026-11-08",
       "evidence": "https://getreder.ru/rules"
+    },
+    {
+      "id": "telegram-bookbotgroup",
+      "name": "Telegram — Книжный чат @bookbotgroup",
+      "url": "https://t.me/bookbotgroup",
+      "rules_url": "https://t.me/s/bookbotgroup_info2",
+      "status": "review_required",
+      "mode": "manual_until_admin_permission",
+      "scope": "third_party",
+      "notes": "Открытая группа для обсуждения книг; в публичном описании около 4,6 тыс. участников. Правила рекламы и согласие администрации на промо BookCheef не подтверждены. Не публиковать до ответа администратора.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/bookbotgroup"
+    },
+    {
+      "id": "telegram-livelib-chat",
+      "name": "Telegram — книжный чат LiveLib",
+      "url": "https://t.me/livelib_poboltaem",
+      "rules_url": "https://t.me/s/livelib_official",
+      "status": "review_required",
+      "mode": "manual_until_admin_permission",
+      "scope": "third_party",
+      "notes": "Чат связан с книжным сообществом LiveLib; официальный канал указывает на чат и контакт по вопросам рекламы. Рекламное размещение именно в чате не подтверждено; сначала запросить условия у администрации/LiveLib.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/s/livelib_official"
+    },
+    {
+      "id": "telegram-authortoday-chat",
+      "name": "Telegram — чат Author.Today",
+      "url": "https://t.me/+ezy2X7jCJCc2YWIy",
+      "rules_url": "https://t.me/s/authortoday",
+      "status": "review_required",
+      "mode": "manual_until_admin_permission",
+      "scope": "third_party",
+      "notes": "Официальный Telegram-канал Author.Today ссылается на чат авторов и читателей. В отдельных тематических обсуждениях самопиар запрещён; допустимость отдельного согласованного поста BookCheef нужно выяснить у администрации.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/s/authortoday"
+    },
+    {
+      "id": "telegram-lumpen-sf-chat",
+      "name": "Telegram — чат «Научная фантастика для пролетариев»",
+      "url": "https://t.me/lumpen_sf_chat",
+      "rules_url": "https://t.me/lumpen_sf",
+      "status": "review_required",
+      "mode": "manual_until_admin_permission",
+      "scope": "third_party",
+      "notes": "Публичный тематический канал о научной фантастике указывает собственный чат. Правила и разрешение на саморекламу в чате не найдены; запросить согласие администратора до публикации.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/lumpen_sf"
     }
   ]
 }
