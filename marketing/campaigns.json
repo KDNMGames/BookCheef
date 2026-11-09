@@ -22,12 +22,12 @@
         "telegram_subscribers_gained": null,
         "notes": "Сбор статистики подключается отдельно; исходные показатели нужно зафиксировать перед первой публикацией."
       },
-      "last_research_at": "2026-11-08",
-      "research_report": "marketing/reports/2026-11-08-external-scan.md",
-      "platforms_checked": 16,
+      "last_research_at": "2026-11-09",
+      "research_report": "marketing/reports/2026-11-09-auto-promo-scan.md",
+      "platforms_checked": 34,
       "third_party_auto_allowed": 0,
-      "third_party_manual_or_review": 9,
-      "third_party_blocked": 7,
+      "third_party_manual_or_review": 15,
+      "third_party_blocked": 9,
       "external_publications": [],
       "historical_non_acquisition_publications": [
         {
@@ -37,7 +37,8 @@
           "published_at": "2026-11-08",
           "note": "Размещён ошибочно в собственном канале; не считать рекламным привлечением и не повторять. Сохранён в истории, не удалять без отдельного указания владельца."
         }
-      ]
+      ],
+      "third_party_contact_sent": 8
     }
   ]
 }
