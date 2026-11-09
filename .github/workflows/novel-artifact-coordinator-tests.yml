@@ -12,6 +12,8 @@ on:
       - "book-publications/automation-config.json"
       - "supabase/provider-quota-setup.sql"
       - "book-publications/PROVIDER-QUOTA-COORDINATOR.md"
+      - ".github/workflows/generate-daily-book.yml"
+      - ".github/workflows/generate-next-novel-chapter.yml"
       - ".github/workflows/novel-artifact-coordinator-tests.yml"
   workflow_dispatch:
 
