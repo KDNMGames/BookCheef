@@ -17,9 +17,15 @@ let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
-const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
-const configuredCycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
-const configuredPosition = Number(rotation.cycle_position) || 1;
+const workerMode = process.env.BOOKCHEEF_WORKER_MODE || "coordinated";
+const isolatedMode = workerMode === "isolated";
+if (!["coordinated", "isolated"].includes(workerMode)) throw new Error("Unsupported BOOKCHEEF_WORKER_MODE: " + workerMode);
+if (isolatedMode && !["ordinary", "interactive"].includes(process.env.BOOKCHEEF_WORKER_TYPE)) {
+  throw new Error("Isolated mode requires BOOKCHEEF_WORKER_TYPE=ordinary or interactive.");
+}
+const rotation = isolatedMode ? {} : JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
+const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (config.daily_book.rotation || ["interactive", "ordinary", "ordinary"]);
+const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) || 1);
 const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
 const workerState = createBookWorkerState({ workerType: requestedWorkerType });
 
@@ -40,7 +46,7 @@ async function findPendingPackage() {
   return { path: filePath, title: pkg.title, publication_key: pkg.publication_key };
 }
 
-const pending = await findPendingPackage();
+const pending = isolatedMode ? null : await findPendingPackage();
 if (pending) {
   console.log("Found a package in the explicit pending queue; retrying it before generating another book.");
   console.log(JSON.stringify(pending));
@@ -263,8 +269,8 @@ const today = new Intl.DateTimeFormat("en-CA", {
   year: "numeric", month: "2-digit", day: "2-digit"
 }).format(new Date());
 
-const lastVerifiedPublicationAt = rotation.updated_at || rotation.last_publication?.created_at || "";
-if (!pending && lastVerifiedPublicationAt) {
+const lastVerifiedPublicationAt = isolatedMode ? "" : (rotation.updated_at || rotation.last_publication?.created_at || "");
+if (!isolatedMode && !pending && lastVerifiedPublicationAt) {
   const lastVerifiedLocalDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: config.timezone || "Europe/Berlin",
     year: "numeric", month: "2-digit", day: "2-digit"
@@ -754,7 +760,7 @@ function validate(pkg) {
 }
 
 let pkg = await loadWork(), lastError;
-if (!pkg) {
+if (!pkg && !isolatedMode) {
   const legacyCheckpointPath = "book-publications/work-in-progress/current.json";
   try {
     const legacyState = JSON.parse(await fs.readFile(legacyCheckpointPath, "utf8"));
@@ -844,7 +850,7 @@ if (deferredTask) {
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
 }
 await workerState.releaseLease();
-console.log("Created "+filePath+" ("+pkg.title+") and added it to the explicit retry queue.");
+console.log("Created "+filePath+" ("+pkg.title+") and added it to the worker outbox.");
 console.log("Type: "+bookType+"; rotation position remains unchanged until verified publication.");
 if (process.env.GITHUB_OUTPUT) {
   await fs.appendFile(process.env.GITHUB_OUTPUT,"package_path="+filePath+"\ncreated=true\n");
