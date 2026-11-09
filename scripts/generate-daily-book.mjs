@@ -14,6 +14,29 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const CURSOR_API_KEY = process.env.CURSOR_FREE_INCLUDED === "true" ? process.env.CURSOR_API_KEY : undefined;
 const GEMINI_API_KEY = process.env.GEMINI_FREE_INCLUDED === "true" ? process.env.GEMINI_API_KEY : undefined;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const TELEGRAM_REPORT_ENDPOINT = "https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot";
+async function notifyBookCheefAdmins(text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    console.warn("Telegram report skipped: TELEGRAM_BOT_TOKEN is not configured.");
+    return false;
+  }
+  try {
+    const response = await fetch(TELEGRAM_REPORT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-bookcheef-report-token": token },
+      body: JSON.stringify({ action: "admin_notification", text: String(text).slice(0, 3900) }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) throw new Error("HTTP " + response.status + ": " + JSON.stringify(result));
+    console.log("Telegram generation report delivered to " + result.delivered + "/" + result.total + " admin chats.");
+    return true;
+  } catch (error) {
+    console.warn("Telegram report delivery failed without stopping book generation: " + error.message);
+    return false;
+  }
+}
 let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
@@ -112,6 +135,7 @@ try {
 
 if (openRouterDisabled && cursorDisabled && geminiDisabled) {
   console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
+  await notifyBookCheefAdmins("⏸ BookCheef: создание следующей книги временно приостановлено. Причина: все разрешённые бесплатные ИИ-провайдеры находятся на паузе/исчерпали доступную квоту. Черновики и контрольные точки сохранены; платные API не используются.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   await workerState.releaseLease();
   process.exit(0);
@@ -795,6 +819,12 @@ function validate(pkg) {
 }
 
 let pkg = await loadWork(), lastError;
+let currentBookTitle = pkg?.title || "";
+let startReportSent = false;
+if (currentBookTitle) {
+  await notifyBookCheefAdmins("🛠 BookCheef: сейчас создаётся книга «" + currentBookTitle + "» (" + bookType + ").");
+  startReportSent = true;
+}
 if (!pkg && !isolatedMode) {
   const legacyCheckpointPath = "book-publications/work-in-progress/current.json";
   try {
@@ -829,7 +859,7 @@ if (pkg) {
   }
 } else {
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
-  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); await saveWork(normalized); pkg=validate(await expandBook(normalized)); break; }
+  try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); currentBookTitle=normalized.title || currentBookTitle; if (!startReportSent) { await notifyBookCheefAdmins("🛠 BookCheef: сейчас создаётся книга «" + currentBookTitle + "» (" + bookType + ")."); startReportSent=true; } await saveWork(normalized); pkg=validate(await expandBook(normalized)); break; }
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
@@ -867,6 +897,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   deferredQueue.updated_at = new Date().toISOString();
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
   console.log("Book task safely deferred until " + nextRetry + "; the next scheduled run can create a different book while this task waits.");
+  await notifyBookCheefAdmins("⏸ BookCheef: создание книги" + (currentBookTitle ? " «" + currentBookTitle + "»" : "") + " прервано и перенесено. Причина: " + String(lastError?.message || "исчерпана бесплатная квота ИИ-провайдера").slice(0, 900) + ". Черновик сохранён. Повторная попытка после: " + nextRetry + ". Платные API не использовались.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   await workerState.releaseLease();
   process.exit(0);
