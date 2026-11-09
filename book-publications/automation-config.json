@@ -12,7 +12,7 @@
   },
   "daily_book": {
     "enabled": true,
-    "schedule_local": "01:10",
+    "schedule_local": "every 5 minutes",
     "max_new_books_per_run": 1,
     "rotation": [
       "interactive",
@@ -140,6 +140,6 @@
     "changes_may_be_requested_in_chat": true,
     "assistant_may_edit_repository_config_and_workflows": true,
     "require_successful_migration_test_before_disabling_chatgpt_automation": true,
-    "last_updated_by": "ChatGPT conversation instructions - long-form reading length"
+    "last_updated_by": "ChatGPT - increased GitHub Actions generation schedule to every 5 minutes"
   }
 }
