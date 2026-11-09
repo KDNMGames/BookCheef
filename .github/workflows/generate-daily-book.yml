@@ -34,6 +34,7 @@ jobs:
           node-version: 22
 
       - name: Install Cursor Agent fallback
+        if: vars.CURSOR_FREE_INCLUDED == 'true'
         run: |
           curl https://cursor.com/install -fsS | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -44,6 +45,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
           CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
