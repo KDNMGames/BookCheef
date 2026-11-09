@@ -36,7 +36,7 @@ jobs:
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
             const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
-            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider", "DEFERRED_QUEUE_PATH", "deferredQueue.tasks.push", "rotation.cycle_position = nextPosition", "task.retry_after", "deferredTask", "candidate.endsWith(\":free\")", "Free-only policy blocked generation", "CURSOR_FREE_INCLUDED === \"true\""]) {
+            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider", "DEFERRED_QUEUE_PATH", "deferredQueue.tasks.push", "Global publication rotation is left untouched until a book is verified as published.", "task.retry_after", "deferredTask", "candidate.endsWith(\":free\")", "Free-only policy blocked generation", "CURSOR_FREE_INCLUDED === \"true\""]) {
               if (!source.includes(token)) throw new Error("Missing generator feature: " + token);
             }
             for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "version: 1"]) {
