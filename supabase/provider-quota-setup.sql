@@ -97,8 +97,6 @@ begin
     raise exception 'Invalid provider quota reservation arguments';
   end if;
 
-  end if;
-
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_provider_key, 0));
   insert into bookcheef_private.provider_quota_state(provider_key)
   values (p_provider_key)
