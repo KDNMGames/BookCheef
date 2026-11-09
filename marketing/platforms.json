@@ -403,6 +403,76 @@
       "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве/взаимной рекомендации; платное размещение не запрашивалось. Ожидаем ответ; публикаций без согласования не делать.",
       "last_checked": "2026-11-09",
       "evidence": "https://booksi.org/contacts/"
+    },
+    {
+      "id": "email-bookishmadness",
+      "name": "Bookish Madness — сотрудничество по email",
+      "url": "https://t.me/bookishmadnesss",
+      "rules_url": "",
+      "contact": "bookishmadnesss@mediar.pro",
+      "status": "draft_created_not_sent",
+      "mode": "email_draft_only_no_send",
+      "scope": "third_party",
+      "notes": "В официальном Telegram-профиле указан адрес именно для сотрудничества. Создан индивидуальный Gmail-черновик; не отправлять без документированного согласия, входящего приглашения или подтверждённого применимого правового основания.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/bookishmadnesss",
+      "gmail_draft_id": "r-8018173084728826938"
+    },
+    {
+      "id": "email-pchela-pr",
+      "name": "Журнал «Пчела» — новости и инфопартнёрства",
+      "url": "https://pchela.media/contacts/",
+      "rules_url": "",
+      "contact": "pr@pchela.media",
+      "status": "draft_created_not_sent",
+      "mode": "email_draft_only_no_send",
+      "scope": "third_party",
+      "notes": "Официальная страница указывает адрес для новостей, инфопартнёрств и PR. Создан индивидуальный Gmail-черновик; публичный PR-адрес не считается согласием на маркетинговую рассылку.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://pchela.media/contacts/",
+      "gmail_draft_id": "r7664379477058743725"
+    },
+    {
+      "id": "email-phantom-press-pr",
+      "name": "Phantom Press — отдел маркетинга",
+      "url": "https://phantom-press.ru/contacts/",
+      "rules_url": "",
+      "contact": "pr@phantom-press.ru",
+      "status": "draft_created_not_sent",
+      "mode": "email_draft_only_no_send",
+      "scope": "third_party",
+      "notes": "Официальная страница указывает отдел маркетинга и московский офис. Создан индивидуальный Gmail-черновик; не отправлять без доказанного правового основания.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://phantom-press.ru/contacts/",
+      "gmail_draft_id": "r-7103111194494605784"
+    },
+    {
+      "id": "email-knijniy-v-klube",
+      "name": "«Книжный в Книжном» — сотрудничество",
+      "url": "https://t.me/Knijniy_v_klube",
+      "rules_url": "",
+      "contact": "kvklube@gmail.com",
+      "status": "draft_created_not_sent",
+      "mode": "email_draft_only_no_send",
+      "scope": "third_party",
+      "notes": "В официальном Telegram-профиле указан адрес по вопросам сотрудничества. Создан индивидуальный Gmail-черновик; публичное указание адреса не является согласием на рекламное письмо.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/Knijniy_v_klube",
+      "gmail_draft_id": "r-6179667729254234325"
+    },
+    {
+      "id": "email-cultpop-editorial",
+      "name": "Cultpop / книжное направление @mustreads — редакция",
+      "url": "https://t.me/CultPop",
+      "rules_url": "",
+      "contact": "mazdrid@gmail.com",
+      "status": "draft_created_not_sent",
+      "mode": "email_draft_only_no_send",
+      "scope": "third_party",
+      "notes": "Официальный Telegram-профиль указывает книжное направление @mustreads и адрес редакции. Создан индивидуальный Gmail-черновик; адрес редакции не трактуется как согласие на маркетинговое письмо.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/CultPop",
+      "gmail_draft_id": "r3279970953001546293"
     }
   ]
 }
