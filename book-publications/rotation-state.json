@@ -1,13 +1,13 @@
 {
-  "cycle_position": 1,
-  "published_count": 5,
-  "updated_at": "2026-11-08T20:07:10.135Z",
+  "cycle_position": 2,
+  "published_count": 6,
+  "updated_at": "2026-11-09T00:06:33.326Z",
   "note": "New rotation order from the next publication: 1 interactive, 2 ordinary, 3 ordinary. Existing two published books retained; current pending interactive package is first.",
   "last_publication": {
-    "title": "Комpass в пустом отсеке",
+    "title": "Эхо внешнего контура",
     "author": "Астэр Неваль",
     "age": "14+",
-    "type": "ordinary",
-    "publication_key": "bookcheef-2026-11-08-kompass-v-pustom-otseke"
+    "type": "interactive",
+    "publication_key": "bookcheef-2026-11-09-ekho-vneshnego-kontura"
   }
 }
