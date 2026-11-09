@@ -108,8 +108,7 @@ jobs:
           BOOKCHEEF_ARTIFACT_ROOT: worker-artifacts
         run: node scripts/coordinate-worker-artifacts.mjs
 
-      - name: Commit coordinated package and queue
-        if: steps.coordinate.outputs.package_count != '0'
+      - name: Commit worker state and any coordinated package
         env:
           PACKAGE_PATHS: ${{ steps.coordinate.outputs.package_paths }}
         run: |
@@ -119,7 +118,9 @@ jobs:
           while IFS= read -r package_path; do
             [ -n "$package_path" ] && git add "$package_path"
           done <<< "$PACKAGE_PATHS"
-          git add book-publications/pending-publications.json
+          if [ "${{ steps.coordinate.outputs.package_count }}" != "0" ]; then
+            git add book-publications/pending-publications.json
+          fi
           git add -A book-publications/workers
           if ! git diff --cached --quiet; then
             git commit -m "Coordinate isolated BookCheef worker artifact"
