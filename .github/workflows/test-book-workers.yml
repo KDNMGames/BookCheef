@@ -9,6 +9,8 @@ on:
       - "scripts/book-worker-state.test.mjs"
       - "scripts/book-checkpoint.mjs"
       - "scripts/generate-daily-book.mjs"
+      - "scripts/generate-next-novel-chapter.mjs"
+      - ".github/workflows/generate-next-novel-chapter.yml"
       - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/test-book-workers.yml"
   workflow_dispatch:
@@ -31,7 +33,7 @@ jobs:
           node --check scripts/coordinate-worker-packages.mjs
           node --check scripts/book-worker-state.mjs
           node --check scripts/generate-daily-book.mjs
+          node --check scripts/generate-next-novel-chapter.mjs
           node --check scripts/book-checkpoint.mjs
-          node --check scripts/generate-daily-book.mjs
       - name: Run worker state tests
         run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs
