@@ -36,6 +36,7 @@ jobs:
           PUBLISHER_TOKEN: ${{ secrets.BOOK_PUBLISHER_TOKEN }}
           PACKAGE_PATH: ${{ github.event_name == 'workflow_dispatch' && inputs.package_path || '' }}
           GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           set -euo pipefail
           if [ -z "${PUBLISHER_TOKEN:-}" ]; then
@@ -63,6 +64,9 @@ jobs:
             exit 1
           fi
           export FILE
+
+          BOOK_TITLE="$(node -e "const p=JSON.parse(require('fs').readFileSync(process.env.FILE,'utf8')); process.stdout.write(String(p.title || '').replace(/[\\r\\n]/g,' ').slice(0,180));")"
+          echo "book_title=$BOOK_TITLE" >> "$GITHUB_OUTPUT"
 
           node --input-type=module <<'NODE'
           import fs from "node:fs";
@@ -252,6 +256,15 @@ jobs:
           if ! git diff --quiet -- book-publications/rotation-state.json; then
             echo "newly_verified=true" >> "$GITHUB_OUTPUT"
             echo "A newly verified publication advanced the rotation; the next generation cycle may start."
+            REPORT_TEXT="✅ BookCheef: книга «$BOOK_TITLE» опубликована. Проверка записи в Supabase, обложки, иллюстраций и содержимого успешно пройдена. https://kdnmgames.github.io/BookCheef/"
+            if ! curl --fail-with-body --silent --show-error \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -H "x-bookcheef-report-token: $TELEGRAM_BOT_TOKEN" \
+              https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot \
+              -d "$(jq -n --arg text "$REPORT_TEXT" '{action:"admin_notification",text:$text}')"; then
+              echo "::warning::Telegram publication report could not be delivered."
+            fi
           else
             echo "newly_verified=false" >> "$GITHUB_OUTPUT"
             echo "This publication was already recorded; no duplicate generation dispatch will be sent."
@@ -263,6 +276,22 @@ jobs:
             git commit -m "Advance BookCheef rotation after verified publication"
             git push
           fi
+
+      - name: Report publication failure to Telegram admins
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          BOOK_TITLE: ${{ steps.publish.outputs.book_title }}
+        run: |
+          set -euo pipefail
+          TITLE="${BOOK_TITLE:-неизвестная книга}"
+          MESSAGE="❌ BookCheef: публикация книги «$TITLE» прервана. Причина: ошибка на этапе проверки, загрузки изображений или записи в Supabase. Книга не считается опубликованной; подробности доступны в журнале GitHub Actions: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-bookcheef-report-token: $TELEGRAM_BOT_TOKEN" \
+            https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot \
+            -d "$(jq -n --arg text "$MESSAGE" '{action:"admin_notification",text:$text}')"
 
       - name: Start the next generation cycle after verified publication
         if: steps.publish.outputs.newly_verified == 'true'
