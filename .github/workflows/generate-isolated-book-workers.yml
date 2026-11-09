@@ -94,6 +94,11 @@ jobs:
           name: ${{ inputs.worker_type }}
           path: worker-artifacts/${{ inputs.worker_type }}
 
+      - name: Restore worker-scoped state from artifact
+        run: |
+          mkdir -p "book-publications/workers/${{ inputs.worker_type }}"
+          cp -a "worker-artifacts/${{ inputs.worker_type }}/." "book-publications/workers/${{ inputs.worker_type }}/"
+
       - name: Test coordinators
         run: node --test scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
 
