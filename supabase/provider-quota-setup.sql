@@ -69,7 +69,8 @@ declare
   v_reason text;
   v_id uuid;
 begin
-  if p_provider_key is null or not (p_provider_key ~ '^[a-z0-9][a-z0-9._:-]{1,79}
+  if p_provider_key is null
+     or not (p_provider_key ~ '^[a-z0-9][a-z0-9._:-]{1,79}$')
      or p_worker_type is null or p_worker_type not in ('ordinary', 'interactive', 'novel')
      or p_task_id is null or length(p_task_id) < 1 or length(p_task_id) > 160
      or p_min_interval_seconds is null or p_min_interval_seconds < 0 or p_min_interval_seconds > 3600
