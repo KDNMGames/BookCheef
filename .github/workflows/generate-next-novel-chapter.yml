@@ -2,6 +2,15 @@ name: Generate next Last Day of the Universe chapter
 
 on:
   workflow_dispatch:
+    inputs:
+      novel_mode:
+        description: "coordinated writes the draft; artifact-only saves an isolated artifact"
+        required: true
+        default: "artifact-only"
+        type: choice
+        options:
+          - artifact-only
+          - coordinated
   schedule:
     # 02:10 Europe/Berlin in both CET and CEST; the second UTC slot is gated below.
     - cron: '10 0,1 * * *'
