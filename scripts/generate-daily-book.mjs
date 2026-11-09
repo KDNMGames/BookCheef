@@ -12,13 +12,14 @@ const ROTATION_PATH = "book-publications/rotation-state.json";
 const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const CURSOR_API_KEY = process.env.CURSOR_FREE_INCLUDED === "true" ? process.env.CURSOR_API_KEY : undefined;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_FREE_INCLUDED === "true" ? process.env.GEMINI_API_KEY : undefined;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
-let geminiDisabled = false;
+let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
+if (geminiDisabled) console.log("Gemini API is disabled unless GEMINI_FREE_INCLUDED=true confirms an included free allowance; Gemini Pro subscription alone is not treated as API credit.");
 const { mode: workerMode, isolated: isolatedMode, workerType: explicitWorkerType } = resolveBookWorkerMode(process.env);
 const rotation = isolatedMode ? {} : JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
 const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (config.daily_book.rotation || ["interactive", "ordinary", "ordinary"]);
