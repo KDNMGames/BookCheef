@@ -13,10 +13,11 @@ on:
         default: ordinary
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 concurrency:
-  group: bookcheef-isolated-worker-batch
+  group: bookcheef-daily-book-generation
   cancel-in-progress: false
 
 jobs:
@@ -65,7 +66,77 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bookcheef-worker-${{ inputs.worker_type }}-${{ github.run_id }}
+          name: ${{ inputs.worker_type }}
           path: book-publications/workers/${{ inputs.worker_type }}/
           if-no-files-found: warn
           retention-days: 7
+
+  coordinate:
+    name: Coordinate and queue generated book
+    needs: generate
+    if: needs.generate.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout BookCheef
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download generated worker artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.worker_type }}
+          path: worker-artifacts/${{ inputs.worker_type }}
+
+      - name: Test coordinators
+        run: node --test scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
+
+      - name: Validate and hand off worker artifact
+        id: coordinate
+        env:
+          BOOKCHEEF_ARTIFACT_ROOT: worker-artifacts
+        run: node scripts/coordinate-worker-artifacts.mjs
+
+      - name: Commit coordinated package and queue
+        if: steps.coordinate.outputs.package_count != '0'
+        env:
+          PACKAGE_PATHS: ${{ steps.coordinate.outputs.package_paths }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          while IFS= read -r package_path; do
+            [ -n "$package_path" ] && git add "$package_path"
+          done <<< "$PACKAGE_PATHS"
+          git add book-publications/pending-publications.json
+          git add -A book-publications/workers
+          if ! git diff --cached --quiet; then
+            git commit -m "Coordinate isolated BookCheef worker artifact"
+          fi
+          git pull --rebase origin main
+          git push
+
+      - name: Dispatch publisher for coordinated packages
+        if: steps.coordinate.outputs.package_count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_PATHS: ${{ steps.coordinate.outputs.package_paths }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r package_path; do
+            [ -n "$package_path" ] || continue
+            node -e "if(!/^book-publications\\/inbox\\/[A-Za-z0-9._-]+\\.json$/.test(process.argv[1])) process.exit(1)" "$package_path"
+            curl --fail-with-body --silent --show-error \\
+              -X POST \\
+              -H "Accept: application/vnd.github+json" \\
+              -H "Authorization: Bearer $GH_TOKEN" \\
+              -H "X-GitHub-Api-Version: 2022-11-28" \\
+              https://api.github.com/repos/KDNMGames/BookCheef/actions/workflows/publish-book.yml/dispatches \\
+              -d "$(jq -n --arg package "$package_path" '{ref:"main", inputs:{package_path:$package}}')"
+          done <<< "$PACKAGE_PATHS"
