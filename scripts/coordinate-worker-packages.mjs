@@ -98,7 +98,7 @@ export async function coordinatePackage({ packagePath, root = process.cwd() }) {
       const existingEntry = queue.packages.find(item => item.publication_key === pkg.publication_key);
       if (existingEntry) {
         targetPath = String(existingEntry.path || "");
-        if (!targetPath.startsWith(inboxPrefix) || !/^[A-Za-z0-9._-]+\\.json$/.test(targetPath.slice(inboxPrefix.length))) {
+        if (!targetPath.startsWith(inboxPrefix) || !/^[A-Za-z0-9._-]+\.json$/.test(targetPath.slice(inboxPrefix.length))) {
           throw new Error("Pending queue contains an unsafe path for this publication key.");
         }
       } else {
