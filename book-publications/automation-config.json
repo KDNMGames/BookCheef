@@ -13,6 +13,7 @@
     "advance_rotation_only_after_verified_publication": true,
     "free_only": true,
     "paid_api_fallbacks": false,
+    "cursor_fallback_requires_explicit_included_free_entitlement": true,
     "defer_task_on_provider_quota_exhaustion": true,
     "continue_with_next_book_task_when_available": true,
     "text_provider": {
