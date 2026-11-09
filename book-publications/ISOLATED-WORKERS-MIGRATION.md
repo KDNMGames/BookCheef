@@ -48,9 +48,15 @@ but is not yet automatically migrated. The novel chapter generator is not yet ad
 The shared inbox, pending-publication queue, and rotation state are still written by
 the daily generator, so this is not yet safe for parallel runs.
 
-Phase 3: add a coordinator that imports completed worker artifacts into the inbox
-with publication-key deduplication and one serialized commit; migrate legacy deferred
-tasks and the novel chapter generator.
+Phase 3 (partially implemented): the daily generator writes new packages only to its
+worker outbox. `coordinate-worker-packages.mjs` validates the package, serializes local
+queue updates with an exclusive lock, deduplicates by `publication_key`, atomically
+updates the pending queue, records the worker handoff, and moves the package into the
+publication inbox. Unit tests cover successful handoff, duplicate keys, type mismatch,
+and path traversal. The daily workflow runs the coordinator before committing and
+dispatching the publisher. Cross-workflow publication locking and artifact handoff
+for genuinely parallel runner machines are still outstanding. Legacy deferred tasks
+and the novel chapter generator are not yet migrated.
 
 Phase 4: enable a two-worker matrix for ordinary and interactive generation, with
 novel generation remaining independently scheduled. Add provider-wide throttling
