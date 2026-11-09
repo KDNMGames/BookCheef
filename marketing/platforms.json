@@ -307,6 +307,42 @@
       "notes": "Публичный тематический канал о научной фантастике указывает собственный чат. Правила и разрешение на саморекламу в чате не найдены; запросить согласие администратора до публикации.",
       "last_checked": "2026-11-09",
       "evidence": "https://t.me/lumpen_sf"
+    },
+    {
+      "id": "livelib-advertising-email",
+      "name": "LiveLib — рекламные обращения по email",
+      "url": "https://t.me/livelib_official",
+      "contact": "reklama@livelib.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен индивидуальный запрос о бесплатном информационном/редакционном сотрудничестве; платное размещение не запрашивалось. Ожидаем ответа. Не считать рекламой и не публиковать без согласования.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/s/livelib_official"
+    },
+    {
+      "id": "mif-pr-email",
+      "name": "Издательство МИФ — PR и сотрудничество",
+      "url": "https://t.me/mifbooks",
+      "contact": "pr@m-i-f.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен индивидуальный запрос о бесплатном информационном/редакционном сотрудничестве; платное размещение не запрашивалось. Ожидаем ответа. Это издательский PR-контакт, не разрешение на публикацию в канале.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/mifbooks"
+    },
+    {
+      "id": "limbakh-pr-email",
+      "name": "Издательство Ивана Лимбаха — PR и сотрудничество",
+      "url": "https://t.me/ilimbakh",
+      "contact": "pr@limbakh.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен индивидуальный запрос о бесплатном информационном/редакционном сотрудничестве; платное размещение не запрашивалось. Ожидаем ответа. Это издательский PR-контакт, не разрешение на публикацию в канале.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://t.me/s/ilimbakh"
     }
   ]
 }
