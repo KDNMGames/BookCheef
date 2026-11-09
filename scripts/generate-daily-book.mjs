@@ -754,6 +754,20 @@ function validate(pkg) {
 }
 
 let pkg = await loadWork(), lastError;
+if (!pkg) {
+  const legacyCheckpointPath = "book-publications/work-in-progress/current.json";
+  try {
+    const legacyState = JSON.parse(await fs.readFile(legacyCheckpointPath, "utf8"));
+    if (legacyState.version === 1 && legacyState.book_type === bookType &&
+        legacyState.pkg?.title && legacyState.pkg?.book_content) {
+      await saveWork(legacyState.pkg);
+      pkg = legacyState.pkg;
+      console.log("Migrated the matching legacy checkpoint into the isolated " + bookType + " worker store; the original file was preserved.");
+    }
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+}
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 if (pkg) {
   try {
