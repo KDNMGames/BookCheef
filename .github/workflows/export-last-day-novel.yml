@@ -67,6 +67,8 @@ jobs:
 
           Этот пакет предназначен для ручного продолжения в DeepSeek. Автоматическая генерация BookCheef после экспорта должна быть отключена отдельно.
           EOF
+      - name: Include dedicated author profile
+        run: cp book-publications/authors/lior-esten.json book-publications/drafts/last-day-of-universe/author-profile-lior-esten.json
       - name: Package manuscript and project notes
         run: |
           cd book-publications/drafts
