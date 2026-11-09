@@ -25,7 +25,7 @@
     "cursor_fallback_requires_explicit_included_free_entitlement": true,
     "gemini_fallback_requires_explicit_included_free_entitlement": true,
     "defer_task_on_provider_quota_exhaustion": true,
-    "continue_with_next_book_task_when_available": true,
+    "continue_with_next_book_task_when_available": false,
     "text_provider": {
       "provider": "openrouter",
       "free_models_only": true,
@@ -135,13 +135,14 @@
         "status": "archived_for_external_continuation",
         "excluded_from_automatic_generation": true
       }
-    ]
+    ],
+    "complete_deferred_task_before_starting_another": true
   },
   "management": {
     "source_of_truth": "book-publications/automation-config.json",
     "changes_may_be_requested_in_chat": true,
     "assistant_may_edit_repository_config_and_workflows": true,
     "require_successful_migration_test_before_disabling_chatgpt_automation": true,
-    "last_updated_by": "ChatGPT - increased GitHub Actions generation schedule to every 5 minutes"
+    "last_updated_by": "ChatGPT - prevent unfinished draft accumulation and prioritize completion"
   }
 }
