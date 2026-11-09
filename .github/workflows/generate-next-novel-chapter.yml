@@ -89,3 +89,41 @@ jobs:
           fi
           git commit -m "Write next chapter of Последний день Вселенной"
           git push
+
+  merge-artifact:
+    needs: generate
+    if: github.event_name == 'workflow_dispatch' && inputs.novel_mode == 'artifact-only'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download isolated chapter artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bookcheef-novel-chapter-${{ github.run_id }}
+          path: worker-artifacts/novel/outbox
+
+      - name: Validate and merge chapter into draft manifest
+        run: node scripts/coordinate-novel-artifacts.mjs worker-artifacts/novel/outbox
+
+      - name: Commit merged chapter and manifest
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add book-publications/drafts/last-day-of-universe/manifest.json book-publications/drafts/last-day-of-universe/chapters/
+          if git diff --cached --quiet; then
+            echo "Coordinator produced no changes; refusing an empty merge commit."
+            exit 1
+          fi
+          git commit -m "Merge isolated novel chapter artifact"
+          git push
