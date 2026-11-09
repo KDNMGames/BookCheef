@@ -101,7 +101,9 @@
     "A successful connection check does not authorize or trigger email sending.",
     "Five new candidate contacts and individualized draft emails were prepared on 2026-11-09. They remain needs_review; no email was sent and they are not yet approved_contacts.",
     "First outreach batch processed after explicit owner approval on 2026-11-09. Sent records contain Gmail message IDs; failed messages remain unsent.",
-    "2026-11-09: created Gmail draft for opt@alpina.ru after verifying the official online-platform partnership contact. Draft ID r-4073089785559091969; not sent pending review/appropriate legal basis."
+    "2026-11-09: created Gmail draft for opt@alpina.ru after verifying the official online-platform partnership contact. Draft ID r-4073089785559091969; not sent pending review/appropriate legal basis.",
+    "2026-11-09 daily compliance review: five additional official public business/editorial contacts were verified and five individualized Gmail drafts were created (see marketing/email-drafts/2026-11-09-second-batch.md). No email was sent in this run: no recipient-specific prior consent, incoming invitation, or confirmed applicable legal basis was documented; public PR/partnership/editorial addresses were not treated as consent. No replies from the five previously sent contacts were found in Gmail Inbox. Recipient country was not independently verified for four of the five new prospects; Phantom Press's official page lists a Moscow office.",
+    "2026-11-09: five earlier messages in the first batch are confirmed in Gmail Sent and recorded in sent_log with message IDs. They were sent at 02:23:16Z (05:23 Moscow); this run did not send or follow up on them. Do not repeat them."
   ],
   "prospects": [
     {
@@ -145,6 +147,157 @@
       "status": "draft_created_not_sent",
       "source_url": "https://alpinabook.ru/contacts/",
       "note": "Официальная страница выделяет отдельное направление сотрудничества с книжными магазинами и онлайн-площадками. Gmail draft created; not sent."
+    },
+    {
+      "email": "bookishmadnesss@mediar.pro",
+      "organization": "Bookish Madness / Mediar",
+      "status": "draft_created_not_sent",
+      "source_url": "https://t.me/bookishmadnesss",
+      "date_checked": "2026-11-09",
+      "recipient_country": "not_verified",
+      "gmail_draft_id": "r-8018173084728826938",
+      "subject": "Идея бесплатного редакционного знакомства с BookCheef",
+      "suppression_status": "not_suppressed",
+      "consent_basis": null,
+      "note": "В официальном Telegram-профиле указан контакт именно по вопросам сотрудничества; публичная публикация адреса не считается согласием на рекламное письмо."
+    },
+    {
+      "email": "pr@pchela.media",
+      "organization": "Журнал «Пчела»",
+      "status": "draft_created_not_sent",
+      "source_url": "https://pchela.media/contacts/",
+      "date_checked": "2026-11-09",
+      "recipient_country": "not_verified",
+      "gmail_draft_id": "r7664379477058743725",
+      "subject": "Редакционная тема: интерактивные истории и цифровое чтение",
+      "suppression_status": "not_suppressed",
+      "consent_basis": null,
+      "note": "Официальная страница указывает адрес для новостей, инфопартнёрств и PR; это не трактуется как согласие на отправку маркетингового предложения."
+    },
+    {
+      "email": "pr@phantom-press.ru",
+      "organization": "Издательство Phantom Press",
+      "status": "draft_created_not_sent",
+      "source_url": "https://phantom-press.ru/contacts/",
+      "date_checked": "2026-11-09",
+      "recipient_country": "Russia (Moscow office on official contact page)",
+      "gmail_draft_id": "r-7103111194494605784",
+      "subject": "BookCheef — возможный бесплатный информационный формат",
+      "suppression_status": "not_suppressed",
+      "consent_basis": null,
+      "note": "Официальная страница указывает отдел маркетинга и московский адрес; отсутствие документированного предварительного согласия остаётся блокером."
+    },
+    {
+      "email": "kvklube@gmail.com",
+      "organization": "«Книжный в Книжном»",
+      "status": "draft_created_not_sent",
+      "source_url": "https://t.me/Knijniy_v_klube",
+      "date_checked": "2026-11-09",
+      "recipient_country": "not_verified",
+      "gmail_draft_id": "r-6179667729254234325",
+      "subject": "Бесплатная идея для читательского сообщества «Книжный в Книжном»",
+      "suppression_status": "not_suppressed",
+      "consent_basis": null,
+      "note": "В официальном Telegram-профиле указан контакт по вопросам сотрудничества; публичный адрес не считается согласием на рекламное письмо."
+    },
+    {
+      "email": "mazdrid@gmail.com",
+      "organization": "Cultpop / книжный канал @mustreads",
+      "status": "draft_created_not_sent",
+      "source_url": "https://t.me/CultPop",
+      "date_checked": "2026-11-09",
+      "recipient_country": "not_verified",
+      "gmail_draft_id": "r3279970953001546293",
+      "subject": "Редакционная идея для книжного направления команды Cultpop",
+      "suppression_status": "not_suppressed",
+      "consent_basis": null,
+      "note": "В официальном Telegram-профиле указан адрес редакции и книжное направление @mustreads; публичный редакционный адрес не считается согласием на маркетинговое письмо."
     }
-  ]
+  ],
+  "draft_log": [
+    {
+      "email": "bookishmadnesss@mediar.pro",
+      "organization": "Bookish Madness / Mediar",
+      "date": "2026-11-09",
+      "gmail_draft_id": "r-8018173084728826938",
+      "subject": "Идея бесплатного редакционного знакомства с BookCheef",
+      "status": "draft_created_not_sent",
+      "source_url": "https://t.me/bookishmadnesss",
+      "consent_basis": null,
+      "recipient_country": "not_verified",
+      "suppression_status": "not_suppressed"
+    },
+    {
+      "email": "pr@pchela.media",
+      "organization": "Журнал «Пчела»",
+      "date": "2026-11-09",
+      "gmail_draft_id": "r7664379477058743725",
+      "subject": "Редакционная тема: интерактивные истории и цифровое чтение",
+      "status": "draft_created_not_sent",
+      "source_url": "https://pchela.media/contacts/",
+      "consent_basis": null,
+      "recipient_country": "not_verified",
+      "suppression_status": "not_suppressed"
+    },
+    {
+      "email": "pr@phantom-press.ru",
+      "organization": "Издательство Phantom Press",
+      "date": "2026-11-09",
+      "gmail_draft_id": "r-7103111194494605784",
+      "subject": "BookCheef — возможный бесплатный информационный формат",
+      "status": "draft_created_not_sent",
+      "source_url": "https://phantom-press.ru/contacts/",
+      "consent_basis": null,
+      "recipient_country": "Russia (Moscow office on official contact page)",
+      "suppression_status": "not_suppressed"
+    },
+    {
+      "email": "kvklube@gmail.com",
+      "organization": "«Книжный в Книжном»",
+      "date": "2026-11-09",
+      "gmail_draft_id": "r-6179667729254234325",
+      "subject": "Бесплатная идея для читательского сообщества «Книжный в Книжном»",
+      "status": "draft_created_not_sent",
+      "source_url": "https://t.me/Knijniy_v_klube",
+      "consent_basis": null,
+      "recipient_country": "not_verified",
+      "suppression_status": "not_suppressed"
+    },
+    {
+      "email": "mazdrid@gmail.com",
+      "organization": "Cultpop / книжный канал @mustreads",
+      "date": "2026-11-09",
+      "gmail_draft_id": "r3279970953001546293",
+      "subject": "Редакционная идея для книжного направления команды Cultpop",
+      "status": "draft_created_not_sent",
+      "source_url": "https://t.me/CultPop",
+      "consent_basis": null,
+      "recipient_country": "not_verified",
+      "suppression_status": "not_suppressed"
+    }
+  ],
+  "legal_review": {
+    "date": "2026-11-09",
+    "sender_location": "EEA; exact country of establishment not confirmed in this run",
+    "result": "draft_only_no_send",
+    "reason": "No documented prior consent, incoming invitation, or confirmed applicable legal basis for any new recipient. A public business/PR/partnership email and an opt-out line do not by themselves establish permission.",
+    "sources": [
+      {
+        "jurisdiction": "Germany",
+        "url": "https://www.gesetze-im-internet.de/uwg_2004/__7.html",
+        "note": "UWG §7(2)(2) requires prior express consent for email advertising, subject to a narrow existing-customer exception."
+      },
+      {
+        "jurisdiction": "EU",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32002L0058",
+        "note": "ePrivacy Directive Article 13 sets prior-consent rules for direct marketing email and a limited existing-customer exception."
+      },
+      {
+        "jurisdiction": "Russia",
+        "url": "https://yasnost.ru/38-fz/st18/",
+        "note": "Current Article 18(1) of Federal Law 38-FZ (edition 2026-09-01; source notes official pravo.gov.ru text) requires prior consent for advertising over telecommunications networks."
+      }
+    ]
+  },
+  "last_checked_at": "2026-11-09"
 }
