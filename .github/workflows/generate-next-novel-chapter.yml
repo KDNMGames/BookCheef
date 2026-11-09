@@ -33,6 +33,16 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Require explicitly enabled included-free Cursor allowance
+        if: steps.local_schedule.outputs.run == 'true'
+        env:
+          CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
+        run: |
+          if [ "$CURSOR_FREE_INCLUDED" != "true" ]; then
+            echo "Stopped safely: novel generation requires explicit confirmation that Cursor Agent is covered by an included free allowance."
+            exit 1
+          fi
+
       - name: Install Cursor CLI
         if: steps.local_schedule.outputs.run == 'true'
         run: |
@@ -44,6 +54,7 @@ jobs:
         if: steps.local_schedule.outputs.run == 'true'
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
         run: node scripts/generate-next-novel-chapter.mjs
 
       - name: Commit generated draft and manifest
