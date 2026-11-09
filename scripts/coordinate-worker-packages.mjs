@@ -98,6 +98,9 @@ export async function coordinatePackage({ packagePath, root = process.cwd() }) {
       const existingEntry = queue.packages.find(item => item.publication_key === pkg.publication_key);
       if (existingEntry) {
         targetPath = String(existingEntry.path || "");
+        if (!targetPath.startsWith(inboxPrefix) || !/^[A-Za-z0-9._-]+\\.json$/.test(targetPath.slice(inboxPrefix.length))) {
+          throw new Error("Pending queue contains an unsafe path for this publication key.");
+        }
       } else {
         const inboxFiles = (await fs.readdir(inboxDir)).filter(name => name.endsWith(".json"));
         for (const name of inboxFiles) {
@@ -134,6 +137,18 @@ export async function coordinatePackage({ packagePath, root = process.cwd() }) {
         queue.updated_at = new Date().toISOString();
         await writeJsonAtomic(queuePath, queue);
       }
+      const workerQueuePath = path.join(absoluteRoot, "book-publications", "workers", workerType, "queue.json");
+      let workerQueue = { worker_type: workerType };
+      try { workerQueue = await readJson(workerQueuePath); } catch (error) { if (error.code !== "ENOENT") throw error; }
+      workerQueue.updated_at = new Date().toISOString();
+      workerQueue.last_completed = {
+        ...(workerQueue.last_completed || {}),
+        title: pkg.title,
+        publication_key: pkg.publication_key,
+        package_path: targetPath,
+        status: "queued_for_publication"
+      };
+      await writeJsonAtomic(workerQueuePath, workerQueue);
       if (source !== path.join(absoluteRoot, targetPath)) await fs.rm(source, { force: true });
       console.log("Coordinated " + workerType + " package " + pkg.publication_key + " -> " + targetPath);
     } else {
