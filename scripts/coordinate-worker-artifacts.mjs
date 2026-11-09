@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import crypto from "node:crypto";
 import { coordinatePackage } from "./coordinate-worker-packages.mjs";
 
 const WORKER_TYPES = ["ordinary", "interactive", "novel"];
@@ -25,9 +26,24 @@ export async function coordinateWorkerArtifacts({ artifactRoot, repoRoot = proce
       if (!/^[A-Za-z0-9._-]+\.json$/.test(name)) {
         throw new Error("Unsafe worker artifact filename: " + name);
       }
-      const absolutePackage = path.join(outbox, name);
-      const relativePackage = path.relative(path.resolve(repoRoot), absolutePackage).split(path.sep).join("/");
+      const artifactPackage = path.join(outbox, name);
+      const canonicalOutbox = path.join(repoRoot, "book-publications", "workers", workerType, "outbox");
+      await fs.mkdir(canonicalOutbox, { recursive: true });
+      const stagedPackage = path.join(canonicalOutbox, name);
+      const artifactBytes = await fs.readFile(artifactPackage);
+      try {
+        await fs.writeFile(stagedPackage, artifactBytes, { flag: "wx" });
+      } catch (error) {
+        if (error.code !== "EEXIST") throw error;
+        const existingBytes = await fs.readFile(stagedPackage);
+        const digest = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
+        if (digest(existingBytes) !== digest(artifactBytes)) {
+          throw new Error("Artifact filename collides with different staged worker output: " + name);
+        }
+      }
+      const relativePackage = path.relative(path.resolve(repoRoot), stagedPackage).split(path.sep).join("/");
       const target = await coordinatePackage({ packagePath: relativePackage, root: repoRoot });
+      await fs.rm(artifactPackage, { force: true });
       coordinated.push({ worker_type: workerType, source: relativePackage, package_path: target });
       console.log("Imported " + workerType + " artifact " + name + " -> " + target);
     }
