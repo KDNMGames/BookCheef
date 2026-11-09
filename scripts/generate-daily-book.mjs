@@ -839,6 +839,11 @@ if (!pkg && !isolatedMode) {
     if (error.code !== "ENOENT") throw error;
   }
 }
+if (pkg && !startReportSent) {
+  currentBookTitle = pkg.title || currentBookTitle;
+  await notifyBookCheefAdmins("🛠 BookCheef: сейчас создаётся книга «" + (currentBookTitle || "без названия") + "» (" + bookType + ").");
+  startReportSent = true;
+}
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 if (pkg) {
   try {
