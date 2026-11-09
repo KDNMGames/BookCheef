@@ -90,6 +90,7 @@ try {
 if (openRouterDisabled && cursorDisabled && geminiDisabled) {
   console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  await workerState.releaseLease();
   process.exit(0);
 }
 
@@ -271,7 +272,8 @@ if (!pending && lastVerifiedPublicationAt) {
   if (lastVerifiedLocalDate === today) {
     console.log("A verified BookCheef book was already published on " + today + "; skipping a second publication for this local date.");
     if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
-    process.exit(0);
+    await workerState.releaseLease();
+  process.exit(0);
   }
 }
 
@@ -811,6 +813,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
   console.log("Book task safely deferred until " + nextRetry + "; the next scheduled run can create a different book while this task waits.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  await workerState.releaseLease();
   process.exit(0);
 }
 if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
