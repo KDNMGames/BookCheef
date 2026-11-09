@@ -833,12 +833,12 @@ await workerState.atomicWriteJson(workerState.queuePath, {
   updated_at: new Date().toISOString(),
   last_completed: { title: pkg.title, publication_key: pkg.publication_key, package_path: filePath }
 });
-await workerState.releaseLease();
 if (deferredTask) {
   deferredQueue.tasks = deferredQueue.tasks.filter(task => task.task_id !== deferredTask.task_id);
   deferredQueue.updated_at = new Date().toISOString();
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
 }
+await workerState.releaseLease();
 console.log("Created "+filePath+" ("+pkg.title+") and added it to the explicit retry queue.");
 console.log("Type: "+bookType+"; rotation position remains unchanged until verified publication.");
 if (process.env.GITHUB_OUTPUT) {
