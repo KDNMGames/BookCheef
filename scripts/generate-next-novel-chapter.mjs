@@ -1,6 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { createBookWorkerState } from "./book-worker-state.mjs";
+
+const workerState = createBookWorkerState({ workerType: "novel" });
+await workerState.acquireLease();
+try {
+const workerCheckpointPath = workerState.checkpointPath("last-day-of-universe");
 
 const ROOT = "book-publications/drafts/last-day-of-universe";
 const manifestPath = path.join(ROOT, "manifest.json");
@@ -114,3 +120,17 @@ await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 console.log(`Saved chapter ${next}: ${title} (${words} words).`);
 console.log(`Provider: Cursor Agent CLI; model: ${model || "account default"}.`);
 console.log("Saved as a draft only; it is not published to the website.");
+await workerState.atomicWriteJson(workerCheckpointPath, {
+  worker_type: "novel",
+  task_id: "last-day-of-universe",
+  status: "completed",
+  completed_chapter: next,
+  next_chapter: next + 1,
+  chapter_path: chapterPath,
+  title,
+  word_count: words,
+  updated_at: new Date().toISOString()
+});
+} finally {
+  await workerState.releaseLease();
+}
