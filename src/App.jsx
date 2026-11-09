@@ -108,7 +108,7 @@ const displayBooks=childMode?sorted.filter(b=>childAges.includes(String(b.age||'
 const newest=displayBooks.slice(0,4);
 const ratingScore=b=>{const r=profileData.ratings.find(x=>String(x.book_id)===String(b.id));const likes=Number(r?.likes)||0,dislikes=Number(r?.dislikes)||0,total=likes+dislikes;return {score:total?likes/total:0,total,likes,dislikes};};
 const byRating=(a,b)=>{const x=ratingScore(a),y=ratingScore(b);return y.score-x.score||y.total-x.total||y.likes-x.likes||new Date(b.created_at||0)-new Date(a.created_at||0);};
-const topBooks=[...displayBooks].sort(byRating).slice(0,10);
+const topBooks=[...displayBooks].sort(byRating).slice(0,8);
 const topFree=[...displayBooks].filter(b=>b.is_free!==false).sort(byRating).slice(0,10);
 const options=useMemo(()=>{const s=settings.catalog_sections||sectionDefaults,h=settings.hidden_catalog_sections||{};const values=(key,field)=>[...new Set([...(s[key]||[]),...books.map(b=>b[field]).filter(Boolean)])].filter(x=>!(h[key]||[]).includes(x));return {authors:values('authors','author'),ages:values('ages','age'),genres:values('genres','genre'),series:values('series','series')}},[settings.catalog_sections,settings.hidden_catalog_sections,books]);
 const filtered=displayBooks.filter(b=>!b.is_interactive&&Object.entries(filters).every(([k,v])=>v==='Все'||(b[k]||'')===v)&&[b.title,b.description,b.author,b.genre,b.series].join(' ').toLowerCase().includes(search.toLowerCase()));
