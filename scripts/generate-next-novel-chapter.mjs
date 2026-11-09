@@ -2,12 +2,16 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createBookWorkerState } from "./book-worker-state.mjs";
+import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
 
 if (process.env.CURSOR_FREE_INCLUDED !== "true") {
   throw new Error("Novel generation stopped: set the CURSOR_FREE_INCLUDED Actions variable to true only after confirming that Cursor Agent usage is covered by an included free allowance. No paid usage is permitted.");
 }
 
 const workerState = createBookWorkerState({ workerType: "novel" });
+const providerQuota = process.env.BOOKCHEEF_SHARED_QUOTA_ENABLED === "true"
+  ? createProviderQuotaCoordinator({ workerType: "novel" })
+  : null;
 await workerState.acquireLease();
 try {
 const workerCheckpointPath = workerState.checkpointPath("last-day-of-universe");
@@ -75,12 +79,23 @@ ${recentText}
 
 const agentArgs = ["-p", prompt, "--output-format", "text", "--trust"];
 if (model) agentArgs.push("--model", model);
-const result = spawnSync("agent", agentArgs, {
+const runAgent = () => spawnSync("agent", agentArgs, {
   encoding: "utf8",
   env: process.env,
   maxBuffer: 20 * 1024 * 1024,
   timeout: 20 * 60 * 1000
 });
+const result = providerQuota
+  ? await providerQuota.run({
+      providerKey: "cursor-agent",
+      taskId: "last-day-of-universe-chapter-" + next,
+      minIntervalSeconds: 15,
+      windowSeconds: 86400,
+      maxRequestsPerWindow: 0,
+      maxConcurrent: 1,
+      leaseSeconds: 3600
+    }, runAgent)
+  : runAgent();
 if (result.error) throw new Error(`Cursor Agent could not start: ${result.error.message}`);
 if (result.status !== 0) {
   const details = (result.stderr || result.stdout || "").trim().slice(-5000);
