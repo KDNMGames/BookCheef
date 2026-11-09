@@ -17,6 +17,7 @@ on:
       - ".github/workflows/generate-next-novel-chapter.yml"
       - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/generate-isolated-book-workers.yml"
+      - "scripts/isolated-workflow.test.mjs"
       - ".github/workflows/test-book-workers.yml"
   workflow_dispatch:
 
@@ -37,10 +38,11 @@ jobs:
         run: |
           node --check scripts/coordinate-worker-packages.mjs
           node --check scripts/coordinate-worker-artifacts.mjs
+          node --check scripts/isolated-workflow.test.mjs
           node --check scripts/book-worker-mode.mjs
           node --check scripts/book-worker-state.mjs
           node --check scripts/generate-daily-book.mjs
           node --check scripts/generate-next-novel-chapter.mjs
           node --check scripts/book-checkpoint.mjs
       - name: Run worker state tests
-        run: node --test scripts/book-worker-mode.test.mjs scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
+        run: node --test scripts/isolated-workflow.test.mjs scripts/book-worker-mode.test.mjs scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
