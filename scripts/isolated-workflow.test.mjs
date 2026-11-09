@@ -5,22 +5,28 @@ import fs from "node:fs/promises";
 const workflow = await fs.readFile(".github/workflows/generate-isolated-book-workers.yml", "utf8");
 
 test("isolated generation is manual, production-branch-only, and serialized with daily publishing", () => {
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /REF_NAME: \\?\$\\?\{\\?\\? github\\.ref \\?\}/);
-  assert.match(workflow, /refs\\/heads\\/main/);
-  assert.match(workflow, /group: bookcheef-daily-book-generation/);
+  for (const fragment of [
+    "workflow_dispatch:",
+    "REF_NAME: ${{ github.ref }}",
+    "refs/heads/main",
+    "group: bookcheef-daily-book-generation"
+  ]) assert.ok(workflow.includes(fragment), "Missing workflow contract: " + fragment);
 });
 
 test("worker artifact is downloaded into the coordinator's expected directory", () => {
-  assert.match(workflow, /name: \\?\$\\?\{\\?\\? inputs\\.worker_type \\?\}/);
-  assert.match(workflow, /path: worker-artifacts\\/\\$\\?\{\\?\\? inputs\\.worker_type \\?\}/);
-  assert.match(workflow, /uses: actions\\/download-artifact@v4/);
-  assert.match(workflow, /cp -a "worker-artifacts\\/\\$\\?\{\\?\\? inputs\\.worker_type \\?\}\\/\\."/);
+  for (const fragment of [
+    "name: ${{ inputs.worker_type }}",
+    "path: worker-artifacts/${{ inputs.worker_type }}",
+    "uses: actions/download-artifact@v4",
+    'cp -a "worker-artifacts/${{ inputs.worker_type }}/."'
+  ]) assert.ok(workflow.includes(fragment), "Missing artifact handoff contract: " + fragment);
 });
 
 test("coordinator persists state and has permission to dispatch the publisher", () => {
-  assert.match(workflow, /actions: write/);
-  assert.match(workflow, /node scripts\\/coordinate-worker-artifacts\\.mjs/);
-  assert.match(workflow, /git add -A book-publications\\/workers/);
-  assert.match(workflow, /actions\\/workflows\\/publish-book\\.yml\\/dispatches/);
+  for (const fragment of [
+    "actions: write",
+    "node scripts/coordinate-worker-artifacts.mjs",
+    "git add -A book-publications/workers",
+    "actions/workflows/publish-book.yml/dispatches"
+  ]) assert.ok(workflow.includes(fragment), "Missing coordinator contract: " + fragment);
 });
