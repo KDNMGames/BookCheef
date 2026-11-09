@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { createCheckpointStore } from "./book-checkpoint.mjs";
 import { createBookWorkerState } from "./book-worker-state.mjs";
 import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
+import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -24,6 +25,24 @@ const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (co
 const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) || 1);
 const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
 const workerState = createBookWorkerState({ workerType: requestedWorkerType });
+
+const sharedQuotaEnabled = process.env.BOOKCHEEF_SHARED_QUOTA_ENABLED === "true";
+const providerQuota = sharedQuotaEnabled ? createProviderQuotaCoordinator({
+  workerType: requestedWorkerType
+}) : null;
+const quotaPolicy = config.provider_quota || {};
+async function withProviderQuota(providerKey, suffix, operation) {
+  if (!providerQuota) return operation();
+  return providerQuota.run({
+    providerKey,
+    taskId: String(workerState.runId) + "-" + suffix,
+    minIntervalSeconds: Number(quotaPolicy.min_interval_seconds ?? 15),
+    windowSeconds: Number(quotaPolicy.window_seconds ?? 86400),
+    maxRequestsPerWindow: Number(quotaPolicy.max_requests_per_window ?? 0),
+    maxConcurrent: Number(quotaPolicy.max_concurrent_per_provider ?? 1),
+    leaseSeconds: Number(quotaPolicy.reservation_lease_seconds ?? 1200)
+  }, operation);
+}
 
 async function findPendingPackage() {
   const queuePath = "book-publications/pending-publications.json";
@@ -118,6 +137,7 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
     error.code = geminiDisabled ? "ALL_PROVIDERS_COOLDOWN" : "NO_FALLBACK_PROVIDER";
     throw error;
   }
+  return await withProviderQuota("gemini", "gemini", async () => {
   console.log("Switching text generation to Google Gemini (" + GEMINI_MODEL + ").");
   const generationConfig = { maxOutputTokens: 16000 };
   if (json) generationConfig.responseMimeType = "application/json";
@@ -135,6 +155,8 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
   if (!response.ok) {
     const message = body.error?.message || "Gemini HTTP " + response.status;
     const error = new Error(message.slice(0, 1000));
+    error.status = response.status;
+    error.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
     if (response.status === 429 || response.status === 503 || /quota|rate.?limit|resource exhausted|daily limit|billing/i.test(message)) {
       error.code = "RATE_LIMIT";
       await saveGeminiCooldown(message);
@@ -147,6 +169,7 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
     throw new Error("Gemini returned no text: " + reason);
   }
   return text;
+  });
 }
 
 async function generateWithFallback(prompt, { json = false, timeout = 900000 } = {}) {
@@ -155,11 +178,12 @@ async function generateWithFallback(prompt, { json = false, timeout = 900000 } =
       const output = await generateWithGemini(prompt, { json, timeout });
       return json ? parseModelJson(output) : output;
     } catch (error) {
-      if (error.code !== "RATE_LIMIT" && error.code !== "ALL_PROVIDERS_COOLDOWN") throw error;
+      if (!["RATE_LIMIT", "ALL_PROVIDERS_COOLDOWN", "PROVIDER_QUOTA_WAIT"].includes(error.code)) throw error;
       console.warn("Gemini quota unavailable; trying Cursor Agent next.");
     }
   }
-  return json ? parseModelJson(runCursorAgent(prompt, { timeout })) : runCursorAgent(prompt, { timeout });
+  const output = await runCursorAgent(prompt, { timeout });
+  return json ? parseModelJson(output) : output;
 }
 
 async function saveCursorCooldown(reason) {
@@ -186,7 +210,7 @@ async function saveOpenRouterCooldown(reason) {
   console.warn("OpenRouter paused until " + retryAfter + "; switching to the next AI provider.");
 }
 
-function runCursorAgent(prompt, { timeout = 600000 } = {}) {
+async function runCursorAgent(prompt, { timeout = 600000 } = {}) {
   if (cursorDisabled) {
     const error = new Error("Cursor Agent is in cooldown.");
     error.code = "ALL_PROVIDERS_COOLDOWN";
@@ -197,6 +221,7 @@ function runCursorAgent(prompt, { timeout = 600000 } = {}) {
     error.code = "NO_FALLBACK_PROVIDER";
     throw error;
   }
+  return await withProviderQuota("cursor-agent", "cursor-agent", async () => {
   console.log("Switching text generation to Cursor Agent CLI.");
   const args = ["-p", prompt, "--output-format", "text", "--trust"];
   if (process.env.CURSOR_MODEL) args.push("--model", process.env.CURSOR_MODEL);
@@ -216,6 +241,7 @@ function runCursorAgent(prompt, { timeout = 600000 } = {}) {
   const output = String(result.stdout || "").trim().replace(/^\x60{3}(?:json|markdown)?\s*/i, "").replace(/\s*\x60{3}$/, "").trim();
   if (!output) throw new Error("Cursor Agent returned an empty response.");
   return output;
+  });
 }
 
 function parseModelJson(output) {
@@ -369,6 +395,7 @@ async function generatePackage(attempt, previousError = "") {
       "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
   }
   try {
+    return await withProviderQuota("openrouter", "openrouter", async () => {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -385,6 +412,8 @@ async function generatePackage(attempt, previousError = "") {
       const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
       const provider = body.error?.metadata?.provider_name || body.error?.provider || "";
       const failure = new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
+      failure.status = response.status;
+      failure.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
       if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
       throw failure;
     }
@@ -402,6 +431,7 @@ async function generatePackage(attempt, previousError = "") {
     }
     const cleaned = content.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "");
     return JSON.parse(cleaned);
+    });
   } catch (error) {
     if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
       await saveOpenRouterCooldown(error.message);
