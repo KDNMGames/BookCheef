@@ -45,7 +45,7 @@
         "new_contacts_verified": 5,
         "individualized_gmail_drafts_created": 5,
         "emails_sent_in_this_run": 0,
-        "earlier_sent_messages_confirmed_today": 5,
+        "outbound_messages_confirmed_before_this_run_today": 13,
         "replies_found": 0,
         "legal_status": "draft_only_no_send"
       }
