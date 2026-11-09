@@ -44,7 +44,7 @@ Phase 2 (partially implemented): ordinary/interactive generator now uses its wor
 checkpoint, deferred-task file, cooldown files, lease, and completion queue record.
 A matching legacy work-in-progress/current.json checkpoint is copied into the worker
 store without deleting the original. The existing legacy deferred queue is preserved
-but is not yet automatically migrated. The novel chapter generator is not yet adapted.
+but is not yet automatically migrated. The novel chapter generator now acquires its own `novel` lease and writes a worker-scoped completion checkpoint. Its chapter and manifest are still committed to the shared draft tree by its serialized workflow; artifact handoff and provider cooldown handling remain outstanding.
 The shared inbox, pending-publication queue, and rotation state are still written by
 the daily generator, so this is not yet safe for parallel runs.
 
