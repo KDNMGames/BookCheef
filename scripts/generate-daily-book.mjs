@@ -310,7 +310,12 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 
 async function generatePackage(attempt, previousError = "") {
   const providerConfig = config.daily_book.text_provider || {};
-  const modelCandidates = [providerConfig.model, ...(providerConfig.fallback_models || [])].filter(Boolean);
+  const modelCandidates = [providerConfig.model, ...(providerConfig.fallback_models || [])]
+    .filter(Boolean)
+    .filter(candidate => candidate === "openrouter/free" || candidate.endsWith(":free"));
+  if (!modelCandidates.length) {
+    throw new Error("Free-only policy blocked generation: no explicitly free OpenRouter models are configured.");
+  }
   const modelIndex = Math.min(modelCandidates.length - 1, Math.floor((attempt - 1) / 2));
   const model = modelCandidates[modelIndex] || "openrouter/free";
   console.log("Using text model " + model + " (attempt " + attempt + ").");
