@@ -67,7 +67,7 @@ async function acquireLock(lockPath) {
   }
 }
 
-export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifacts/novel/outbox", repoRoot = process.cwd() } = {}) {
+export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifacts/novel/outbox", repoRoot = process.cwd(), beforeManifestWrite } = {}) {
   const root = path.resolve(repoRoot);
   const artifactDir = path.resolve(root, artifactRoot);
   const relativeArtifactDir = path.relative(root, artifactDir);
@@ -149,6 +149,7 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
       nextManifest.last_generated_at = artifact.generated_at || new Date().toISOString();
       nextManifest.last_provider = artifact.provider || "isolated novel worker";
 
+      if (beforeManifestWrite) await beforeManifestWrite({ artifact, manifestPath, nextManifest });
       await atomicWriteJson(manifestPath, nextManifest);
       Object.assign(manifest, nextManifest);
       await fs.rm(sourcePath);
