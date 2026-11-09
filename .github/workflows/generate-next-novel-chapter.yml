@@ -55,10 +55,20 @@ jobs:
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
+          BOOKCHEEF_NOVEL_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.novel_mode || 'coordinated' }}
         run: node scripts/generate-next-novel-chapter.mjs
 
+      - name: Upload isolated novel chapter artifact
+        if: steps.local_schedule.outputs.run == 'true' && github.event_name == 'workflow_dispatch' && inputs.novel_mode == 'artifact-only'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bookcheef-novel-chapter-${{ github.run_id }}
+          path: book-publications/workers/novel/outbox/*.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Commit generated draft and manifest
-        if: steps.local_schedule.outputs.run == 'true'
+        if: steps.local_schedule.outputs.run == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.novel_mode == 'artifact-only')
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
