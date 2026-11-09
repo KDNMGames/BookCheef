@@ -312,7 +312,7 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 - Русский язык, естественный и грамотный, без повторов и искусственного растягивания.
 - Возраст выбирай по реальному содержанию. Текст должен соответствовать возрасту.
 - ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ. Итоговая взрослая книга (16+/18+) — не менее 18 000 слов (примерно 2–2,5 часа чтения), 10–14 глав. Детская/подростковая: 6+ — не менее 1 500 слов; 9+ — 1 800; 12+ — 2 400; 14+ — 2 700 слов; 5–9 глав. Генерация проходит в два этапа: сейчас верни структурный JSON-черновик с полноценными сюжетными заготовками по 100–180 слов на главу; затем каждая глава будет отдельно расширена до требуемого объёма. Не пытайся уместить весь роман в один ответ. Не допускай повторов и искусственного растягивания.
-- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена. Для 16+/18+ каждый узел должен содержать не менее 5 000 слов, чтобы каждый маршрут (scene-1 → ветка → финал) давал не менее 15 000 слов и около 2 часов чтения. Для детской/подростковой аудитории минимальный объём каждого узла: 6+ — 450 слов, 9+ — 550, 12+ — 650, 14+ — 750. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
+- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена. Для 16+/18+ каждый узел должен содержать не менее 6 000 слов, чтобы каждый маршрут (scene-1 → ветка → финал) давал не менее 18 000 слов и около 2 часов чтения. Для детской/подростковой аудитории минимальный объём каждого узла: 6+ — 500 слов, 9+ — 600, 12+ — 800, 14+ — 900. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
 - В интерактивной книге choices — массив объектов {text,next}; next обязан ссылаться на существующий id.
 - Вопросы reader_questions: 3–5 содержательных пар question/answer, не помещай их в book_content.
 - Сноски: минимум одна для возраста 6+ и старше; слово в word должно дословно встречаться в тексте сцен/глав, текст определения соответствует возрасту.
@@ -595,8 +595,8 @@ async function expandInteractiveBook(pkg) {
   if (bookType !== "interactive") return pkg;
   const age = String(pkg.age || "12+");
   const adult = age === "16+" || age === "18+";
-  const targetWords = adult ? 5600 : age === "6+" ? 520 : age === "9+" ? 620 : age === "12+" ? 720 : 820;
-  const minWords = adult ? 5000 : age === "6+" ? 450 : age === "9+" ? 550 : age === "12+" ? 650 : 750;
+  const targetWords = adult ? 6600 : age === "6+" ? 600 : age === "9+" ? 700 : age === "12+" ? 900 : 1000;
+  const minWords = adult ? 6000 : age === "6+" ? 500 : age === "9+" ? 600 : age === "12+" ? 800 : 900;
   for (let i = 0; i < pkg.interactive_content.nodes.length; i++) {
     const node = pkg.interactive_content.nodes[i];
     const current = countWords(node.text);
@@ -614,7 +614,7 @@ async function expandInteractiveBook(pkg) {
   const byId = new Map(pkg.interactive_content.nodes.map(n => [n.id, n]));
   const routeA = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2a").text) + countWords(byId.get("ending-a").text);
   const routeB = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2b").text) + countWords(byId.get("ending-b").text);
-  const routeMinimum = adult ? 15000 : minWords * 3;
+  const routeMinimum = adult ? 18000 : minWords * 3;
   if (routeA < routeMinimum || routeB < routeMinimum) throw new Error("Interactive route is below its reading-length minimum.");
   console.log("Long-form interactive routes: " + routeA + " and " + routeB + " words.");
   return pkg;
@@ -718,7 +718,7 @@ function validate(pkg) {
     if (ids.size!==5 || !["scene-1","scene-2a","scene-2b","ending-a","ending-b"].every(id=>ids.has(id))) throw new Error("Interactive scene IDs are invalid.");
     const byId=new Map(data.nodes.map(n=>[n.id,n]));
     for (const node of data.nodes) {
-      const ageMinimum=pkg.age==="16+"||pkg.age==="18+"?5000:pkg.age==="6+"?450:pkg.age==="9+"?550:pkg.age==="12+"?650:750; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or too short: "+node.id);
+      const ageMinimum=pkg.age==="16+"||pkg.age==="18+"?6000:pkg.age==="6+"?500:pkg.age==="9+"?600:pkg.age==="12+"?800:900; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or too short: "+node.id);
       for (const choice of node.choices) if (!choice.text?.trim() || !ids.has(choice.next)) throw new Error("Invalid branch in "+node.id);
       const index=Number(node.id==="scene-1"?1:node.id==="scene-2a"?2:node.id==="scene-2b"?3:node.id==="ending-a"?4:5);
       const illustration=pkg.illustrations.find(x=>x.number===index && x.chapter===node.title);
