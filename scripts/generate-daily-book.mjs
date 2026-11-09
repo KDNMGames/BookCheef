@@ -318,7 +318,7 @@ for (const name of authorFiles) {
   authors.push(JSON.parse(await fs.readFile(path.join(authorDir, name), "utf8")));
 }
 const existingFiles = (await fs.readdir(INBOX)).filter(x => x.endsWith(".json")).sort();
-const existingTitles = [];
+const existingTitles = [...(config.daily_book.excluded_titles || [])];
 for (const name of existingFiles) {
   try {
     const p = JSON.parse(await fs.readFile(path.join(INBOX, name), "utf8"));
