@@ -44,7 +44,7 @@ jobs:
             }
             if (!workflow.includes("git add -A book-publications/work-in-progress") || !workflow.includes("book-publications/cursor-cooldown.json") || !workflow.includes("book-publications/gemini-cooldown.json") || !workflow.includes("book-publications/deferred-books.json") || !workflow.includes("git add book-publications/rotation-state.json")) throw new Error("Workflow does not persist checkpoint or provider cooldown state");
             const generationWorkflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
-            if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY") || !generationWorkflow.includes("vars.CURSOR_FREE_INCLUDED") || !generationWorkflow.includes("if: vars.CURSOR_FREE_INCLUDED == 'true'")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
+            if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY") || !generationWorkflow.includes("vars.CURSOR_FREE_INCLUDED") || !generationWorkflow.includes("if: vars.CURSOR_FREE_INCLUDED")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
             if (!generationWorkflow.includes("secrets.GEMINI_API_KEY")) throw new Error("Gemini API key is not passed to the generation workflow");
             console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
           '
