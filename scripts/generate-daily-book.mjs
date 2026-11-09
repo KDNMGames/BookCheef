@@ -318,19 +318,9 @@ const today = new Intl.DateTimeFormat("en-CA", {
   year: "numeric", month: "2-digit", day: "2-digit"
 }).format(new Date());
 
-const lastVerifiedPublicationAt = isolatedMode ? "" : (rotation.updated_at || rotation.last_publication?.created_at || "");
-if (!isolatedMode && !pending && lastVerifiedPublicationAt) {
-  const lastVerifiedLocalDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: config.timezone || "Europe/Berlin",
-    year: "numeric", month: "2-digit", day: "2-digit"
-  }).format(new Date(lastVerifiedPublicationAt));
-  if (lastVerifiedLocalDate === today) {
-    console.log("A verified BookCheef book was already published on " + today + "; skipping a second publication for this local date.");
-    if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
-    await workerState.releaseLease();
-  process.exit(0);
-  }
-}
+// A verified publication earlier today must not block the next generation cycle.
+ // Duplicate protection remains enforced by publication_key, the pending-publication queue,
+ // the publisher's check_publication action, and verify-and-advance-book.mjs.
 
 const systemPrompt = [
   "Ты — профессиональная редакция BookCheef. Создавай оригинальные законченные книги на русском языке.",
