@@ -33,7 +33,7 @@ jobs:
           node-version: 22
 
       - name: Test isolated worker state
-        run: node --test scripts/book-worker-state.test.mjs
+        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs
 
       - name: Install Cursor Agent fallback
         if: vars.CURSOR_FREE_INCLUDED == 'true'
