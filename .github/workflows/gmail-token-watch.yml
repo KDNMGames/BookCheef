@@ -1,0 +1,88 @@
+name: BookCheef Gmail OAuth token reminders
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      test_notification:
+        description: "Send a test notification to Telegram admins"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  token-reminder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Calculate reminder window
+        id: reminder
+        env:
+          AUTHORIZED_AT: ${{ vars.GMAIL_TOKEN_AUTHORIZED_AT }}
+          TEST_NOTIFICATION: ${{ inputs.test_notification }}
+        run: |
+          set -euo pipefail
+          if [[ "$TEST_NOTIFICATION" == "true" ]]; then
+            echo "send=true" >> "$GITHUB_OUTPUT"
+            echo "message=🧪 Тест связи: Telegram-уведомления BookCheef о сроке Gmail OAuth работают." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "${AUTHORIZED_AT:-}" ]]; then
+            echo "::error::Repository variable GMAIL_TOKEN_AUTHORIZED_AT is not set."
+            exit 1
+          fi
+
+          auth_epoch="$(date -u -d "$AUTHORIZED_AT" +%s)"
+          now_epoch="$(date -u +%s)"
+          if (( auth_epoch > now_epoch )); then
+            echo "::error::GMAIL_TOKEN_AUTHORIZED_AT is in the future."
+            exit 1
+          fi
+
+          age_days=$(( (now_epoch - auth_epoch) / 86400 ))
+          case "$age_days" in
+            5)
+              message="⚠️ BookCheef: Gmail OAuth-токену примерно 5 дней. Осталось около 48 часов до ожидаемого истечения. Переавторизуй Gmail и обнови GMAIL_TOKEN_AUTHORIZED_AT в GitHub Variables."
+              ;;
+            6)
+              message="⏰ BookCheef: Gmail OAuth-токену примерно 6 дней. Осталось около 24 часов. Переавторизуй Gmail сегодня и обнови GMAIL_TOKEN_AUTHORIZED_AT в GitHub Variables."
+              ;;
+            7)
+              message="🚨 BookCheef: ожидаемый 7-дневный срок Gmail OAuth-токена достигнут. Автоматическая отправка писем может остановиться. Нужна повторная авторизация Google."
+              ;;
+            *)
+              echo "send=false" >> "$GITHUB_OUTPUT"
+              echo "No reminder due (token age: ${age_days} days)."
+              exit 0
+              ;;
+          esac
+
+          echo "send=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "message<<BOOKCHEEF_EOF"
+            echo "$message"
+            echo "BOOKCHEEF_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Telegram administrators
+        if: steps.reminder.outputs.send == 'true'
+        env:
+          TELEGRAM_REPORT_TOKEN: ${{ secrets.BOOKCHEEF_TELEGRAM_REPORT_TOKEN }}
+          MESSAGE: ${{ steps.reminder.outputs.message }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_REPORT_TOKEN:-}" ]]; then
+            echo "::error::Repository secret BOOKCHEEF_TELEGRAM_REPORT_TOKEN is not set."
+            exit 1
+          fi
+          payload="$(jq -n --arg text "$MESSAGE" '{action:"admin_notification",text:$text}')"
+          curl --silent --show-error --fail-with-body \
+            -X POST "https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot" \
+            -H "Content-Type: application/json" \
+            -H "x-bookcheef-report-token: $TELEGRAM_REPORT_TOKEN" \
+            --data "$payload"
