@@ -180,6 +180,7 @@ async function generateWithFallback(prompt, { json = false, timeout = 900000 } =
       return json ? parseModelJson(output) : output;
     } catch (error) {
       if (!["RATE_LIMIT", "ALL_PROVIDERS_COOLDOWN", "PROVIDER_QUOTA_WAIT"].includes(error.code)) throw error;
+      if (error.code === "PROVIDER_QUOTA_WAIT") geminiDisabled = true;
       console.warn("Gemini quota unavailable; trying Cursor Agent next.");
     }
   }
@@ -434,6 +435,12 @@ async function generatePackage(attempt, previousError = "") {
     return JSON.parse(cleaned);
     });
   } catch (error) {
+    if (error.code === "PROVIDER_QUOTA_WAIT") {
+      openRouterDisabled = true;
+      console.warn("OpenRouter is temporarily unavailable under the shared quota policy; trying another provider.");
+      return await generateWithFallback(systemPrompt + "\\n\\n" + userPrompt + retryInstruction +
+        "\\n\\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
+    }
     if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
       await saveOpenRouterCooldown(error.message);
       return await generateWithFallback(systemPrompt + "\n\n" + userPrompt + retryInstruction +
@@ -811,8 +818,10 @@ if (pkg) {
     console.error("Resumed book expansion stopped: " + error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
-      if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
-      else await saveOpenRouterCooldown(error.message);
+      if (error.code !== "PROVIDER_QUOTA_WAIT") {
+        if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
+        else await saveOpenRouterCooldown(error.message);
+      }
     } else {
       throw error;
     }
@@ -825,8 +834,10 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
-      if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
-      else await saveOpenRouterCooldown(error.message);
+      if (error.code !== "PROVIDER_QUOTA_WAIT") {
+        if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
+        else await saveOpenRouterCooldown(error.message);
+      }
       if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
       console.error("No available AI provider for this attempt. The partial checkpoint, if any, is preserved for the next run.");
       break;
