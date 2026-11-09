@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "policy": {
+    "max_emails_per_run": 5,
+    "default_mode": "dry_run",
+    "require_manual_confirmation": true,
+    "require_official_public_business_contact": true,
+    "require_individualized_message": true,
+    "no_bcc": true,
+    "no_unsolicited_followups": true,
+    "include_opt_out": true
+  },
+  "approved_contacts": [],
+  "suppressed_contacts": [
+    {
+      "email": "reklama@livelib.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "pr@m-i-f.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "pr@limbakh.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "pr1@eksmo.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "pr2@eksmo.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "zolina.is@eksmo.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "pr@litres.ru",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    },
+    {
+      "email": "partners@booksi.org",
+      "reason": "Previously contacted; do not resend",
+      "source": "prior BookCheef outreach record"
+    }
+  ],
+  "sent_log": [],
+  "notes": [
+    "The eight suppressed addresses above were contacted before this ledger was introduced; their history is not duplicated in sent_log.",
+    "Do not add a contact to approved_contacts until its official public business source and recipient-specific message have been reviewed.",
+    "A successful connection check does not authorize or trigger email sending."
+  ]
+}
