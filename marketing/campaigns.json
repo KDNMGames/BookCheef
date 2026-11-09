@@ -38,7 +38,17 @@
           "note": "Размещён ошибочно в собственном канале; не считать рекламным привлечением и не повторять. Сохранён в истории, не удалять без отдельного указания владельца."
         }
       ],
-      "third_party_contact_sent": 8
+      "third_party_contact_sent": 13,
+      "last_email_outreach_at": "2026-11-09",
+      "email_outreach_last_run": {
+        "date": "2026-11-09",
+        "new_contacts_verified": 5,
+        "individualized_gmail_drafts_created": 5,
+        "emails_sent_in_this_run": 0,
+        "earlier_sent_messages_confirmed_today": 5,
+        "replies_found": 0,
+        "legal_status": "draft_only_no_send"
+      }
     }
   ]
 }
