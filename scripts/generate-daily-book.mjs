@@ -22,8 +22,6 @@ const configuredCycle = config.daily_book.rotation || ["interactive", "ordinary"
 const configuredPosition = Number(rotation.cycle_position) || 1;
 const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
 const workerState = createBookWorkerState({ workerType: requestedWorkerType });
-await workerState.acquireLease();
-console.log("Using isolated " + requestedWorkerType + " worker storage at " + workerState.workerDir + ".");
 
 async function findPendingPackage() {
   const queuePath = "book-publications/pending-publications.json";
@@ -49,9 +47,12 @@ if (pending) {
   if (process.env.GITHUB_OUTPUT) {
     await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=" + pending.path + "\ncreated=false\n");
   }
+  await workerState.releaseLease();
   process.exit(0);
 }
 
+await workerState.acquireLease();
+console.log("Using isolated " + requestedWorkerType + " worker storage at " + workerState.workerDir + ".");
 
 const WORK_DIR = workerState.workerDir;
 const WORK_PATH = workerState.checkpointPath("current");
