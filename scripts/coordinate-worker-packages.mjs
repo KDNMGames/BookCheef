@@ -126,6 +126,17 @@ export async function coordinatePackage({ packagePath, root = process.cwd() }) {
         }
       }
 
+      const coordinatedFile = path.join(absoluteRoot, targetPath);
+      try {
+        const existingPackage = await readJson(coordinatedFile);
+        if (existingPackage.publication_key !== pkg.publication_key) {
+          throw new Error("The pending queue points to an inbox file with a different publication key.");
+        }
+      } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+        await fs.writeFile(coordinatedFile, JSON.stringify(pkg, null, 2) + "\\n", { flag: "wx" });
+      }
+
       if (!queue.packages.some(item => item.publication_key === pkg.publication_key)) {
         queue.packages.push({
           path: targetPath,
