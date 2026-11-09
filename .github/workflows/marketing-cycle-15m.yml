@@ -1,0 +1,32 @@
+name: BookCheef marketing cycle (15 minutes)
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-marketing-cycle
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Audit marketing registry and safe publication gates
+        run: node scripts/marketing-cycle-audit.mjs
+
+      - name: Save cycle report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bookcheef-marketing-cycle-${{ github.run_id }}
+          path: marketing/reports/scheduled-cycle-latest.md
+          if-no-files-found: error
+          retention-days: 14
