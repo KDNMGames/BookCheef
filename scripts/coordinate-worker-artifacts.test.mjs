@@ -52,6 +52,7 @@ test("artifact coordinator imports all worker types sequentially into one queue"
     for (const item of results) {
       assert.match(item.package_path, /^book-publications\/inbox\/.+\.json$/);
       await assert.rejects(() => fs.access(path.join(root, item.source)), { code: "ENOENT" });
+      await assert.rejects(() => fs.access(path.join(root, "worker-artifacts", item.worker_type, "outbox", path.basename(item.source))), { code: "ENOENT" });
     }
   } finally {
     await fs.rm(root, { recursive: true, force: true });
