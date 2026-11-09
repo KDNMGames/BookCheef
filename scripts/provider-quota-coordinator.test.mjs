@@ -113,4 +113,9 @@ test("fails closed when shared quota credentials are missing or provider identit
     fetchImpl: async () => response([])
   });
   await assert.rejects(quota.acquire({ providerKey: "Bad Provider", taskId: "task-1" }), /Invalid providerKey/);
+  assert.throws(() => createProviderQuotaCoordinator({
+    supabaseUrl: "https://example.supabase.co",
+    serviceRoleKey: "secret",
+    defaultCooldownSeconds: 10
+  }), /defaultCooldownSeconds/);
 });
