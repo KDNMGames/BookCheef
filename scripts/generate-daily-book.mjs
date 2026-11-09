@@ -893,7 +893,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
   console.log("Book task safely deferred until " + nextRetry + "; the next scheduled run can create a different book while this task waits.");
   await notifyBookCheefAdmins("⏸ BookCheef: создание книги" + (currentBookTitle ? " «" + currentBookTitle + "»" : "") + " прервано и перенесено. Причина: " + String(lastError?.message || "исчерпана бесплатная квота ИИ-провайдера").slice(0, 900) + ". Черновик сохранён. Повторная попытка после: " + nextRetry + ". Платные API не использовались.");
-  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\ndeferred=true\nretry_after=" + nextRetry + "\n");
   await workerState.releaseLease();
   process.exit(0);
 }
