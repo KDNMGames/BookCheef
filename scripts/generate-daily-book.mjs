@@ -26,11 +26,12 @@ const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) |
 const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
 const workerState = createBookWorkerState({ workerType: requestedWorkerType });
 
+const quotaPolicy = config.provider_quota || {};
 const sharedQuotaEnabled = process.env.BOOKCHEEF_SHARED_QUOTA_ENABLED === "true";
 const providerQuota = sharedQuotaEnabled ? createProviderQuotaCoordinator({
-  workerType: requestedWorkerType
+  workerType: requestedWorkerType,
+  defaultCooldownSeconds: Number(quotaPolicy.cooldown_after_rate_limit_seconds ?? 21600)
 }) : null;
-const quotaPolicy = config.provider_quota || {};
 async function withProviderQuota(providerKey, suffix, operation) {
   if (!providerQuota) return operation();
   return providerQuota.run({
@@ -838,7 +839,8 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
     .map(async file => { try { return Date.parse(JSON.parse(await fs.readFile(file, "utf8")).retry_after || ""); } catch { return 0; } });
   const cooldowns = await Promise.all(retryAfter);
-  const nextRetry = new Date(Math.max(Date.now() + 15 * 60 * 1000, ...cooldowns.filter(Number.isFinite))).toISOString();
+  const sharedRetry = Date.parse(lastError?.retryAfter || "");
+  const nextRetry = new Date(Math.max(Date.now() + 15 * 60 * 1000, sharedRetry || 0, ...cooldowns.filter(Number.isFinite))).toISOString();
   let deferredEntry = deferredTask;
   if (!deferredEntry) {
     const taskId = "book-" + Date.now() + "-" + bookType;
