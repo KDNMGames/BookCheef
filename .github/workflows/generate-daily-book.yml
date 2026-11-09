@@ -115,7 +115,7 @@ jobs:
           fi
 
       - name: Dispatch publisher
-        if: steps.book.outputs.package_path != ''
+        if: steps.coordinate.outputs.package_path != ''
         env:
           GH_TOKEN: ${{ github.token }}
           PACKAGE_PATH: ${{ steps.coordinate.outputs.package_path }}
