@@ -1,0 +1,60 @@
+name: BookCheef isolated book workers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-isolated-worker-batch
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate ${{ matrix.worker_type }} book
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        worker_type: [ordinary, interactive]
+    steps:
+      - name: Checkout BookCheef
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test isolated worker mode and state
+        run: node --test scripts/book-worker-mode.test.mjs scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
+
+      - name: Install Cursor Agent fallback
+        if: vars.CURSOR_FREE_INCLUDED == 'true'
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          agent --version
+
+      - name: Generate isolated book package (no shared queue writes)
+        env:
+          BOOKCHEEF_WORKER_MODE: isolated
+          BOOKCHEEF_WORKER_TYPE: ${{ matrix.worker_type }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
+          CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: node scripts/generate-daily-book.mjs
+
+      - name: Upload worker artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bookcheef-worker-${{ matrix.worker_type }}-${{ github.run_id }}
+          path: book-publications/workers/${{ matrix.worker_type }}/
+          if-no-files-found: warn
+          retention-days: 7
