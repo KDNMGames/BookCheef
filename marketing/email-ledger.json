@@ -14,96 +14,232 @@
   "suppressed_contacts": [
     {
       "email": "reklama@livelib.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "LiveLib",
+      "last_contacted_at": "2026-11-09T00:31:40Z",
+      "gmail_message_id": "1a1bdb7c6f4731ed"
     },
     {
       "email": "pr@m-i-f.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "Издательство МИФ",
+      "last_contacted_at": "2026-11-09T00:31:46Z",
+      "gmail_message_id": "1a1bdb7dd2d14245"
     },
     {
       "email": "pr@limbakh.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "Издательство Ивана Лимбаха",
+      "last_contacted_at": "2026-11-09T00:31:47Z",
+      "gmail_message_id": "1a1bdb7e333b7672"
     },
     {
       "email": "pr1@eksmo.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "Эксмо — PR художественной литературы",
+      "last_contacted_at": "2026-11-09T00:32:56Z",
+      "gmail_message_id": "1a1bdb8f2ce542b5"
     },
     {
       "email": "pr2@eksmo.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "Эксмо — PR детской и подростковой литературы",
+      "last_contacted_at": "2026-11-09T00:32:58Z",
+      "gmail_message_id": "1a1bdb8f84dfdbb7"
     },
     {
       "email": "zolina.is@eksmo.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "БОМБОРА",
+      "last_contacted_at": "2026-11-09T00:33:00Z",
+      "gmail_message_id": "1a1bdb8ffa1df1c7"
     },
     {
       "email": "pr@litres.ru",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "ЛитРес",
+      "last_contacted_at": "2026-11-09T00:33:10Z",
+      "gmail_message_id": "1a1bdb9293e69472"
     },
     {
       "email": "partners@booksi.org",
-      "reason": "Previously contacted; do not resend",
-      "source": "prior BookCheef outreach record"
+      "reason": "Already contacted; do not resend or follow up unless the recipient replies or owner authorizes otherwise",
+      "source": "prior BookCheef outreach record",
+      "organization": "Букси",
+      "last_contacted_at": "2026-11-09T00:33:12Z",
+      "gmail_message_id": "1a1bdb92f71c8f28"
     }
   ],
   "sent_log": [
     {
       "email": "pr@podpisnie.ru",
-      "date": "2026-11-09T02:23:16.208Z",
+      "date": "2026-11-09T02:23:03Z",
       "message_id": "1a1be1dc3c9806b4",
       "organization": "Подписные издания",
       "method": "Gmail API",
-      "campaign": "2026-11-09 first batch"
+      "campaign": "2026-11-09 first batch",
+      "subject": "BookCheef — предложение информационного сотрудничества",
+      "source_url": "https://www.podpisnie.ru/contacts/",
+      "follow_up_allowed": false
     },
     {
       "email": "smm@goodwinbooks.ru",
-      "date": "2026-11-09T02:23:16.208Z",
+      "date": "2026-11-09T02:23:05Z",
       "message_id": "1a1be1dc96c733c8",
       "organization": "Издательство Гудвин",
       "method": "Gmail API",
-      "campaign": "2026-11-09 first batch"
+      "campaign": "2026-11-09 first batch",
+      "subject": "Возможная книжная коллаборация с BookCheef",
+      "source_url": "https://goodwinbooks.ru/contacts",
+      "follow_up_allowed": false
     },
     {
       "email": "press@boomkniga.ru",
-      "date": "2026-11-09T02:23:16.208Z",
+      "date": "2026-11-09T02:23:12Z",
       "message_id": "1a1be1de2835f267",
       "organization": "Издательство Бумкнига",
       "method": "Gmail API",
-      "campaign": "2026-11-09 first batch"
+      "campaign": "2026-11-09 first batch",
+      "subject": "BookCheef × Бумкнига — идея редакционной подборки",
+      "source_url": "https://boomkniga.ru/contacts/",
+      "follow_up_allowed": false
     },
     {
       "email": "pr@samokatbook.ru",
-      "date": "2026-11-09T02:23:16.208Z",
+      "date": "2026-11-09T02:23:13Z",
       "message_id": "1a1be1de92054aad",
       "organization": "Издательский дом Самокат",
       "method": "Gmail API",
-      "campaign": "2026-11-09 first batch"
+      "campaign": "2026-11-09 first batch",
+      "subject": "BookCheef — идея сотрудничества о детском и подростковом чтении",
+      "source_url": "https://samokatbook.ru/sotrudnichetstvo/",
+      "follow_up_allowed": false
     },
     {
       "email": "info@buklya.com",
-      "date": "2026-11-09T02:23:16.208Z",
+      "date": "2026-11-09T02:23:15Z",
       "message_id": "1a1be1df276b9e02",
       "organization": "Литературный портал Букля",
       "method": "Gmail API",
-      "campaign": "2026-11-09 first batch"
+      "campaign": "2026-11-09 first batch",
+      "subject": "Возможное сотрудничество двух книжных онлайн-проектов",
+      "source_url": "https://buklya.com/kontakty",
+      "follow_up_allowed": false
+    },
+    {
+      "email": "reklama@livelib.ru",
+      "organization": "LiveLib",
+      "date": "2026-11-09T00:31:40Z",
+      "message_id": "1a1bdb7c6f4731ed",
+      "subject": "BookCheef — предложение бесплатного книжного сотрудничества",
+      "source_url": "https://t.me/livelib_official",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "pr@m-i-f.ru",
+      "organization": "Издательство МИФ",
+      "date": "2026-11-09T00:31:46Z",
+      "message_id": "1a1bdb7dd2d14245",
+      "subject": "BookCheef — предложение бесплатного информационного сотрудничества",
+      "source_url": "https://t.me/mifbooks",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "pr@limbakh.ru",
+      "organization": "Издательство Ивана Лимбаха",
+      "date": "2026-11-09T00:31:47Z",
+      "message_id": "1a1bdb7e333b7672",
+      "subject": "BookCheef — предложение бесплатного информационного сотрудничества",
+      "source_url": "https://t.me/ilimbakh",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "pr1@eksmo.ru",
+      "organization": "Эксмо — PR художественной литературы",
+      "date": "2026-11-09T00:32:56Z",
+      "message_id": "1a1bdb8f2ce542b5",
+      "subject": "BookCheef — бесплатное информационное сотрудничество (художественная литература)",
+      "source_url": "https://eksmo.ru/publishers/contacts/",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "pr2@eksmo.ru",
+      "organization": "Эксмо — PR детской и подростковой литературы",
+      "date": "2026-11-09T00:32:58Z",
+      "message_id": "1a1bdb8f84dfdbb7",
+      "subject": "BookCheef — бесплатное информационное сотрудничество (детская литература)",
+      "source_url": "https://eksmo.ru/publishers/contacts/",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "zolina.is@eksmo.ru",
+      "organization": "БОМБОРА",
+      "date": "2026-11-09T00:33:00Z",
+      "message_id": "1a1bdb8ffa1df1c7",
+      "subject": "BookCheef — предложение бесплатного кросс-промо с БОМБОРОЙ",
+      "source_url": "https://bombora.ru/about/",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "pr@litres.ru",
+      "organization": "ЛитРес",
+      "date": "2026-11-09T00:33:10Z",
+      "message_id": "1a1bdb9293e69472",
+      "subject": "BookCheef — предложение бесплатного информационного сотрудничества",
+      "source_url": "https://www.litres.ru/company/press-service/",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
+    },
+    {
+      "email": "partners@booksi.org",
+      "organization": "Букси",
+      "date": "2026-11-09T00:33:12Z",
+      "message_id": "1a1bdb92f71c8f28",
+      "subject": "BookCheef — предложение бесплатного книжного сотрудничества",
+      "source_url": "https://booksi.org/contacts/",
+      "method": "Gmail Sent verified",
+      "campaign": "2026-11-09 earlier batch",
+      "follow_up_allowed": false,
+      "consent_basis": "not recorded in current registry"
     }
   ],
   "notes": [
-    "The eight suppressed addresses above were contacted before this ledger was introduced; their history is not duplicated in sent_log.",
     "Do not add a contact to approved_contacts until its official public business source and recipient-specific message have been reviewed.",
     "A successful connection check does not authorize or trigger email sending.",
     "Five new candidate contacts and individualized draft emails were prepared on 2026-11-09. They remain needs_review; no email was sent and they are not yet approved_contacts.",
     "First outreach batch processed after explicit owner approval on 2026-11-09. Sent records contain Gmail message IDs; failed messages remain unsent.",
     "2026-11-09: created Gmail draft for opt@alpina.ru after verifying the official online-platform partnership contact. Draft ID r-4073089785559091969; not sent pending review/appropriate legal basis.",
     "2026-11-09 daily compliance review: five additional official public business/editorial contacts were verified and five individualized Gmail drafts were created (see marketing/email-drafts/2026-11-09-second-batch.md). No email was sent in this run: no recipient-specific prior consent, incoming invitation, or confirmed applicable legal basis was documented; public PR/partnership/editorial addresses were not treated as consent. No replies from the five previously sent contacts were found in Gmail Inbox. Recipient country was not independently verified for four of the five new prospects; Phantom Press's official page lists a Moscow office.",
-    "2026-11-09: five earlier messages in the first batch are confirmed in Gmail Sent and recorded in sent_log with message IDs. They were sent at 02:23:16Z (05:23 Moscow); this run did not send or follow up on them. Do not repeat them."
+    "2026-11-09: five earlier messages in the first batch are confirmed in Gmail Sent and recorded in sent_log with message IDs. They were sent at 02:23:16Z (05:23 Moscow); this run did not send or follow up on them. Do not repeat them.",
+    "Gmail Sent reconciliation on 2026-11-09: 8 previously listed no-repeat addresses have verified message IDs and timestamps between 00:31:40Z and 00:33:12Z; IDs and source URLs were added to sent_log/prospects. Five additional first-batch emails are verified between 02:23:03Z and 02:23:15Z. Total confirmed BookCheef outreach messages sent earlier today before this run: 13. No new email was sent in this run.",
+    "The original first-batch draft file was corrected after Gmail Sent verification; the five messages were sent despite the file's earlier draft-only note. No recipient-specific consent evidence is recorded here. Do not follow up unless a recipient replies or the owner authorizes a legally reviewed response."
   ],
   "prospects": [
     {
@@ -212,6 +348,102 @@
       "suppression_status": "not_suppressed",
       "consent_basis": null,
       "note": "В официальном Telegram-профиле указан адрес редакции и книжное направление @mustreads; публичный редакционный адрес не считается согласием на маркетинговое письмо."
+    },
+    {
+      "email": "reklama@livelib.ru",
+      "organization": "LiveLib",
+      "status": "sent",
+      "source_url": "https://t.me/livelib_official",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — предложение бесплатного книжного сотрудничества",
+      "gmail_message_id": "1a1bdb7c6f4731ed",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "pr@m-i-f.ru",
+      "organization": "Издательство МИФ",
+      "status": "sent",
+      "source_url": "https://t.me/mifbooks",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — предложение бесплатного информационного сотрудничества",
+      "gmail_message_id": "1a1bdb7dd2d14245",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "pr@limbakh.ru",
+      "organization": "Издательство Ивана Лимбаха",
+      "status": "sent",
+      "source_url": "https://t.me/ilimbakh",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — предложение бесплатного информационного сотрудничества",
+      "gmail_message_id": "1a1bdb7e333b7672",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "pr1@eksmo.ru",
+      "organization": "Эксмо — PR художественной литературы",
+      "status": "sent",
+      "source_url": "https://eksmo.ru/publishers/contacts/",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — бесплатное информационное сотрудничество (художественная литература)",
+      "gmail_message_id": "1a1bdb8f2ce542b5",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "pr2@eksmo.ru",
+      "organization": "Эксмо — PR детской и подростковой литературы",
+      "status": "sent",
+      "source_url": "https://eksmo.ru/publishers/contacts/",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — бесплатное информационное сотрудничество (детская литература)",
+      "gmail_message_id": "1a1bdb8f84dfdbb7",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "zolina.is@eksmo.ru",
+      "organization": "БОМБОРА",
+      "status": "sent",
+      "source_url": "https://bombora.ru/about/",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — предложение бесплатного кросс-промо с БОМБОРОЙ",
+      "gmail_message_id": "1a1bdb8ffa1df1c7",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "pr@litres.ru",
+      "organization": "ЛитРес",
+      "status": "sent",
+      "source_url": "https://www.litres.ru/company/press-service/",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — предложение бесплатного информационного сотрудничества",
+      "gmail_message_id": "1a1bdb9293e69472",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
+    },
+    {
+      "email": "partners@booksi.org",
+      "organization": "Букси",
+      "status": "sent",
+      "source_url": "https://booksi.org/contacts/",
+      "date_checked": "2026-11-09",
+      "subject": "BookCheef — предложение бесплатного книжного сотрудничества",
+      "gmail_message_id": "1a1bdb92f71c8f28",
+      "suppression_status": "do_not_repeat",
+      "response_status": "no_reply_found_as_of_2026-11-09",
+      "note": "Gmail Sent подтверждает отправку 2026-11-09 до текущего запуска. Повторные обращения запрещены; доказательство согласия на получение рекламной почты в текущем реестре не найдено."
     }
   ],
   "draft_log": [
@@ -297,7 +529,14 @@
         "url": "https://yasnost.ru/38-fz/st18/",
         "note": "Current Article 18(1) of Federal Law 38-FZ (edition 2026-09-01; source notes official pravo.gov.ru text) requires prior consent for advertising over telecommunications networks."
       }
-    ]
+    ],
+    "historical_sends_audit": {
+      "date": "2026-11-09",
+      "confirmed_sent_before_current_run": 13,
+      "sent_in_current_run": 0,
+      "consent_evidence_recorded_for_historical_sends": 0,
+      "action": "No further outreach or follow-up. Await replies; assess any response individually. Preserve sent IDs for audit."
+    }
   },
   "last_checked_at": "2026-11-09"
 }
