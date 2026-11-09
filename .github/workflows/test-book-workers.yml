@@ -5,6 +5,8 @@ on:
     paths:
       - "scripts/coordinate-worker-packages.mjs"
       - "scripts/coordinate-worker-packages.test.mjs"
+      - "scripts/coordinate-worker-artifacts.mjs"
+      - "scripts/coordinate-worker-artifacts.test.mjs"
       - "scripts/book-worker-state.mjs"
       - "scripts/book-worker-state.test.mjs"
       - "scripts/book-checkpoint.mjs"
@@ -31,9 +33,10 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check scripts/coordinate-worker-packages.mjs
+          node --check scripts/coordinate-worker-artifacts.mjs
           node --check scripts/book-worker-state.mjs
           node --check scripts/generate-daily-book.mjs
           node --check scripts/generate-next-novel-chapter.mjs
           node --check scripts/book-checkpoint.mjs
       - name: Run worker state tests
-        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs
+        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
