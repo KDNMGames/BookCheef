@@ -46,7 +46,9 @@ if (pending) {
 }
 
 
-const WORK_PATH = "book-publications/work-in-progress/current.json";
+const WORK_DIR = "book-publications/work-in-progress";
+const WORK_PATH = path.join(WORK_DIR, "current.json");
+const DEFERRED_QUEUE_PATH = "book-publications/deferred-books.json";
 
 const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
 const CURSOR_COOLDOWN_PATH = "book-publications/cursor-cooldown.json";
@@ -212,10 +214,27 @@ function parseModelJson(output) {
   if (start < 0 || end <= start) throw new Error("Cursor Agent did not return a JSON object.");
   return JSON.parse(cleaned.slice(start, end + 1));
 }
-const position = Number(rotation.cycle_position) || 1;
 const cycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
-const bookType = cycle[(position - 1) % cycle.length];
-const { saveWork, loadWork } = createCheckpointStore({ workPath: WORK_PATH, bookType });
+const position = Number(rotation.cycle_position) || 1;
+let deferredQueue = { tasks: [], updated_at: null };
+try {
+  deferredQueue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8"));
+} catch (error) { if (error.code !== "ENOENT") throw error; }
+deferredQueue.tasks = Array.isArray(deferredQueue.tasks) ? deferredQueue.tasks : [];
+const now = Date.now();
+const readyDeferredIndex = deferredQueue.tasks.findIndex(task =>
+  task && ["interactive", "ordinary"].includes(task.book_type) &&
+  typeof task.checkpoint_path === "string" &&
+  task.checkpoint_path.startsWith(WORK_DIR + "/deferred-") &&
+  (!Number.isFinite(Date.parse(task.retry_after || "")) || Date.parse(task.retry_after) <= now)
+);
+const deferredTask = readyDeferredIndex >= 0 ? deferredQueue.tasks[readyDeferredIndex] : null;
+const bookType = deferredTask?.book_type || cycle[(position - 1) % cycle.length];
+const workPath = deferredTask?.checkpoint_path || WORK_PATH;
+const { saveWork, loadWork } = createCheckpointStore({ workPath, bookType });
+console.log(deferredTask
+  ? "Resuming deferred " + bookType + " book task " + (deferredTask.task_id || "unknown") + "."
+  : "Starting the next " + bookType + " book task; deferred tasks remain parked until their retry time.");
 const authorDir = "book-publications/authors";
 const authorFiles = (await fs.readdir(authorDir)).filter(x => x.endsWith(".json")).sort();
 const authors = [];
@@ -727,7 +746,29 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
 }
 }
 if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVIDERS_COOLDOWN" || /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(lastError?.message || ""))) {
-  console.log("All configured text providers are unavailable or quota-limited. The checkpoint remains saved; no book was published and rotation was not advanced.");
+  const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
+    .map(async file => { try { return Date.parse(JSON.parse(await fs.readFile(file, "utf8")).retry_after || ""); } catch { return 0; } });
+  const cooldowns = await Promise.all(retryAfter);
+  const nextRetry = new Date(Math.max(Date.now() + 15 * 60 * 1000, ...cooldowns.filter(Number.isFinite))).toISOString();
+  let deferredEntry = deferredTask;
+  if (!deferredEntry) {
+    const taskId = "book-" + Date.now() + "-" + bookType;
+    const deferredPath = path.join(WORK_DIR, "deferred-" + taskId + ".json");
+    try { await fs.rename(workPath, deferredPath); } catch (error) { if (error.code !== "ENOENT") throw error; }
+    deferredEntry = { task_id: taskId, book_type: bookType, checkpoint_path: deferredPath, created_at: new Date().toISOString() };
+    deferredQueue.tasks.push(deferredEntry);
+    const nextPosition = position % cycle.length + 1;
+    rotation.cycle_position = nextPosition;
+    rotation.updated_at = new Date().toISOString();
+    rotation.note = "Generation task deferred after free-provider quota exhaustion; rotation advanced to another book type without publishing incomplete content.";
+    await fs.writeFile(ROTATION_PATH, JSON.stringify(rotation, null, 2) + "\n");
+    console.log("Deferred the current book task and advanced rotation to position " + nextPosition + ".");
+  }
+  deferredEntry.retry_after = nextRetry;
+  deferredEntry.last_error = String(lastError?.message || "Free provider quota unavailable").slice(0, 500);
+  deferredQueue.updated_at = new Date().toISOString();
+  await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+  console.log("Book task safely deferred until " + nextRetry + "; the next scheduled run can create a different book while this task waits.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   process.exit(0);
 }
@@ -742,7 +783,12 @@ pendingQueue.packages=Array.isArray(pendingQueue.packages)?pendingQueue.packages
 pendingQueue.packages.push({path:filePath,title:pkg.title,publication_key:pkg.publication_key,created_at:new Date().toISOString()});
 pendingQueue.updated_at=new Date().toISOString();
 await fs.writeFile(pendingQueuePath,JSON.stringify(pendingQueue,null,2)+"\n");
-await fs.rm(WORK_PATH, { force: true });
+await fs.rm(workPath, { force: true });
+if (deferredTask) {
+  deferredQueue.tasks = deferredQueue.tasks.filter(task => task.task_id !== deferredTask.task_id);
+  deferredQueue.updated_at = new Date().toISOString();
+  await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+}
 console.log("Created "+filePath+" ("+pkg.title+") and added it to the explicit retry queue.");
 console.log("Type: "+bookType+"; rotation position remains unchanged until verified publication.");
 if (process.env.GITHUB_OUTPUT) {
