@@ -254,6 +254,19 @@ const today = new Intl.DateTimeFormat("en-CA", {
   year: "numeric", month: "2-digit", day: "2-digit"
 }).format(new Date());
 
+const lastVerifiedPublicationAt = rotation.updated_at || rotation.last_publication?.created_at || "";
+if (!pending && lastVerifiedPublicationAt) {
+  const lastVerifiedLocalDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: config.timezone || "Europe/Berlin",
+    year: "numeric", month: "2-digit", day: "2-digit"
+  }).format(new Date(lastVerifiedPublicationAt));
+  if (lastVerifiedLocalDate === today) {
+    console.log("A verified BookCheef book was already published on " + today + "; skipping a second publication for this local date.");
+    if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+    process.exit(0);
+  }
+}
+
 const systemPrompt = [
   "Ты — профессиональная редакция BookCheef. Создавай оригинальные законченные книги на русском языке.",
   "Верни только один корректный JSON-объект, без Markdown и комментариев.",
@@ -261,6 +274,7 @@ const systemPrompt = [
   "Книга должна быть содержательной, с полноценным сюжетом, сценами, конфликтом и завершением; не конспектом и не синопсисом.",
   "Не используй заглушки, TODO, пустые поля и служебные комментарии.",
   "Все изображения описывай точными визуальными промптами; не вставляй URL и base64."
+  "Сначала задай визуальный паспорт по обложке: техника, линии, палитра, освещение, контраст, фактура и реализм. Используй один неизменный style anchor во всех изображениях; предпочитай окружения, архитектуру, предметы и силуэты вместо крупных планов людей. Если человек показан — естественная анатомия, одна голова, ровно две руки и две ноги, без лишних/дублированных конечностей и оторванных частей тела; избегай толпы, сложных жестов, текста, логотипов, водяных знаков и коллажей."
 ].join("\n");
 
 const userPrompt = `Создай ОДНУ полностью готовую бесплатную книгу для каталога BookCheef.
@@ -629,12 +643,26 @@ function validate(pkg) {
   if (!pkg.cover?.prompt?.trim()) throw new Error("Missing cover prompt.");
   const anchor = String(pkg.cover.visual_style_anchor || "Cinematic painterly digital realism, finely etched details, cohesive restrained color palette, atmospheric directional lighting, consistent material textures.").trim();
   pkg.cover.visual_style_anchor = anchor;
-  pkg.cover.prompt = anchor + " " + String(pkg.cover.prompt).trim();
+  const qualityGuard = "Clear uncluttered composition; prefer environments, architecture, objects and silhouettes over close-up people. If a human appears: natural anatomy, one head, exactly two arms and two legs; no extra or duplicated limbs, detached body parts or malformed hands. No unintended people or objects, text, logos, watermarks or collage.";
+  const normalizeVisualPrompt = (value) => {
+    let body = String(value ?? "").replace(anchor, "").trim();
+    if (body.endsWith(qualityGuard)) body = body.slice(0, -qualityGuard.length).trim();
+    const maxBody = 1800 - anchor.length - qualityGuard.length - 2;
+    if (maxBody < 80) throw new Error("Visual style anchor is too long.");
+    if (body.length > maxBody) {
+      body = body.slice(0, maxBody);
+      const boundary = body.lastIndexOf(" ");
+      if (boundary > 80) body = body.slice(0, boundary);
+      body = body.trim();
+    }
+    return [anchor, body, qualityGuard].filter(Boolean).join(" ");
+  };
+  pkg.cover.prompt = normalizeVisualPrompt(pkg.cover.prompt);
   for (let i=0;i<pkg.illustrations.length;i++) {
     const item=pkg.illustrations[i];
     item.number=i+1;
     if (!item.chapter?.trim() || !item.prompt?.trim()) throw new Error("Illustration " + (i+1) + " is incomplete.");
-    item.prompt = anchor + " " + item.prompt.replace(anchor,"").trim();
+    item.prompt = normalizeVisualPrompt(item.prompt);
     if (item.prompt.length > 1800) throw new Error("Illustration prompt is too long.");
   }
   if (!Array.isArray(pkg.footnotes) && Array.isArray(pkg.interactive_content?.footnotes)) {
