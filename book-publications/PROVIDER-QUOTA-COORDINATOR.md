@@ -16,14 +16,13 @@ The setup SQL is deliberately **not applied to the live database** by this chang
 
 ## One-time activation steps
 
-1. Open the existing Supabase project SQL Editor.
-2. Review and run the complete contents of `supabase/provider-quota-setup.sql`.
-3. In GitHub repository Settings → Secrets and variables → Actions → Secrets, add:
+1. The SQL setup has already been applied to the existing Supabase Free project as migration `20261109123700_bookcheef_provider_quota_coordinator`; both private tables and RPC functions are present and verified.
+2. In GitHub repository Settings → Secrets and variables → Actions → Secrets, add:
    - `SUPABASE_URL` — the existing BookCheef project API URL.
    - `SUPABASE_SERVICE_ROLE_KEY` — the server-side service-role key for that same project.
-4. Never place the service-role key in Vite variables, frontend code, committed files, artifacts, or logs. It is intended only for trusted GitHub Actions jobs.
-5. In GitHub Actions Variables, set `BOOKCHEEF_SHARED_QUOTA_ENABLED=true` only after the SQL setup and both Supabase secrets are in place.
-6. Keep `CURSOR_FREE_INCLUDED=true` and `GEMINI_FREE_INCLUDED=true` disabled unless the corresponding provider's included-free API entitlement has been explicitly confirmed. A Gemini Pro subscription does not by itself establish free Gemini API quota. This quota coordinator does not change those safeguards.
+3. Never place the service-role key in Vite variables, frontend code, committed files, artifacts, or logs. It is intended only for trusted GitHub Actions jobs.
+4. In GitHub Actions Variables, set `BOOKCHEEF_SHARED_QUOTA_ENABLED=true` only after the SQL setup and both Supabase secrets are in place.
+5. Keep `CURSOR_FREE_INCLUDED=true` and `GEMINI_FREE_INCLUDED=true` disabled unless the corresponding provider's included-free API entitlement has been explicitly confirmed. A Gemini Pro subscription does not by itself establish free Gemini API quota. This quota coordinator does not change those safeguards.
 
 ## Default policy
 
@@ -37,4 +36,4 @@ Use account-level provider keys such as `gemini`, `openrouter`, and `cursor-agen
 
 ## Current activation status
 
-The client and SQL contract are prepared and CI-tested. The daily book and novel generators are wired behind `BOOKCHEEF_SHARED_QUOTA_ENABLED`, which remains off until the live schema and GitHub Actions secrets are configured. The SQL setup has not been applied and no GitHub secrets/variables have been added by this change. Until activation and cross-workflow publisher/queue serialization are complete, parallel AI generation must remain disabled. Do not infer or configure numeric daily quotas from plan names; set them only after verifying the actual provider entitlement.
+The client and SQL contract are prepared and CI-tested. The SQL migration is installed in the existing Supabase Free project and its RPC behavior and access controls were verified. The daily book and novel generators are wired behind `BOOKCHEEF_SHARED_QUOTA_ENABLED`, which remains off until the two GitHub Actions secrets and enablement variable are configured. No GitHub secrets/variables have been added by this change. Until activation and cross-workflow publisher/queue serialization are complete, parallel AI generation must remain disabled. Do not infer or configure numeric daily quotas from plan names; set them only after verifying the actual provider entitlement.
