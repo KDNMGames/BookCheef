@@ -23,6 +23,8 @@ Each worker owns `book-publications/workers/<type>/`: lease, queue, checkpoints,
 
 - Worker-specific paths, leases, atomic JSON writes, and unit tests.
 - Ordinary/interactive generation writes newly created packages to its worker outbox.
+- `BOOKCHEEF_WORKER_MODE=isolated` requires an explicit `BOOKCHEEF_WORKER_TYPE` (`ordinary` or `interactive`). In this mode the generator does not read the shared pending queue or rotation state, does not import the legacy shared checkpoint, does not mutate shared publication files, and only writes worker-scoped checkpoints/deferred state/outbox files.
+- A manual, single-worker workflow can run one selected worker and upload its worker directory as an artifact. It intentionally does not run both worker types concurrently until provider-wide throttling is implemented.
 - `coordinate-worker-packages.mjs` validates package structure, deduplicates by `publication_key`, updates the pending queue, records worker handoff, and moves packages to the publication inbox.
 - `coordinate-worker-artifacts.mjs` accepts a downloaded artifact tree shaped as `<artifact-root>/<worker-type>/outbox/*.json`. It processes ordinary, interactive, then novel packages sequentially through the existing coordinator. It emits the resulting inbox paths as a GitHub Actions multiline output. Re-running after a partial handoff is safe because already-imported source files have been moved and package keys are deduplicated.
 - The novel generator now acquires a `novel` lease and writes a worker-scoped completion checkpoint. Its chapter and shared manifest are still committed by its own serialized workflow.
@@ -30,9 +32,10 @@ Each worker owns `book-publications/workers/<type>/`: lease, queue, checkpoints,
 
 ## Not enabled / remaining work
 
-- The daily workflow is still single-worker. No matrix or parallel generation is active.
-- The artifact coordinator is tested but not yet wired to a matrix workflow; worker jobs must upload their isolated outboxes and state, and one downstream job must download all artifacts and run the coordinator.
-- The ordinary/interactive generator still reads shared pending queue and rotation state. It needs a true artifact-only mode that cannot commit or mutate shared queue/rotation/cooldown state.
+- The existing daily workflow is still single-worker. No automatic or matrix parallel generation is active.
+- The manual artifact-only workflow runs exactly one selected worker at a time and uploads its isolated state/outbox. It does not publish or commit the artifact.
+- The artifact coordinator is tested but not yet connected to a downstream artifact-download job.
+- A provider-wide throttle and coordinated quota budget are still required before running ordinary and interactive workers concurrently.
 - Novel chapter/manifest changes still target the shared draft tree. Novel output needs artifact handoff and a serialized manifest merge.
 - Legacy deferred tasks still need a safe migration.
 - Provider-wide throttling and cross-workflow publisher/queue serialization are required before any parallel run.
