@@ -9,7 +9,7 @@ const campaignsData = readJson(campaignsFile);
 const platforms = Array.isArray(platformsData.platforms) ? platformsData.platforms : [];
 const campaigns = Array.isArray(campaignsData.campaigns) ? campaignsData.campaigns : [];
 
-const counts = { auto_allowed: 0, manual_only: 0, review_required: 0, blocked: 0, other: 0 };
+const counts = { auto_allowed: 0, manual_only: 0, review_required: 0, blocked: 0, contact_sent: 0, other: 0 };
 for (const platform of platforms) {
   if (Object.hasOwn(counts, platform.status)) counts[platform.status]++;
   else counts.other++;
@@ -35,6 +35,7 @@ const lines = [
   `- manual_only: ${counts.manual_only}`,
   `- review_required: ${counts.review_required}`,
   `- blocked: ${counts.blocked}`,
+  `- contact_sent: ${counts.contact_sent}`,
   `- other statuses: ${counts.other}`,
   "",
   "## Publication gate",
