@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 concurrency:
   group: bookcheef-daily-book-generation
@@ -125,7 +125,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           while IFS= read -r package_path; do
-            [ -n "$package_path" ] && git add "$package_path"
+            if [ -n "$package_path" ]; then
+              git add "$package_path"
+            fi
           done <<< "$PACKAGE_PATHS"
           if [ "${{ steps.coordinate.outputs.package_count }}" != "0" ]; then
             git add book-publications/pending-publications.json
