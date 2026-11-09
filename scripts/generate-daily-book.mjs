@@ -37,6 +37,15 @@ async function notifyBookCheefAdmins(text) {
     return false;
   }
 }
+
+async function notifyProviderLimit(provider, reason, retryAfter) {
+  await notifyBookCheefAdmins(
+    "⚠️ BookCheef: бесплатный лимит ИИ-провайдера «" + provider + "» исчерпан или временно недоступен. " +
+    "Пауза до: " + retryAfter + ". " +
+    "Причина: " + String(reason || "провайдер сообщил об ограничении").slice(0, 700) + ". " +
+    "Генератор попробует другой разрешённый бесплатный источник; если все источники недоступны, черновик останется сохранённым. Платные API не используются."
+  );
+}
 let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
@@ -155,6 +164,7 @@ async function saveGeminiCooldown(reason) {
   }, null, 2) + "\n");
   geminiDisabled = true;
   console.warn("Gemini paused until " + retryAfter + ".");
+  await notifyProviderLimit("Google Gemini API", reason, retryAfter);
 }
 
 async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {}) {
@@ -223,6 +233,7 @@ async function saveCursorCooldown(reason) {
   }, null, 2) + "\n");
   cursorDisabled = true;
   console.warn("Cursor Agent paused until " + retryAfter + ".");
+  await notifyProviderLimit("Cursor Agent", reason, retryAfter);
 }
 
 async function saveOpenRouterCooldown(reason) {
@@ -235,6 +246,7 @@ async function saveOpenRouterCooldown(reason) {
   }, null, 2) + "\n");
   openRouterDisabled = true;
   console.warn("OpenRouter paused until " + retryAfter + "; switching to the next AI provider.");
+  await notifyProviderLimit("OpenRouter (бесплатные модели)", reason, retryAfter);
 }
 
 async function runCursorAgent(prompt, { timeout = 600000 } = {}) {
