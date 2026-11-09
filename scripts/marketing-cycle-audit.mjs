@@ -46,7 +46,7 @@ const lines = [
   "## Connector limitations",
   "",
   "- This GitHub runner has no authenticated Gmail connector session; it does not send outreach email.",
-  "- This cycle does not perform web discovery or infer permissions from search snippets.",
+  "- Weekly community discovery runs separately from public Russian-language RSS feeds; it only creates candidates and never verifies permissions or publishes.",
   "- Manual/review-required destinations remain untouched.",
   "- The owned @BookCheef channel is excluded from acquisition advertising.",
   "",
@@ -54,7 +54,7 @@ const lines = [
   "",
   "- Add a platform only after checking its current first-party rules and recording the rules URL and check date.",
   "- Obtain explicit admin permission and official publishing API access before changing any platform to auto_allowed.",
-  "- Email outreach remains in the connected Gmail workflow and must check Sent plus the suppression list before sending."
+  "- GitHub Actions still has no Gmail API credentials; no email is sent by this runner. Gmail connector access in ChatGPT is separate."
 ];
 
 const output = path.join("marketing", "reports", "scheduled-cycle-latest.md");
