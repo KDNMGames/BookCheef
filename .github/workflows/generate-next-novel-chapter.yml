@@ -65,6 +65,9 @@ jobs:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
           BOOKCHEEF_NOVEL_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.novel_mode || 'coordinated' }}
+          BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/generate-next-novel-chapter.mjs
 
       - name: Upload isolated novel chapter artifact
