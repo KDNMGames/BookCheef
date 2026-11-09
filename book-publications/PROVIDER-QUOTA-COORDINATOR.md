@@ -22,7 +22,8 @@ The setup SQL is deliberately **not applied to the live database** by this chang
    - `SUPABASE_URL` — the existing BookCheef project API URL.
    - `SUPABASE_SERVICE_ROLE_KEY` — the server-side service-role key for that same project.
 4. Never place the service-role key in Vite variables, frontend code, committed files, artifacts, or logs. It is intended only for trusted GitHub Actions jobs.
-5. Keep `CURSOR_FREE_INCLUDED=true` disabled unless Cursor's included-free entitlement has been explicitly confirmed. This quota coordinator does not change that safeguard.
+5. In GitHub Actions Variables, set `BOOKCHEEF_SHARED_QUOTA_ENABLED=true` only after the SQL setup and both Supabase secrets are in place.
+6. Keep `CURSOR_FREE_INCLUDED=true` and `GEMINI_FREE_INCLUDED=true` disabled unless the corresponding provider's included-free API entitlement has been explicitly confirmed. A Gemini Pro subscription does not by itself establish free Gemini API quota. This quota coordinator does not change those safeguards.
 
 ## Default policy
 
@@ -36,4 +37,4 @@ Use account-level provider keys such as `gemini`, `openrouter`, and `cursor-agen
 
 ## Current activation status
 
-The client and SQL contract are prepared and CI-tested. The live schema has not been changed, GitHub Actions secrets have not been added, and generation workflows are not yet calling this coordinator. Until the activation and integration steps are complete, parallel AI generation must remain disabled. Do not infer or configure numeric daily quotas from plan names; set them only after verifying the actual provider entitlement.
+The client and SQL contract are prepared and CI-tested. The daily book and novel generators are wired behind `BOOKCHEEF_SHARED_QUOTA_ENABLED`, which remains off until the live schema and GitHub Actions secrets are configured. The SQL setup has not been applied and no GitHub secrets/variables have been added by this change. Until activation and cross-workflow publisher/queue serialization are complete, parallel AI generation must remain disabled. Do not infer or configure numeric daily quotas from plan names; set them only after verifying the actual provider entitlement.
