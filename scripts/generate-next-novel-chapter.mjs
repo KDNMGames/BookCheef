@@ -3,6 +3,10 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createBookWorkerState } from "./book-worker-state.mjs";
 
+if (process.env.CURSOR_FREE_INCLUDED !== "true") {
+  throw new Error("Novel generation stopped: set the CURSOR_FREE_INCLUDED Actions variable to true only after confirming that Cursor Agent usage is covered by an included free allowance. No paid usage is permitted.");
+}
+
 const workerState = createBookWorkerState({ workerType: "novel" });
 await workerState.acquireLease();
 try {
