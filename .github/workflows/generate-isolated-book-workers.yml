@@ -2,6 +2,15 @@ name: BookCheef isolated book workers
 
 on:
   workflow_dispatch:
+    inputs:
+      worker_type:
+        description: Which isolated book worker to run
+        required: true
+        type: choice
+        options:
+          - ordinary
+          - interactive
+        default: ordinary
 
 permissions:
   contents: read
@@ -12,13 +21,9 @@ concurrency:
 
 jobs:
   generate:
-    name: Generate ${{ matrix.worker_type }} book
+    name: Generate ${{ inputs.worker_type }} book
     runs-on: ubuntu-24.04
     timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        worker_type: [ordinary, interactive]
     steps:
       - name: Checkout BookCheef
         uses: actions/checkout@v4
@@ -50,7 +55,7 @@ jobs:
       - name: Generate isolated book package (no shared queue writes)
         env:
           BOOKCHEEF_WORKER_MODE: isolated
-          BOOKCHEEF_WORKER_TYPE: ${{ matrix.worker_type }}
+          BOOKCHEEF_WORKER_TYPE: ${{ inputs.worker_type }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
           CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
@@ -60,7 +65,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bookcheef-worker-${{ matrix.worker_type }}-${{ github.run_id }}
-          path: book-publications/workers/${{ matrix.worker_type }}/
+          name: bookcheef-worker-${{ inputs.worker_type }}-${{ github.run_id }}
+          path: book-publications/workers/${{ inputs.worker_type }}/
           if-no-files-found: warn
           retention-days: 7
