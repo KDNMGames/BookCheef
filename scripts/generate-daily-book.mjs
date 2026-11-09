@@ -233,7 +233,7 @@ const now = Date.now();
 const readyDeferredIndex = deferredQueue.tasks.findIndex(task =>
   task && ["interactive", "ordinary"].includes(task.book_type) &&
   typeof task.checkpoint_path === "string" &&
-  task.checkpoint_path.startsWith(WORK_DIR + "/deferred-") &&
+  task.checkpoint_path.startsWith(workerState.deferredDir + path.sep) &&
   (!Number.isFinite(Date.parse(task.retry_after || "")) || Date.parse(task.retry_after) <= now)
 );
 const deferredTask = readyDeferredIndex >= 0 ? deferredQueue.tasks[readyDeferredIndex] : null;
