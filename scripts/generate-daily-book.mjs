@@ -308,7 +308,7 @@ if (deferredSelection.status === "wait") {
     (waitingTask.task_id ? " (" + waitingTask.task_id + ")" : "") +
     ". Бесплатный повторный запуск после: " + deferredSelection.retryAfter +
     ". Черновик и контрольные точки сохраняются; платные API не используются.");
-  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\\ncreated=false\\n");
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   await workerState.releaseLease();
   process.exit(0);
 }
