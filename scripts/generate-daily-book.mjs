@@ -5,6 +5,7 @@ import { createCheckpointStore } from "./book-checkpoint.mjs";
 import { createBookWorkerState } from "./book-worker-state.mjs";
 import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
+import { selectDeferredTask } from "./deferred-task-policy.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -297,14 +298,24 @@ try {
   deferredQueue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8"));
 } catch (error) { if (error.code !== "ENOENT") throw error; }
 deferredQueue.tasks = Array.isArray(deferredQueue.tasks) ? deferredQueue.tasks : [];
-const now = Date.now();
-const readyDeferredIndex = deferredQueue.tasks.findIndex(task =>
-  task && ["interactive", "ordinary"].includes(task.book_type) &&
-  typeof task.checkpoint_path === "string" &&
-  task.checkpoint_path.startsWith(workerState.deferredDir + path.sep) &&
-  (!Number.isFinite(Date.parse(task.retry_after || "")) || Date.parse(task.retry_after) <= now)
-);
-const deferredTask = readyDeferredIndex >= 0 ? deferredQueue.tasks[readyDeferredIndex] : null;
+const deferredSelection = selectDeferredTask(deferredQueue.tasks, Date.now());
+if (deferredSelection.status === "wait") {
+  const waitingTask = deferredSelection.task;
+  console.log("A deferred book is still waiting for its free-provider retry window: " +
+    (waitingTask.task_id || "unknown") + " until " + deferredSelection.retryAfter +
+    ". No new book will be started, so the queue cannot fill with unfinished drafts.");
+  await notifyBookCheefAdmins("⏸ BookCheef: новая книга пока не запускается. Сначала будет завершена ранее начатая книга" +
+    (waitingTask.task_id ? " (" + waitingTask.task_id + ")" : "") +
+    ". Бесплатный повторный запуск после: " + deferredSelection.retryAfter +
+    ". Черновик и контрольные точки сохраняются; платные API не используются.");
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\\ncreated=false\\n");
+  await workerState.releaseLease();
+  process.exit(0);
+}
+const deferredTask = deferredSelection.status === "resume" ? deferredSelection.task : null;
+if (deferredTask && !deferredTask.checkpoint_path.startsWith(workerState.deferredDir + path.sep)) {
+  throw new Error("Deferred task checkpoint path is outside this worker's deferred directory.");
+}
 const bookType = deferredTask?.book_type || cycle[(position - 1) % cycle.length];
 const workPath = deferredTask?.checkpoint_path || WORK_PATH;
 const { saveWork, loadWork } = createCheckpointStore({ workPath, bookType });
