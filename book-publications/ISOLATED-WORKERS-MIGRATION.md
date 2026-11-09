@@ -18,9 +18,11 @@ Each worker owns `book-publications/workers/<type>/`:
 - `provider-cooldowns.json` — worker-local provider observations
 
 The shared publication inbox and Supabase publisher remain outside worker state.
-Workers must never edit the global rotation state or append to the shared publication
-queue directly. A single coordinator will validate worker outputs, deduplicate by
-`publication_key`, and enqueue publication packages.
+The target architecture requires workers not to edit the global rotation state or append
+to the shared publication queue directly. The current Phase 2 adapter has not reached
+that boundary yet: ordinary/interactive generation still appends to the legacy shared
+pending-publication queue and may advance global rotation when a task is deferred. Do
+not run multiple workers until the coordinator replaces these shared writes.
 
 ## Concurrency contract
 
@@ -36,15 +38,19 @@ queue directly. A single coordinator will validate worker outputs, deduplicate b
 
 ## Rollout status
 
-Phase 1 (this change): isolated path layout, lease ownership, atomic JSON writes,
-and unit tests.
+Phase 1: isolated path layout, lease ownership, atomic JSON writes, and unit tests.
 
-Phase 2: adapt the generator to accept an explicit worker type and move checkpoints,
-deferred tasks, and cooldown state into that worker's directory. Preserve the legacy
-single-worker paths for migration/recovery; do not delete old checkpoints.
+Phase 2 (partially implemented): ordinary/interactive generator now uses its worker's
+checkpoint, deferred-task file, cooldown files, lease, and completion queue record.
+A matching legacy work-in-progress/current.json checkpoint is copied into the worker
+store without deleting the original. The existing legacy deferred queue is preserved
+but is not yet automatically migrated. The novel chapter generator is not yet adapted.
+The shared inbox, pending-publication queue, and rotation state are still written by
+the daily generator, so this is not yet safe for parallel runs.
 
 Phase 3: add a coordinator that imports completed worker artifacts into the inbox
-with publication-key deduplication and one serialized commit.
+with publication-key deduplication and one serialized commit; migrate legacy deferred
+tasks and the novel chapter generator.
 
 Phase 4: enable a two-worker matrix for ordinary and interactive generation, with
 novel generation remaining independently scheduled. Add provider-wide throttling
