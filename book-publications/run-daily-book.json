@@ -1,8 +1,8 @@
 {
-  "requested_at": "2026-11-09T14:16:43.073Z",
-  "requested_by": "User explicitly requested to start the BookCheef generator",
+  "requested_at": "2026-11-09T14:32:57.293Z",
+  "requested_by": "User requested to fix BookCheef generation and start it immediately",
   "requested_type": "generate next book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Manual start requested by user. Resume pending work first, preserve checkpoints, use free providers only, and do not publish incomplete books.",
-  "reason": "Start one BookCheef generation cycle immediately. Keep the existing rotation, provider quota controls, isolated worker lease, publication verification, and all existing publications unchanged."
+  "retry_reason": "Resume any existing checkpoint first. The daily-publication stop condition has been removed. Use free providers only, preserve all checkpoints, defer exhausted providers, and never publish incomplete books.",
+  "reason": "Start one generation cycle immediately after removing the obsolete one-publication-per-day guard. Keep worker leases, shared provider quotas, publication-key duplicate protection, quality validation, and verified publication flow."
 }
