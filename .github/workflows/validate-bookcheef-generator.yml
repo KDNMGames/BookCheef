@@ -57,8 +57,11 @@ jobs:
             if (config.daily_book.free_only !== true || config.daily_book.paid_api_fallbacks !== false || config.daily_book.cursor_fallback_requires_explicit_included_free_entitlement !== true || config.daily_book.text_provider.free_models_only !== true) throw new Error("BookCheef must remain free-only");
             if (config.daily_book.on_failure.except_when_task_is_explicitly_deferred_after_free_provider_quota_exhaustion !== true) throw new Error("Deferred task rotation exception is not documented");
             if (length.adult_minimum_words < 18000) throw new Error("Adult minimum is below 18,000 words");
+            if (length.adult_interactive_minimum_words_per_route !== 18000 || length.adult_interactive_minimum_words_per_scene !== 6000) throw new Error("Adult interactive routes must be at least 18,000 words with 6,000 words per scene.");
+            const interactiveSceneMinimums = {"6+":500,"9+":600,"12+":800,"14+":900};
             for (const age of ["6+", "9+", "12+", "14+"]) {
               if (!length.child_minimum_words_by_age[age]) throw new Error("Missing child length for " + age);
+              if (length.child_interactive_minimum_words_per_scene_by_age?.[age] !== interactiveSceneMinimums[age]) throw new Error("Interactive scene minimum is incorrect for " + age);
             }
             console.log("Reading-length policy is valid.");
           '
