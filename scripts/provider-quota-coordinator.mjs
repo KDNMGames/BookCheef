@@ -32,6 +32,7 @@ export function createProviderQuotaCoordinator({
   supabaseUrl = process.env.SUPABASE_URL,
   serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY,
   workerType = process.env.BOOKCHEEF_WORKER_TYPE || "ordinary",
+  defaultCooldownSeconds = 21600,
   fetchImpl = globalThis.fetch
 } = {}) {
   if (!supabaseUrl || !serviceRoleKey) {
@@ -44,6 +45,7 @@ export function createProviderQuotaCoordinator({
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(baseUrl)) {
     throw new Error("SUPABASE_URL must be the HTTPS URL of the BookCheef Supabase project.");
   }
+  assertInteger("defaultCooldownSeconds", defaultCooldownSeconds, 60, 2592000);
   if (typeof fetchImpl !== "function") throw new Error("A fetch implementation is required.");
 
   async function rpc(name, body) {
@@ -145,7 +147,7 @@ export function createProviderQuotaCoordinator({
       if (limited) {
         outcome = "rate_limited";
         const retrySeconds = Number(error?.retryAfterSeconds || 0);
-        cooldownSeconds = Math.max(60, Math.min(2592000, retrySeconds || 21600));
+        cooldownSeconds = Math.max(60, Math.min(2592000, retrySeconds || defaultCooldownSeconds));
       } else {
         outcome = "failed";
       }
