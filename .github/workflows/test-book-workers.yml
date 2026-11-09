@@ -1,0 +1,33 @@
+name: BookCheef worker state tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/book-worker-state.mjs"
+      - "scripts/book-worker-state.test.mjs"
+      - "scripts/book-checkpoint.mjs"
+      - "scripts/generate-daily-book.mjs"
+      - ".github/workflows/generate-daily-book.yml"
+      - ".github/workflows/test-book-workers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker-state:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check scripts/book-worker-state.mjs
+          node --check scripts/book-checkpoint.mjs
+          node --check scripts/generate-daily-book.mjs
+      - name: Run worker state tests
+        run: node --test scripts/book-worker-state.test.mjs
