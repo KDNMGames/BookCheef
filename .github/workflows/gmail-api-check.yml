@@ -1,0 +1,91 @@
+name: BookCheef Gmail API connection check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-gmail-api-check
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify Gmail OAuth refresh and Gmail API access (no email is sent)
+        id: gmail
+        env:
+          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          for name in GMAIL_CLIENT_ID GMAIL_CLIENT_SECRET GMAIL_REFRESH_TOKEN; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing repository secret: $name"
+              exit 1
+            fi
+          done
+
+          response_file="$(mktemp)"
+          profile_file="$(mktemp)"
+          trap 'rm -f "$response_file" "$profile_file"' EXIT
+
+          http_code="$(curl --silent --show-error \
+            -o "$response_file" -w '%{http_code}' \
+            -X POST 'https://oauth2.googleapis.com/token' \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode "client_id=$GMAIL_CLIENT_ID" \
+            --data-urlencode "client_secret=$GMAIL_CLIENT_SECRET" \
+            --data-urlencode "refresh_token=$GMAIL_REFRESH_TOKEN" \
+            --data-urlencode 'grant_type=refresh_token')"
+
+          if [[ "$http_code" != "200" ]]; then
+            error_code="$(jq -r '.error // "unknown_error"' "$response_file" 2>/dev/null || echo unknown_error)"
+            echo "::error::Google OAuth refresh failed (HTTP $http_code; $error_code). Secret values were not printed."
+            exit 1
+          fi
+
+          access_token="$(jq -r '.access_token // empty' "$response_file")"
+          if [[ -z "$access_token" ]]; then
+            echo "::error::Google OAuth response did not contain an access token."
+            exit 1
+          fi
+
+          profile_code="$(curl --silent --show-error \
+            -o "$profile_file" -w '%{http_code}' \
+            -H "Authorization: Bearer $access_token" \
+            'https://gmail.googleapis.com/gmail/v1/users/me/profile')"
+
+          if [[ "$profile_code" != "200" ]]; then
+            api_error="$(jq -r '.error.message // .error.status // "Gmail API request failed"' "$profile_file" 2>/dev/null || echo 'Gmail API request failed')"
+            echo "::error::Gmail API profile check failed (HTTP $profile_code): $api_error"
+            exit 1
+          fi
+
+          message_count="$(jq -r '.messagesTotal // 0' "$profile_file")"
+          echo "Gmail OAuth refresh: successful."
+          echo "Gmail API access: successful."
+          echo "Mailbox messagesTotal: $message_count"
+          echo "No email was sent."
+
+      - name: Notify Telegram if Gmail connection check fails
+        if: failure()
+        env:
+          TELEGRAM_INTERNAL_SECRET: ${{ secrets.TELEGRAM_INTERNAL_SECRET }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_INTERNAL_SECRET:-}" ]]; then
+            echo "Telegram notification skipped: internal secret is missing."
+            exit 0
+          fi
+          message="🚨 BookCheef: проверка Gmail API не прошла. Автоматическая рассылка не запускалась. Открой GitHub Actions и проверь шаг Gmail API connection check."
+          payload="$(jq -n --arg text "$message" '{action:"admin_notification",text:$text}')"
+          curl --silent --show-error --fail-with-body \
+            -X POST 'https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot' \
+            -H 'Content-Type: application/json' \
+            -H "x-telegram-internal-secret: $TELEGRAM_INTERNAL_SECRET" \
+            --data "$payload"
