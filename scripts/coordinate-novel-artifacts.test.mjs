@@ -6,9 +6,9 @@ import path from "node:path";
 import { coordinateNovelArtifacts } from "./coordinate-novel-artifacts.mjs";
 
 const NOVEL = "book-publications/drafts/last-day-of-universe";
-const TARGET = `${NOVEL}/chapters/volume-01-chapter-026.md`;
+const TARGET = \`\${NOVEL}/chapters/volume-01-chapter-026.md\`;
 const markdown = "# Глава 26. Архив согласий\n\n" + ("Илья внимательно изучал старые записи и задавал вопросы Ладе. ".repeat(260));
-const wordCount = markdown.match(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu).length;
+const wordCount = markdown.match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu).length;
 
 function artifact(overrides = {}) {
   return {
@@ -40,7 +40,7 @@ async function fixture() {
     planned_chapters: 160,
     current_word_count: 10000,
     next_chapter: 26,
-    completed_chapters: [{ chapter: 25, volume: 1, path: `${NOVEL}/chapters/volume-01-chapter-025.md`, title: "Предыдущая", word_count: 1000 }],
+    completed_chapters: [{ chapter: 25, volume: 1, path: \`\${NOVEL}/chapters/volume-01-chapter-025.md\`, title: "Предыдущая", word_count: 1000 }],
     volumes: [{ volume: 1, status: "writing", completed_chapters: 25 }]
   };
   await fs.writeFile(path.join(novelRoot, "manifest.json"), JSON.stringify(manifest, null, 2));
@@ -59,7 +59,7 @@ test("merges a valid chapter and updates manifest exactly once", async () => {
     assert.equal(updated.completed_chapters.length, 2);
     assert.equal(updated.current_word_count, 10000 + wordCount);
     assert.equal(updated.volumes[0].completed_chapters, 26);
-    assert.equal(await fs.readFile(path.join(f.root, TARGET), "utf8"), markdown + "\\n");
+    assert.equal(await fs.readFile(path.join(f.root, TARGET), "utf8"), markdown + "\n");
     await assert.rejects(() => fs.access(source), { code: "ENOENT" });
   } finally { await fs.rm(f.root, { recursive: true, force: true }); }
 });
@@ -74,9 +74,8 @@ test("retry resumes after chapter write but before manifest update", async () =>
       repoRoot: f.root,
       beforeManifestWrite: async () => { throw new Error("simulated interruption"); }
     }), /simulated interruption/);
-    assert.equal(await fs.readFile(path.join(f.root, TARGET), "utf8"), markdown + "\\n");
-    await fs.access(source); // The source artifact must survive an interrupted merge.
-    await fs.writeFile(source, JSON.stringify(artifact()));
+    assert.equal(await fs.readFile(path.join(f.root, TARGET), "utf8"), markdown + "\n");
+    await fs.access(source);
     const result = await coordinateNovelArtifacts({ artifactRoot: "worker-artifacts/novel/outbox", repoRoot: f.root });
     assert.equal(result[0].status, "merged");
     const updated = JSON.parse(await fs.readFile(path.join(f.novelRoot, "manifest.json"), "utf8"));
@@ -93,7 +92,7 @@ test("rejects path traversal, invalid word count, and out-of-order chapters", as
     await assert.rejects(() => coordinateNovelArtifacts({ artifactRoot: "worker-artifacts/novel/outbox", repoRoot: f.root }), /target_path/);
     await fs.writeFile(source, JSON.stringify(artifact({ word_count: 1 })));
     await assert.rejects(() => coordinateNovelArtifacts({ artifactRoot: "worker-artifacts/novel/outbox", repoRoot: f.root }), /word_count mismatch/);
-    await fs.writeFile(source, JSON.stringify(artifact({ chapter: 27, target_path: `${NOVEL}/chapters/volume-01-chapter-027.md`, markdown: markdown.replace("Глава 26", "Глава 27") })));
+    await fs.writeFile(source, JSON.stringify(artifact({ chapter: 27, target_path: \`\${NOVEL}/chapters/volume-01-chapter-027.md\`, markdown: markdown.replace("Глава 26", "Глава 27") })));
     await assert.rejects(() => coordinateNovelArtifacts({ artifactRoot: "worker-artifacts/novel/outbox", repoRoot: f.root }), /expects chapter 26/);
   } finally { await fs.rm(f.root, { recursive: true, force: true }); }
 });
