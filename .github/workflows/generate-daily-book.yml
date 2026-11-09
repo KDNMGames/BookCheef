@@ -5,9 +5,8 @@ on:
     branches: [main]
     paths:
       - "book-publications/run-daily-book.json"
-  schedule:
-    # Poll for the next production task every 15 minutes.
-    - cron: '*/15 * * * *'
+  # The single daily ChatGPT automation triggers this workflow by updating
+  # book-publications/run-daily-book.json. Do not add a frequent cron here.
   workflow_dispatch:
 
 permissions:
