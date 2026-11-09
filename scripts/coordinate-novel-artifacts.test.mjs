@@ -75,7 +75,7 @@ test("retry resumes after chapter write but before manifest update", async () =>
       beforeManifestWrite: async () => { throw new Error("simulated interruption"); }
     }), /simulated interruption/);
     assert.equal(await fs.readFile(path.join(f.root, TARGET), "utf8"), markdown + "\\n");
-    await assert.rejects(() => fs.access(source), { code: "ENOENT" }).catch(() => {});
+    await fs.access(source); // The source artifact must survive an interrupted merge.
     await fs.writeFile(source, JSON.stringify(artifact()));
     const result = await coordinateNovelArtifacts({ artifactRoot: "worker-artifacts/novel/outbox", repoRoot: f.root });
     assert.equal(result[0].status, "merged");
