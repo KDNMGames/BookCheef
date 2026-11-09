@@ -30,7 +30,7 @@ test("acquires a provider reservation through the private Supabase RPC", async (
   assert.equal(reservation.id, "00000000-0000-4000-8000-000000000001");
   assert.equal(call.url, "https://example.supabase.co/rest/v1/rpc/bookcheef_reserve_provider_request");
   assert.equal(call.options.headers.apikey, "test-service-role");
-  assert.equal(call.options.headers.Authorization, "Bearer test-service-role");
+  assert.equal(call.options.headers.Authorization, undefined);
   const body = JSON.parse(call.options.body);
   assert.equal(body.p_provider_key, "gemini");
   assert.equal(body.p_worker_type, "interactive");
@@ -106,7 +106,7 @@ test("fails closed when shared quota credentials are missing or provider identit
   assert.throws(() => createProviderQuotaCoordinator({
     supabaseUrl: "https://example.supabase.co",
     serviceRoleKey: ""
-  }), /SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY/);
+  }), /SUPABASE_URL and SUPABASE_SECRET_KEY/);
   const quota = createProviderQuotaCoordinator({
     supabaseUrl: "https://example.supabase.co",
     serviceRoleKey: "secret",
