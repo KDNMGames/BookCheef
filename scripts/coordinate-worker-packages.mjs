@@ -134,7 +134,7 @@ export async function coordinatePackage({ packagePath, root = process.cwd() }) {
         }
       } catch (error) {
         if (error.code !== "ENOENT") throw error;
-        await fs.writeFile(coordinatedFile, JSON.stringify(pkg, null, 2) + "\\n", { flag: "wx" });
+        await fs.writeFile(coordinatedFile, JSON.stringify(pkg, null, 2) + "\n", { flag: "wx" });
       }
 
       if (!queue.packages.some(item => item.publication_key === pkg.publication_key)) {
