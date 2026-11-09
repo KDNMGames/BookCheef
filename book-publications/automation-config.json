@@ -1,6 +1,15 @@
 {
   "version": 1,
   "timezone": "Europe/Berlin",
+  "provider_quota": {
+    "enabled_by_actions_variable": "BOOKCHEEF_SHARED_QUOTA_ENABLED",
+    "min_interval_seconds": 15,
+    "window_seconds": 86400,
+    "max_requests_per_window": 0,
+    "max_concurrent_per_provider": 1,
+    "reservation_lease_seconds": 1200,
+    "cooldown_after_rate_limit_seconds": 21600
+  },
   "daily_book": {
     "enabled": true,
     "schedule_local": "01:10",
