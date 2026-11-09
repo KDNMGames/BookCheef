@@ -343,6 +343,42 @@
       "notes": "Отправлен индивидуальный запрос о бесплатном информационном/редакционном сотрудничестве; платное размещение не запрашивалось. Ожидаем ответа. Это издательский PR-контакт, не разрешение на публикацию в канале.",
       "last_checked": "2026-11-09",
       "evidence": "https://t.me/s/ilimbakh"
+    },
+    {
+      "id": "eksmo-fiction-pr-email",
+      "name": "Эксмо — PR художественной литературы",
+      "url": "https://eksmo.ru/publishers/contacts/",
+      "contact": "pr1@eksmo.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве; платное размещение не запрашивалось. Ожидаем ответ; публикаций без разрешения не делать.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://eksmo.ru/publishers/contacts/"
+    },
+    {
+      "id": "eksmo-childrens-pr-email",
+      "name": "Эксмо — PR детской и подростковой литературы",
+      "url": "https://eksmo.ru/publishers/contacts/",
+      "contact": "pr2@eksmo.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве по детским книгам; платное размещение не запрашивалось. Ожидаем ответ; публикаций без разрешения не делать.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://eksmo.ru/publishers/contacts/"
+    },
+    {
+      "id": "bombora-marketing-contact",
+      "name": "БОМБОРА — предложения коллабораций",
+      "url": "https://bombora.ru/about/",
+      "contact": "zolina.is@eksmo.ru",
+      "status": "contact_sent",
+      "mode": "email_inquiry_sent_waiting_reply",
+      "scope": "third_party",
+      "notes": "Отправлен адресный запрос о бесплатном информационном сотрудничестве/кросс-промо; платное размещение не запрашивалось. Ожидаем ответ; публикаций без разрешения не делать.",
+      "last_checked": "2026-11-09",
+      "evidence": "https://bombora.ru/about/"
     }
   ]
 }
