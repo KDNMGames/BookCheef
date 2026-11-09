@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Test isolated worker state
+        run: node --test scripts/book-worker-state.test.mjs
+
       - name: Install Cursor Agent fallback
         if: vars.CURSOR_FREE_INCLUDED == 'true'
         run: |
@@ -50,6 +53,17 @@ jobs:
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: node scripts/generate-daily-book.mjs
 
+      - name: Release isolated worker lease
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import { createBookWorkerState } from "./scripts/book-worker-state.mjs";
+          for (const workerType of ["ordinary", "interactive", "novel"]) {
+            const worker = createBookWorkerState({ workerType, runId: process.env.GITHUB_RUN_ID });
+            await worker.releaseLease();
+          }
+          NODE
+
       - name: Commit generated package
         if: steps.book.outputs.created == 'true'
         env:
@@ -59,7 +73,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$PACKAGE_PATH" book-publications/pending-publications.json book-publications/deferred-books.json
-          git add -A book-publications/work-in-progress
+          git add -A book-publications/workers
           git commit -m "Create daily BookCheef book package"
           git pull --rebase origin main
           git push
@@ -70,6 +84,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A book-publications/workers
           if [ -f book-publications/provider-cooldown.json ]; then
             git add book-publications/provider-cooldown.json
           fi
