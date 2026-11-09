@@ -36,7 +36,7 @@ Each worker owns `book-publications/workers/<type>/`: lease, queue, checkpoints,
 - The manual artifact-only workflow runs exactly one selected worker at a time and uploads its isolated state/outbox. It does not publish or commit the artifact.
 - The artifact coordinator is connected to the manual workflow's downstream artifact-download job. This workflow is still manual and serial; it does not change the existing scheduled daily generator.
 - A provider-wide throttle and coordinated quota budget are still required before running ordinary and interactive workers concurrently. Cursor is conservatively gated by the explicit included-free entitlement flag in the novel and isolated workflows.
-- Novel chapter/manifest changes still target the shared draft tree. Novel output needs artifact handoff and a serialized manifest merge; the manual isolated workflow currently runs ordinary or interactive only.
+- Novel generator supports a manual `artifact-only` mode: it writes a JSON chapter artifact and worker checkpoint without changing the shared chapter tree or manifest; the workflow uploads that artifact. The scheduled workflow remains in coordinated mode. A serialized artifact validator/manifest merger is still required before artifacts can be imported.
 - Legacy deferred tasks still need a safe migration.
 - Provider-wide throttling and cross-workflow publisher/queue serialization are required before any parallel run.
 
