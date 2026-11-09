@@ -57,6 +57,44 @@
   "notes": [
     "The eight suppressed addresses above were contacted before this ledger was introduced; their history is not duplicated in sent_log.",
     "Do not add a contact to approved_contacts until its official public business source and recipient-specific message have been reviewed.",
-    "A successful connection check does not authorize or trigger email sending."
+    "A successful connection check does not authorize or trigger email sending.",
+    "Five new candidate contacts and individualized draft emails were prepared on 2026-11-09. They remain needs_review; no email was sent and they are not yet approved_contacts."
+  ],
+  "prospects": [
+    {
+      "email": "pr@podpisnie.ru",
+      "organization": "Подписные издания",
+      "status": "needs_review",
+      "source_url": "https://www.podpisnie.ru/contacts/",
+      "note": "Официальная страница: PR и сотрудничество"
+    },
+    {
+      "email": "smm@goodwinbooks.ru",
+      "organization": "Издательство Гудвин",
+      "status": "needs_review",
+      "source_url": "https://goodwinbooks.ru/contacts",
+      "note": "Официальная страница: PR, сотрудничество, коллаборации"
+    },
+    {
+      "email": "press@boomkniga.ru",
+      "organization": "Издательство Бумкнига",
+      "status": "needs_review",
+      "source_url": "https://boomkniga.ru/contacts/",
+      "note": "Официальная страница: СМИ и блогерам"
+    },
+    {
+      "email": "pr@samokatbook.ru",
+      "organization": "Издательский дом Самокат",
+      "status": "needs_review",
+      "source_url": "https://samokatbook.ru/sotrudnichetstvo/",
+      "note": "Официальная страница: СМИ, блогеры и партнёры"
+    },
+    {
+      "email": "info@buklya.com",
+      "organization": "Литературный портал Букля",
+      "status": "needs_review",
+      "source_url": "https://buklya.com/kontakty",
+      "note": "Официальная страница: авторам и партнёрам"
+    }
   ]
 }
