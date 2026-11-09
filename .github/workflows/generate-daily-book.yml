@@ -2,9 +2,9 @@ name: Daily BookCheef book generation
 
 on:
   schedule:
-    # GitHub cron uses UTC: 00:10 UTC = 01:10 Europe/Berlin in winter.
-    # In summer the run is one hour later locally; generation remains once per day.
-    - cron: "10 0 * * *"
+    # GitHub Actions minimum supported schedule interval: every 5 minutes.
+    # Runs in UTC; provider quotas and the shared worker lease control actual generation throughput.
+    - cron: "*/5 * * * *"
   push:
     branches: [main]
     paths:
