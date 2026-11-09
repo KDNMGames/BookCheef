@@ -124,16 +124,18 @@
       "except_when_task_is_explicitly_deferred_after_free_provider_quota_exhaustion": true,
       "do_not_publish_partial_book": true,
       "report_failure_to_telegram_admins": true
-    }
-  },
-  "long_novel": {
-    "title": "Последний день Вселенной",
-    "generator": "cursor-agent-cli",
-    "workflow": ".github/workflows/generate-next-novel-chapter.yml",
-    "schedule_local": "02:10",
-    "exclusive_generator": true,
-    "daily_chapters_max": 1,
-    "never_publish_until_complete_and_edited": true
+    },
+    "excluded_titles": [
+      "Последний день Вселенной"
+    ],
+    "excluded_projects": [
+      {
+        "title": "Последний день Вселенной",
+        "slug": "last-day-of-universe",
+        "status": "archived_for_external_continuation",
+        "excluded_from_automatic_generation": true
+      }
+    ]
   },
   "management": {
     "source_of_truth": "book-publications/automation-config.json",
