@@ -50,6 +50,29 @@ async function atomicWriteJson(filePath, value) {
   }
 }
 
+async function writeCompletedCheckpoint(root, artifact, target, words) {
+  const checkpointPath = path.join(root, "book-publications/workers/novel/checkpoints", TASK_ID + ".json");
+  let previous = {};
+  try {
+    previous = JSON.parse(await fs.readFile(checkpointPath, "utf8"));
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+  await atomicWriteJson(checkpointPath, {
+    ...previous,
+    worker_type: "novel",
+    task_id: TASK_ID,
+    status: "completed",
+    completed_chapter: artifact.chapter,
+    next_chapter: artifact.chapter + 1,
+    chapter_path: target,
+    title: artifact.title,
+    word_count: words,
+    artifact_path: null,
+    updated_at: artifact.generated_at || new Date().toISOString()
+  });
+}
+
 async function acquireLock(lockPath) {
   await fs.mkdir(path.dirname(lockPath), { recursive: true });
   let handle;
@@ -105,6 +128,7 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
         if (existingMarkdown !== artifact.markdown + "\n" && existingMarkdown !== artifact.markdown) {
           throw new Error(`Chapter file conflicts with manifest entry for chapter ${artifact.chapter}.`);
         }
+        await writeCompletedCheckpoint(root, artifact, target, words);
         await fs.rm(sourcePath);
         results.push({ chapter: artifact.chapter, status: "already_merged", path: target });
         continue;
@@ -152,6 +176,7 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
       if (beforeManifestWrite) await beforeManifestWrite({ artifact, manifestPath, nextManifest });
       await atomicWriteJson(manifestPath, nextManifest);
       Object.assign(manifest, nextManifest);
+      await writeCompletedCheckpoint(root, artifact, target, words);
       await fs.rm(sourcePath);
       results.push({ chapter: artifact.chapter, status: "merged", path: target, word_count: words });
     }
