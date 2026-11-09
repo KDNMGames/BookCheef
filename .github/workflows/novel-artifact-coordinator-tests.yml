@@ -1,0 +1,41 @@
+name: BookCheef novel artifact coordinator tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/coordinate-novel-artifacts.mjs"
+      - "scripts/coordinate-novel-artifacts.test.mjs"
+      - "scripts/provider-quota-coordinator.mjs"
+      - "scripts/provider-quota-coordinator.test.mjs"
+      - "scripts/generate-daily-book.mjs"
+      - "scripts/generate-next-novel-chapter.mjs"
+      - "book-publications/automation-config.json"
+      - "supabase/provider-quota-setup.sql"
+      - "book-publications/PROVIDER-QUOTA-COORDINATOR.md"
+      - ".github/workflows/generate-daily-book.yml"
+      - ".github/workflows/generate-next-novel-chapter.yml"
+      - ".github/workflows/novel-artifact-coordinator-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  novel-coordinator:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax checks
+        run: |
+          node --check scripts/coordinate-novel-artifacts.mjs
+          node --check scripts/coordinate-novel-artifacts.test.mjs
+          node --check scripts/provider-quota-coordinator.mjs
+          node --check scripts/provider-quota-coordinator.test.mjs
+          node --check scripts/generate-daily-book.mjs
+          node --check scripts/generate-next-novel-chapter.mjs
+          node -e "JSON.parse(require('node:fs').readFileSync('book-publications/automation-config.json', 'utf8'))"
+      - name: Run coordinator tests
+        run: node --test scripts/coordinate-novel-artifacts.test.mjs scripts/provider-quota-coordinator.test.mjs

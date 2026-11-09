@@ -2,6 +2,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createCheckpointStore } from "./book-checkpoint.mjs";
+import { createBookWorkerState } from "./book-worker-state.mjs";
+import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
+import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -9,14 +12,39 @@ const ROTATION_PATH = "book-publications/rotation-state.json";
 const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const CURSOR_API_KEY = process.env.CURSOR_FREE_INCLUDED === "true" ? process.env.CURSOR_API_KEY : undefined;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_FREE_INCLUDED === "true" ? process.env.GEMINI_API_KEY : undefined;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
-let geminiDisabled = false;
+let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
-const rotation = JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
+if (geminiDisabled) console.log("Gemini API is disabled unless GEMINI_FREE_INCLUDED=true confirms an included free allowance; Gemini Pro subscription alone is not treated as API credit.");
+const { mode: workerMode, isolated: isolatedMode, workerType: explicitWorkerType } = resolveBookWorkerMode(process.env);
+const rotation = isolatedMode ? {} : JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
+const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (config.daily_book.rotation || ["interactive", "ordinary", "ordinary"]);
+const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) || 1);
+const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
+const workerState = createBookWorkerState({ workerType: requestedWorkerType });
+
+const quotaPolicy = config.provider_quota || {};
+const sharedQuotaEnabled = process.env.BOOKCHEEF_SHARED_QUOTA_ENABLED === "true";
+const providerQuota = sharedQuotaEnabled ? createProviderQuotaCoordinator({
+  workerType: requestedWorkerType,
+  defaultCooldownSeconds: Number(quotaPolicy.cooldown_after_rate_limit_seconds ?? 21600)
+}) : null;
+async function withProviderQuota(providerKey, suffix, operation) {
+  if (!providerQuota) return operation();
+  return providerQuota.run({
+    providerKey,
+    taskId: String(workerState.runId) + "-" + suffix,
+    minIntervalSeconds: Number(quotaPolicy.min_interval_seconds ?? 15),
+    windowSeconds: Number(quotaPolicy.window_seconds ?? 86400),
+    maxRequestsPerWindow: Number(quotaPolicy.max_requests_per_window ?? 0),
+    maxConcurrent: Number(quotaPolicy.max_concurrent_per_provider ?? 1),
+    leaseSeconds: Number(quotaPolicy.reservation_lease_seconds ?? 1200)
+  }, operation);
+}
 
 async function findPendingPackage() {
   const queuePath = "book-publications/pending-publications.json";
@@ -35,24 +63,27 @@ async function findPendingPackage() {
   return { path: filePath, title: pkg.title, publication_key: pkg.publication_key };
 }
 
-const pending = await findPendingPackage();
+const pending = isolatedMode ? null : await findPendingPackage();
 if (pending) {
   console.log("Found a package in the explicit pending queue; retrying it before generating another book.");
   console.log(JSON.stringify(pending));
   if (process.env.GITHUB_OUTPUT) {
     await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=" + pending.path + "\ncreated=false\n");
   }
+  await workerState.releaseLease();
   process.exit(0);
 }
 
+await workerState.acquireLease();
+console.log("Using isolated " + requestedWorkerType + " worker storage at " + workerState.workerDir + ".");
 
-const WORK_DIR = "book-publications/work-in-progress";
-const WORK_PATH = path.join(WORK_DIR, "current.json");
-const DEFERRED_QUEUE_PATH = "book-publications/deferred-books.json";
+const WORK_DIR = workerState.workerDir;
+const WORK_PATH = workerState.checkpointPath("current");
+const DEFERRED_QUEUE_PATH = path.join(workerState.workerDir, "deferred-books.json");
 
-const COOLDOWN_PATH = "book-publications/provider-cooldown.json";
-const CURSOR_COOLDOWN_PATH = "book-publications/cursor-cooldown.json";
-const GEMINI_COOLDOWN_PATH = "book-publications/gemini-cooldown.json";
+const COOLDOWN_PATH = path.join(workerState.workerDir, "openrouter-cooldown.json");
+const CURSOR_COOLDOWN_PATH = path.join(workerState.workerDir, "cursor-cooldown.json");
+const GEMINI_COOLDOWN_PATH = path.join(workerState.workerDir, "gemini-cooldown.json");
 const cooldownSeconds = 21600;
 try {
   const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
@@ -82,6 +113,7 @@ try {
 if (openRouterDisabled && cursorDisabled && geminiDisabled) {
   console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  await workerState.releaseLease();
   process.exit(0);
 }
 
@@ -107,6 +139,7 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
     error.code = geminiDisabled ? "ALL_PROVIDERS_COOLDOWN" : "NO_FALLBACK_PROVIDER";
     throw error;
   }
+  return await withProviderQuota("gemini", "gemini", async () => {
   console.log("Switching text generation to Google Gemini (" + GEMINI_MODEL + ").");
   const generationConfig = { maxOutputTokens: 16000 };
   if (json) generationConfig.responseMimeType = "application/json";
@@ -124,6 +157,8 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
   if (!response.ok) {
     const message = body.error?.message || "Gemini HTTP " + response.status;
     const error = new Error(message.slice(0, 1000));
+    error.status = response.status;
+    error.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
     if (response.status === 429 || response.status === 503 || /quota|rate.?limit|resource exhausted|daily limit|billing/i.test(message)) {
       error.code = "RATE_LIMIT";
       await saveGeminiCooldown(message);
@@ -136,6 +171,7 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
     throw new Error("Gemini returned no text: " + reason);
   }
   return text;
+  });
 }
 
 async function generateWithFallback(prompt, { json = false, timeout = 900000 } = {}) {
@@ -144,11 +180,13 @@ async function generateWithFallback(prompt, { json = false, timeout = 900000 } =
       const output = await generateWithGemini(prompt, { json, timeout });
       return json ? parseModelJson(output) : output;
     } catch (error) {
-      if (error.code !== "RATE_LIMIT" && error.code !== "ALL_PROVIDERS_COOLDOWN") throw error;
+      if (!["RATE_LIMIT", "ALL_PROVIDERS_COOLDOWN", "PROVIDER_QUOTA_WAIT"].includes(error.code)) throw error;
+      if (error.code === "PROVIDER_QUOTA_WAIT") geminiDisabled = true;
       console.warn("Gemini quota unavailable; trying Cursor Agent next.");
     }
   }
-  return json ? parseModelJson(runCursorAgent(prompt, { timeout })) : runCursorAgent(prompt, { timeout });
+  const output = await runCursorAgent(prompt, { timeout });
+  return json ? parseModelJson(output) : output;
 }
 
 async function saveCursorCooldown(reason) {
@@ -175,7 +213,7 @@ async function saveOpenRouterCooldown(reason) {
   console.warn("OpenRouter paused until " + retryAfter + "; switching to the next AI provider.");
 }
 
-function runCursorAgent(prompt, { timeout = 600000 } = {}) {
+async function runCursorAgent(prompt, { timeout = 600000 } = {}) {
   if (cursorDisabled) {
     const error = new Error("Cursor Agent is in cooldown.");
     error.code = "ALL_PROVIDERS_COOLDOWN";
@@ -186,6 +224,7 @@ function runCursorAgent(prompt, { timeout = 600000 } = {}) {
     error.code = "NO_FALLBACK_PROVIDER";
     throw error;
   }
+  return await withProviderQuota("cursor-agent", "cursor-agent", async () => {
   console.log("Switching text generation to Cursor Agent CLI.");
   const args = ["-p", prompt, "--output-format", "text", "--trust"];
   if (process.env.CURSOR_MODEL) args.push("--model", process.env.CURSOR_MODEL);
@@ -205,6 +244,7 @@ function runCursorAgent(prompt, { timeout = 600000 } = {}) {
   const output = String(result.stdout || "").trim().replace(/^\x60{3}(?:json|markdown)?\s*/i, "").replace(/\s*\x60{3}$/, "").trim();
   if (!output) throw new Error("Cursor Agent returned an empty response.");
   return output;
+  });
 }
 
 function parseModelJson(output) {
@@ -214,8 +254,8 @@ function parseModelJson(output) {
   if (start < 0 || end <= start) throw new Error("Cursor Agent did not return a JSON object.");
   return JSON.parse(cleaned.slice(start, end + 1));
 }
-const cycle = config.daily_book.rotation || ["interactive", "ordinary", "ordinary"];
-const position = Number(rotation.cycle_position) || 1;
+const cycle = configuredCycle;
+const position = configuredPosition;
 let deferredQueue = { tasks: [], updated_at: null };
 try {
   deferredQueue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8"));
@@ -225,7 +265,7 @@ const now = Date.now();
 const readyDeferredIndex = deferredQueue.tasks.findIndex(task =>
   task && ["interactive", "ordinary"].includes(task.book_type) &&
   typeof task.checkpoint_path === "string" &&
-  task.checkpoint_path.startsWith(WORK_DIR + "/deferred-") &&
+  task.checkpoint_path.startsWith(workerState.deferredDir + path.sep) &&
   (!Number.isFinite(Date.parse(task.retry_after || "")) || Date.parse(task.retry_after) <= now)
 );
 const deferredTask = readyDeferredIndex >= 0 ? deferredQueue.tasks[readyDeferredIndex] : null;
@@ -254,8 +294,8 @@ const today = new Intl.DateTimeFormat("en-CA", {
   year: "numeric", month: "2-digit", day: "2-digit"
 }).format(new Date());
 
-const lastVerifiedPublicationAt = rotation.updated_at || rotation.last_publication?.created_at || "";
-if (!pending && lastVerifiedPublicationAt) {
+const lastVerifiedPublicationAt = isolatedMode ? "" : (rotation.updated_at || rotation.last_publication?.created_at || "");
+if (!isolatedMode && !pending && lastVerifiedPublicationAt) {
   const lastVerifiedLocalDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: config.timezone || "Europe/Berlin",
     year: "numeric", month: "2-digit", day: "2-digit"
@@ -263,7 +303,8 @@ if (!pending && lastVerifiedPublicationAt) {
   if (lastVerifiedLocalDate === today) {
     console.log("A verified BookCheef book was already published on " + today + "; skipping a second publication for this local date.");
     if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
-    process.exit(0);
+    await workerState.releaseLease();
+  process.exit(0);
   }
 }
 
@@ -357,6 +398,7 @@ async function generatePackage(attempt, previousError = "") {
       "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
   }
   try {
+    return await withProviderQuota("openrouter", "openrouter", async () => {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -373,6 +415,8 @@ async function generatePackage(attempt, previousError = "") {
       const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
       const provider = body.error?.metadata?.provider_name || body.error?.provider || "";
       const failure = new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
+      failure.status = response.status;
+      failure.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
       if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
       throw failure;
     }
@@ -390,7 +434,14 @@ async function generatePackage(attempt, previousError = "") {
     }
     const cleaned = content.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "");
     return JSON.parse(cleaned);
+    });
   } catch (error) {
+    if (error.code === "PROVIDER_QUOTA_WAIT") {
+      openRouterDisabled = true;
+      console.warn("OpenRouter is temporarily unavailable under the shared quota policy; trying another provider.");
+      return await generateWithFallback(systemPrompt + "\\n\\n" + userPrompt + retryInstruction +
+        "\\n\\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
+    }
     if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
       await saveOpenRouterCooldown(error.message);
       return await generateWithFallback(systemPrompt + "\n\n" + userPrompt + retryInstruction +
@@ -744,6 +795,20 @@ function validate(pkg) {
 }
 
 let pkg = await loadWork(), lastError;
+if (!pkg && !isolatedMode) {
+  const legacyCheckpointPath = "book-publications/work-in-progress/current.json";
+  try {
+    const legacyState = JSON.parse(await fs.readFile(legacyCheckpointPath, "utf8"));
+    if (legacyState.version === 1 && legacyState.book_type === bookType &&
+        legacyState.pkg?.title && legacyState.pkg?.book_content) {
+      await saveWork(legacyState.pkg);
+      pkg = legacyState.pkg;
+      console.log("Migrated the matching legacy checkpoint into the isolated " + bookType + " worker store; the original file was preserved.");
+    }
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+}
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 if (pkg) {
   try {
@@ -754,8 +819,10 @@ if (pkg) {
     console.error("Resumed book expansion stopped: " + error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
-      if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
-      else await saveOpenRouterCooldown(error.message);
+      if (error.code !== "PROVIDER_QUOTA_WAIT") {
+        if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
+        else await saveOpenRouterCooldown(error.message);
+      }
     } else {
       throw error;
     }
@@ -768,8 +835,10 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
         /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
-      if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
-      else await saveOpenRouterCooldown(error.message);
+      if (error.code !== "PROVIDER_QUOTA_WAIT") {
+        if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
+        else await saveOpenRouterCooldown(error.message);
+      }
       if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
       console.error("No available AI provider for this attempt. The partial checkpoint, if any, is preserved for the next run.");
       break;
@@ -782,20 +851,16 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
     .map(async file => { try { return Date.parse(JSON.parse(await fs.readFile(file, "utf8")).retry_after || ""); } catch { return 0; } });
   const cooldowns = await Promise.all(retryAfter);
-  const nextRetry = new Date(Math.max(Date.now() + 15 * 60 * 1000, ...cooldowns.filter(Number.isFinite))).toISOString();
+  const sharedRetry = Date.parse(lastError?.retryAfter || "");
+  const nextRetry = new Date(Math.max(Date.now() + 15 * 60 * 1000, sharedRetry || 0, ...cooldowns.filter(Number.isFinite))).toISOString();
   let deferredEntry = deferredTask;
   if (!deferredEntry) {
     const taskId = "book-" + Date.now() + "-" + bookType;
-    const deferredPath = path.join(WORK_DIR, "deferred-" + taskId + ".json");
+    const deferredPath = workerState.deferredPath(taskId);
     try { await fs.rename(workPath, deferredPath); } catch (error) { if (error.code !== "ENOENT") throw error; }
     deferredEntry = { task_id: taskId, book_type: bookType, checkpoint_path: deferredPath, created_at: new Date().toISOString() };
     deferredQueue.tasks.push(deferredEntry);
-    const nextPosition = position % cycle.length + 1;
-    rotation.cycle_position = nextPosition;
-    rotation.updated_at = new Date().toISOString();
-    rotation.note = "Generation task deferred after free-provider quota exhaustion; rotation advanced to another book type without publishing incomplete content.";
-    await fs.writeFile(ROTATION_PATH, JSON.stringify(rotation, null, 2) + "\n");
-    console.log("Deferred the current book task and advanced rotation to position " + nextPosition + ".");
+    console.log("Deferred the current task in its isolated worker store. Global publication rotation is left untouched until a book is verified as published.");
   }
   deferredEntry.retry_after = nextRetry;
   deferredEntry.last_error = String(lastError?.message || "Free provider quota unavailable").slice(0, 500);
@@ -803,26 +868,29 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
   console.log("Book task safely deferred until " + nextRetry + "; the next scheduled run can create a different book while this task waits.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+  await workerState.releaseLease();
   process.exit(0);
 }
 if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
 
-const fileName=today+"-"+slugify(pkg.title)+".json";
-const filePath=path.join(INBOX,fileName);
+const outboxDir=path.join(workerState.workerDir,"outbox");
+await fs.mkdir(outboxDir,{recursive:true});
+const fileName=today+"-"+slugify(pkg.title)+"-"+requestedWorkerType+".json";
+const filePath=path.join(outboxDir,fileName);
 await fs.writeFile(filePath,JSON.stringify(pkg,null,2)+"\n",{flag:"wx"});
-const pendingQueuePath="book-publications/pending-publications.json";
-const pendingQueue=JSON.parse(await fs.readFile(pendingQueuePath,"utf8"));
-pendingQueue.packages=Array.isArray(pendingQueue.packages)?pendingQueue.packages:[];
-pendingQueue.packages.push({path:filePath,title:pkg.title,publication_key:pkg.publication_key,created_at:new Date().toISOString()});
-pendingQueue.updated_at=new Date().toISOString();
-await fs.writeFile(pendingQueuePath,JSON.stringify(pendingQueue,null,2)+"\n");
 await fs.rm(workPath, { force: true });
+await workerState.atomicWriteJson(workerState.queuePath, {
+  worker_type: requestedWorkerType,
+  updated_at: new Date().toISOString(),
+  last_completed: { title: pkg.title, publication_key: pkg.publication_key, package_path: filePath, status: "awaiting_coordination" }
+});
 if (deferredTask) {
   deferredQueue.tasks = deferredQueue.tasks.filter(task => task.task_id !== deferredTask.task_id);
   deferredQueue.updated_at = new Date().toISOString();
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
 }
-console.log("Created "+filePath+" ("+pkg.title+") and added it to the explicit retry queue.");
+await workerState.releaseLease();
+console.log("Created "+filePath+" ("+pkg.title+") and added it to the worker outbox.");
 console.log("Type: "+bookType+"; rotation position remains unchanged until verified publication.");
 if (process.env.GITHUB_OUTPUT) {
   await fs.appendFile(process.env.GITHUB_OUTPUT,"package_path="+filePath+"\ncreated=true\n");

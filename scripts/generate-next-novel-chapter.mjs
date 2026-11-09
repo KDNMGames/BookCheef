@@ -1,6 +1,20 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { createBookWorkerState } from "./book-worker-state.mjs";
+import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
+
+if (process.env.CURSOR_FREE_INCLUDED !== "true") {
+  throw new Error("Novel generation stopped: set the CURSOR_FREE_INCLUDED Actions variable to true only after confirming that Cursor Agent usage is covered by an included free allowance. No paid usage is permitted.");
+}
+
+const workerState = createBookWorkerState({ workerType: "novel" });
+const providerQuota = process.env.BOOKCHEEF_SHARED_QUOTA_ENABLED === "true"
+  ? createProviderQuotaCoordinator({ workerType: "novel" })
+  : null;
+await workerState.acquireLease();
+try {
+const workerCheckpointPath = workerState.checkpointPath("last-day-of-universe");
 
 const ROOT = "book-publications/drafts/last-day-of-universe";
 const manifestPath = path.join(ROOT, "manifest.json");
@@ -65,12 +79,23 @@ ${recentText}
 
 const agentArgs = ["-p", prompt, "--output-format", "text", "--trust"];
 if (model) agentArgs.push("--model", model);
-const result = spawnSync("agent", agentArgs, {
+const runAgent = () => spawnSync("agent", agentArgs, {
   encoding: "utf8",
   env: process.env,
   maxBuffer: 20 * 1024 * 1024,
   timeout: 20 * 60 * 1000
 });
+const result = providerQuota
+  ? await providerQuota.run({
+      providerKey: "cursor-agent",
+      taskId: "last-day-of-universe-chapter-" + next,
+      minIntervalSeconds: 15,
+      windowSeconds: 86400,
+      maxRequestsPerWindow: 0,
+      maxConcurrent: 1,
+      leaseSeconds: 3600
+    }, runAgent)
+  : runAgent();
 if (result.error) throw new Error(`Cursor Agent could not start: ${result.error.message}`);
 if (result.status !== 0) {
   const details = (result.stderr || result.stdout || "").trim().slice(-5000);
@@ -92,25 +117,79 @@ const title = heading[1].replace(/^Глава\s+\d+\.\s*/, "").trim();
 const synopsis = outlineLine.replace(/^[-*]\s+\*\*\d+\.\s*/, "").replace(/\*\*\s*[—-]\s*/, " — ").trim();
 const continuityNote = `Сохранить события и изменения персонажей главы ${next}; продолжить сюжет согласно следующему пункту плана.`;
 
-await fs.mkdir(path.dirname(chapterPath), { recursive: true });
-await fs.writeFile(chapterPath, markdown + "\n", { flag: "wx" });
-manifest.completed_chapters.push({
-  chapter: next,
-  volume,
-  path: chapterPath,
-  title,
-  word_count: words,
-  synopsis,
-  status: "draft",
-  continuity_note: continuityNote
-});
-manifest.current_word_count = (Number(manifest.current_word_count) || 0) + words;
-manifest.next_chapter = next + 1;
-const currentVolume = manifest.volumes?.find(item => item.volume === volume);
-if (currentVolume) currentVolume.completed_chapters = (Number(currentVolume.completed_chapters) || 0) + 1;
-manifest.last_generated_at = new Date().toISOString();
-manifest.last_provider = model ? `Cursor Agent CLI (${model})` : "Cursor Agent CLI (account default model)";
-await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
-console.log(`Saved chapter ${next}: ${title} (${words} words).`);
-console.log(`Provider: Cursor Agent CLI; model: ${model || "account default"}.`);
-console.log("Saved as a draft only; it is not published to the website.");
+const generatedAt = new Date().toISOString();
+if (process.env.BOOKCHEEF_NOVEL_MODE === "artifact-only") {
+  const outbox = path.join(workerState.workerDir, "outbox");
+  await fs.mkdir(outbox, { recursive: true });
+  const artifactPath = path.join(outbox, `chapter-${String(next).padStart(3, "0")}.json`);
+  const artifact = {
+    schema_version: 1,
+    artifact_type: "bookcheef_novel_chapter",
+    worker_type: "novel",
+    task_id: "last-day-of-universe",
+    chapter: next,
+    volume,
+    title,
+    word_count: words,
+    synopsis,
+    continuity_note: continuityNote,
+    target_path: chapterPath,
+    markdown,
+    generated_at: generatedAt,
+    provider: model ? `Cursor Agent CLI (${model})` : "Cursor Agent CLI (account default model)"
+  };
+  await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2) + "\n", { flag: "wx" });
+  await workerState.atomicWriteJson(workerCheckpointPath, {
+    worker_type: "novel",
+    task_id: "last-day-of-universe",
+    status: "awaiting_manifest_merge",
+    completed_chapter: next,
+    next_chapter: next + 1,
+    artifact_path: artifactPath,
+    title,
+    word_count: words,
+    updated_at: generatedAt
+  });
+  if (process.env.GITHUB_OUTPUT) {
+    await fs.appendFile(process.env.GITHUB_OUTPUT, `artifact_path=${artifactPath}\nchapter=${next}\n`);
+  }
+  console.log(`Prepared novel chapter artifact ${next}: ${title} (${words} words).`);
+  console.log("Shared chapter files and manifest were not modified.");
+} else {
+  await fs.mkdir(path.dirname(chapterPath), { recursive: true });
+  await fs.writeFile(chapterPath, markdown + "\n", { flag: "wx" });
+  manifest.completed_chapters.push({
+    chapter: next,
+    volume,
+    path: chapterPath,
+    title,
+    word_count: words,
+    synopsis,
+    status: "draft",
+    continuity_note: continuityNote
+  });
+  manifest.current_word_count = (Number(manifest.current_word_count) || 0) + words;
+  manifest.next_chapter = next + 1;
+  const currentVolume = manifest.volumes?.find(item => item.volume === volume);
+  if (currentVolume) currentVolume.completed_chapters = (Number(currentVolume.completed_chapters) || 0) + 1;
+  manifest.last_generated_at = generatedAt;
+  manifest.last_provider = model ? `Cursor Agent CLI (${model})` : "Cursor Agent CLI (account default model)";
+  await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+  console.log(`Saved chapter ${next}: ${title} (${words} words).`);
+  console.log(`Provider: Cursor Agent CLI; model: ${model || "account default"}.`);
+  console.log("Saved as a draft only; it is not published to the website.");
+  await workerState.atomicWriteJson(workerCheckpointPath, {
+    worker_type: "novel",
+    task_id: "last-day-of-universe",
+    status: "completed",
+    completed_chapter: next,
+    next_chapter: next + 1,
+    chapter_path: chapterPath,
+    title,
+    word_count: words,
+    updated_at: generatedAt
+  });
+}
+} finally {
+  await workerState.releaseLease();
+}

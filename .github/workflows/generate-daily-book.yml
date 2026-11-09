@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Test isolated worker state
+        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs
+
       - name: Install Cursor Agent fallback
         if: vars.CURSOR_FREE_INCLUDED == 'true'
         run: |
@@ -47,20 +50,45 @@ jobs:
           CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
           CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_FREE_INCLUDED: ${{ vars.GEMINI_FREE_INCLUDED }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/generate-daily-book.mjs
 
-      - name: Commit generated package
-        if: steps.book.outputs.created == 'true'
+      - name: Coordinate worker package
+        id: coordinate
+        if: steps.book.outputs.package_path != ''
         env:
-          PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+          COORDINATOR_PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+        run: node scripts/coordinate-worker-packages.mjs
+
+      - name: Release isolated worker lease
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import { createBookWorkerState } from "./scripts/book-worker-state.mjs";
+          for (const workerType of ["ordinary", "interactive", "novel"]) {
+            const worker = createBookWorkerState({ workerType, runId: process.env.GITHUB_RUN_ID });
+            await worker.releaseLease();
+          }
+          NODE
+
+      - name: Commit generated package
+        if: steps.coordinate.outputs.package_path != ''
+        env:
+          PACKAGE_PATH: ${{ steps.coordinate.outputs.package_path }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$PACKAGE_PATH" book-publications/pending-publications.json book-publications/deferred-books.json
-          git add -A book-publications/work-in-progress
-          git commit -m "Create daily BookCheef book package"
+          git add -A book-publications/workers
+          if ! git diff --cached --quiet; then
+            git commit -m "Coordinate BookCheef worker publication package"
+          fi
           git pull --rebase origin main
           git push
 
@@ -70,6 +98,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A book-publications/workers
           if [ -f book-publications/provider-cooldown.json ]; then
             git add book-publications/provider-cooldown.json
           fi
@@ -91,10 +120,10 @@ jobs:
           fi
 
       - name: Dispatch publisher
-        if: steps.book.outputs.package_path != ''
+        if: steps.coordinate.outputs.package_path != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+          PACKAGE_PATH: ${{ steps.coordinate.outputs.package_path }}
         run: |
           set -euo pipefail
           test -n "$PACKAGE_PATH"
