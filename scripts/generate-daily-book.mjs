@@ -3,6 +3,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createCheckpointStore } from "./book-checkpoint.mjs";
 import { createBookWorkerState } from "./book-worker-state.mjs";
+import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -17,12 +18,7 @@ let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
-const workerMode = process.env.BOOKCHEEF_WORKER_MODE || "coordinated";
-const isolatedMode = workerMode === "isolated";
-if (!["coordinated", "isolated"].includes(workerMode)) throw new Error("Unsupported BOOKCHEEF_WORKER_MODE: " + workerMode);
-if (isolatedMode && !["ordinary", "interactive"].includes(process.env.BOOKCHEEF_WORKER_TYPE)) {
-  throw new Error("Isolated mode requires BOOKCHEEF_WORKER_TYPE=ordinary or interactive.");
-}
+const { mode: workerMode, isolated: isolatedMode, workerType: explicitWorkerType } = resolveBookWorkerMode(process.env);
 const rotation = isolatedMode ? {} : JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
 const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (config.daily_book.rotation || ["interactive", "ordinary", "ordinary"]);
 const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) || 1);
