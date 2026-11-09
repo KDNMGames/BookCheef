@@ -34,7 +34,7 @@ for (const query of queries) {
     });
     if (!response.ok) throw new Error("HTTP " + response.status);
     const xml = await response.text();
-    const items = [...xml.matchAll(/<item(?:\\s[^>]*)?>([\\s\\S]*?)</item>/gi)];
+    const items = [...xml.matchAll(/<item(?:\\s[^>]*)?>([\\s\\S]*?)<\\/item>/gi)];
     for (const match of items) {
       const item = match[1];
       const title = getTag(item, "title");
