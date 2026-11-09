@@ -100,7 +100,8 @@
     "Do not add a contact to approved_contacts until its official public business source and recipient-specific message have been reviewed.",
     "A successful connection check does not authorize or trigger email sending.",
     "Five new candidate contacts and individualized draft emails were prepared on 2026-11-09. They remain needs_review; no email was sent and they are not yet approved_contacts.",
-    "First outreach batch processed after explicit owner approval on 2026-11-09. Sent records contain Gmail message IDs; failed messages remain unsent."
+    "First outreach batch processed after explicit owner approval on 2026-11-09. Sent records contain Gmail message IDs; failed messages remain unsent.",
+    "2026-11-09: created Gmail draft for opt@alpina.ru after verifying the official online-platform partnership contact. Draft ID r-4073089785559091969; not sent pending review/appropriate legal basis."
   ],
   "prospects": [
     {
@@ -137,6 +138,13 @@
       "status": "sent",
       "source_url": "https://buklya.com/kontakty",
       "note": "Официальная страница: авторам и партнёрам"
+    },
+    {
+      "email": "opt@alpina.ru",
+      "organization": "Альпина Паблишер",
+      "status": "draft_created_not_sent",
+      "source_url": "https://alpinabook.ru/contacts/",
+      "note": "Официальная страница выделяет отдельное направление сотрудничества с книжными магазинами и онлайн-площадками. Gmail draft created; not sent."
     }
   ]
 }
