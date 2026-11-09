@@ -3,6 +3,8 @@ name: BookCheef worker state tests
 on:
   pull_request:
     paths:
+      - "scripts/coordinate-worker-packages.mjs"
+      - "scripts/coordinate-worker-packages.test.mjs"
       - "scripts/book-worker-state.mjs"
       - "scripts/book-worker-state.test.mjs"
       - "scripts/book-checkpoint.mjs"
@@ -26,8 +28,10 @@ jobs:
           node-version: 22
       - name: Check JavaScript syntax
         run: |
+          node --check scripts/coordinate-worker-packages.mjs
           node --check scripts/book-worker-state.mjs
+          node --check scripts/generate-daily-book.mjs
           node --check scripts/book-checkpoint.mjs
           node --check scripts/generate-daily-book.mjs
       - name: Run worker state tests
-        run: node --test scripts/book-worker-state.test.mjs
+        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs
