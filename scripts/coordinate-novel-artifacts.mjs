@@ -7,15 +7,15 @@ const MIN_WORDS = 1400;
 const MAX_WORDS = 6000;
 
 function countWords(markdown) {
-  return markdown.match(/[\\p{L}\\p{N}]+(?:[-’'][\\p{L}\\p{N}]+)*/gu)?.length || 0;
+  return markdown.match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu)?.length || 0;
 }
 
 function expectedChapterPath(chapter, volume) {
   const expectedVolume = Math.ceil(chapter / 32);
   if (volume !== expectedVolume || volume < 1 || volume > 5) {
-    throw new Error(`Invalid volume ${volume} for chapter ${chapter}; expected ${expectedVolume}.`);
+    throw new Error(\`Invalid volume \${volume} for chapter \${chapter}; expected \${expectedVolume}.\`);
   }
-  return `${NOVEL_ROOT}/chapters/volume-${String(volume).padStart(2, "0")}-chapter-${String(chapter).padStart(3, "0")}.md`;
+  return \`\${NOVEL_ROOT}/chapters/volume-\${String(volume).padStart(2, "0")}-chapter-\${String(chapter).padStart(3, "0")}.md\`;
 }
 
 function validateArtifact(artifact) {
@@ -24,25 +24,24 @@ function validateArtifact(artifact) {
   if (artifact.worker_type !== "novel" || artifact.task_id !== TASK_ID) throw new Error("Artifact worker_type or task_id is invalid.");
   if (!Number.isSafeInteger(artifact.chapter) || artifact.chapter < 1 || artifact.chapter > 160) throw new Error("Artifact chapter must be an integer from 1 to 160.");
   if (!Number.isSafeInteger(artifact.volume)) throw new Error("Artifact volume must be a positive integer.");
-  if (typeof artifact.title !== "string" || !artifact.title.trim()) throw new Error("Artifact title is required.");
-  if (typeof artifact.synopsis !== "string" || !artifact.synopsis.trim()) throw new Error("Artifact synopsis is required.");
-  if (typeof artifact.continuity_note !== "string" || !artifact.continuity_note.trim()) throw new Error("Artifact continuity_note is required.");
-  if (typeof artifact.markdown !== "string" || !artifact.markdown.trim()) throw new Error("Artifact markdown is required.");
+  for (const field of ["title", "synopsis", "continuity_note", "markdown"]) {
+    if (typeof artifact[field] !== "string" || !artifact[field].trim()) throw new Error(\`Artifact \${field} is required.\`);
+  }
   const target = expectedChapterPath(artifact.chapter, artifact.volume);
-  if (artifact.target_path !== target) throw new Error(`Unsafe or unexpected target_path; expected ${target}.`);
-  const heading = artifact.markdown.match(/^#\\s+Глава\\s+(\\d+)\\.\\s+(.+)$/m);
+  if (artifact.target_path !== target) throw new Error(\`Unsafe or unexpected target_path; expected \${target}.\`);
+  const heading = artifact.markdown.match(/^#\s+Глава\s+(\d+)\.\s+(.+)$/m);
   if (!heading || Number(heading[1]) !== artifact.chapter || heading[2].trim() !== artifact.title.trim()) {
     throw new Error("Markdown heading must exactly match the artifact chapter number and title.");
   }
   const words = countWords(artifact.markdown);
-  if (words < MIN_WORDS || words > MAX_WORDS) throw new Error(`Chapter word count ${words} is outside ${MIN_WORDS}–${MAX_WORDS}.`);
-  if (artifact.word_count !== words) throw new Error(`word_count mismatch: artifact says ${artifact.word_count}, markdown contains ${words}.`);
+  if (words < MIN_WORDS || words > MAX_WORDS) throw new Error(\`Chapter word count \${words} is outside \${MIN_WORDS}–\${MAX_WORDS}.\`);
+  if (artifact.word_count !== words) throw new Error(\`word_count mismatch: artifact says \${artifact.word_count}, markdown contains \${words}.\`);
   return { target, words };
 }
 
 async function atomicWriteJson(filePath, value) {
-  const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
-  await fs.writeFile(tempPath, JSON.stringify(value, null, 2) + "\\n", { flag: "wx" });
+  const tempPath = \`\${filePath}.\${process.pid}.\${Date.now()}.tmp\`;
+  await fs.writeFile(tempPath, JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
   try {
     await fs.rename(tempPath, filePath);
   } catch (error) {
@@ -56,19 +55,19 @@ async function acquireLock(lockPath) {
   let handle;
   try {
     handle = await fs.open(lockPath, "wx");
-    await handle.writeFile(JSON.stringify({ pid: process.pid, created_at: new Date().toISOString() }) + "\\n");
+    await handle.writeFile(JSON.stringify({ pid: process.pid, created_at: new Date().toISOString() }) + "\n");
     return async () => {
       await handle.close();
       await fs.rm(lockPath, { force: true });
     };
   } catch (error) {
     if (handle) await handle.close().catch(() => {});
-    if (error.code === "EEXIST") throw new Error(`Novel manifest merge is already locked: ${lockPath}`);
+    if (error.code === "EEXIST") throw new Error(\`Novel manifest merge is already locked: \${lockPath}\`);
     throw error;
   }
 }
 
-export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifacts/novel/outbox", repoRoot = process.cwd(), beforeManifestWrite } = {}) {
+export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifacts/novel/outbox", repoRoot = process.cwd() } = {}) {
   const root = path.resolve(repoRoot);
   const artifactDir = path.resolve(root, artifactRoot);
   const relativeArtifactDir = path.relative(root, artifactDir);
@@ -100,11 +99,11 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
 
       if (existingEntry) {
         if (existingEntry.path !== target || existingEntry.title !== artifact.title || existingEntry.word_count !== words) {
-          throw new Error(`Manifest already contains conflicting chapter ${artifact.chapter}.`);
+          throw new Error(\`Manifest already contains conflicting chapter \${artifact.chapter}.\`);
         }
         const existingMarkdown = await fs.readFile(chapterPath, "utf8");
-        if (existingMarkdown !== artifact.markdown + "\\n" && existingMarkdown !== artifact.markdown) {
-          throw new Error(`Chapter file conflicts with manifest entry for chapter ${artifact.chapter}.`);
+        if (existingMarkdown !== artifact.markdown + "\n" && existingMarkdown !== artifact.markdown) {
+          throw new Error(\`Chapter file conflicts with manifest entry for chapter \${artifact.chapter}.\`);
         }
         await fs.rm(sourcePath);
         results.push({ chapter: artifact.chapter, status: "already_merged", path: target });
@@ -113,7 +112,7 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
 
       const expectedNext = Number(manifest.next_chapter) || (Math.max(0, ...manifest.completed_chapters.map(item => item.chapter)) + 1);
       if (artifact.chapter !== expectedNext) {
-        throw new Error(`Out-of-order chapter ${artifact.chapter}; manifest expects chapter ${expectedNext}.`);
+        throw new Error(\`Out-of-order chapter \${artifact.chapter}; manifest expects chapter \${expectedNext}.\`);
       }
       if (artifact.chapter > Number(manifest.planned_chapters || 160)) throw new Error("Artifact exceeds planned chapter count.");
 
@@ -121,13 +120,13 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
       try {
         const existingMarkdown = await fs.readFile(chapterPath, "utf8");
         chapterExists = true;
-        if (existingMarkdown !== artifact.markdown + "\\n" && existingMarkdown !== artifact.markdown) {
-          throw new Error(`Target chapter file already exists with different content: ${target}`);
+        if (existingMarkdown !== artifact.markdown + "\n" && existingMarkdown !== artifact.markdown) {
+          throw new Error(\`Target chapter file already exists with different content: \${target}\`);
         }
       } catch (error) {
         if (error.code !== "ENOENT") throw error;
       }
-      if (!chapterExists) await fs.writeFile(chapterPath, artifact.markdown + "\\n", { flag: "wx" });
+      if (!chapterExists) await fs.writeFile(chapterPath, artifact.markdown + "\n", { flag: "wx" });
 
       const nextManifest = structuredClone(manifest);
       nextManifest.completed_chapters.push({
@@ -144,13 +143,12 @@ export async function coordinateNovelArtifacts({ artifactRoot = "worker-artifact
       nextManifest.current_word_count = (Number(nextManifest.current_word_count) || 0) + words;
       nextManifest.next_chapter = artifact.chapter + 1;
       const volumeEntry = nextManifest.volumes.find(item => item.volume === artifact.volume);
-      if (!volumeEntry) throw new Error(`Manifest has no volume entry for volume ${artifact.volume}.`);
+      if (!volumeEntry) throw new Error(\`Manifest has no volume entry for volume \${artifact.volume}.\`);
       volumeEntry.completed_chapters = (Number(volumeEntry.completed_chapters) || 0) + 1;
       volumeEntry.status = "writing";
       nextManifest.last_generated_at = artifact.generated_at || new Date().toISOString();
       nextManifest.last_provider = artifact.provider || "isolated novel worker";
 
-      if (beforeManifestWrite) await beforeManifestWrite({ artifact, manifestPath, nextManifest });
       await atomicWriteJson(manifestPath, nextManifest);
       Object.assign(manifest, nextManifest);
       await fs.rm(sourcePath);
