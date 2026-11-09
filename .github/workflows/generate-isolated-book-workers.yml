@@ -26,6 +26,15 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
+      - name: Require production branch
+        env:
+          REF_NAME: ${{ github.ref }}
+        run: |
+          if [ "$REF_NAME" != "refs/heads/main" ]; then
+            echo "Run this workflow from main after the isolated-worker PR has been reviewed and merged."
+            exit 1
+          fi
+
       - name: Checkout BookCheef
         uses: actions/checkout@v4
 
