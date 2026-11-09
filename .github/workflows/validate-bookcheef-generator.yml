@@ -51,6 +51,7 @@ jobs:
             const generationWorkflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY") || !generationWorkflow.includes("vars.CURSOR_FREE_INCLUDED") || !generationWorkflow.includes("if: vars.CURSOR_FREE_INCLUDED")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
             if (!generationWorkflow.includes("secrets.GEMINI_API_KEY")) throw new Error("Gemini API key is not passed to the generation workflow");
+            if (generationWorkflow.includes("actions/workflows/generate-daily-book.yml/dispatches")) throw new Error("Quota deferrals must not immediately dispatch another empty generation cycle.");
             console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
           '
       - name: Validate automation configuration
@@ -61,6 +62,7 @@ jobs:
             const length = config.daily_book.content_rules.reading_length;
             if (config.daily_book.free_only !== true || config.daily_book.paid_api_fallbacks !== false || config.daily_book.cursor_fallback_requires_explicit_included_free_entitlement !== true || config.daily_book.text_provider.free_models_only !== true) throw new Error("BookCheef must remain free-only");
             if (config.daily_book.on_failure.except_when_task_is_explicitly_deferred_after_free_provider_quota_exhaustion !== true) throw new Error("Deferred task rotation exception is not documented");
+            if (config.daily_book.complete_deferred_task_before_starting_another !== true || config.daily_book.continue_with_next_book_task_when_available !== false) throw new Error("Generator must finish a deferred book before starting another.");
             if (length.adult_minimum_words < 18000) throw new Error("Adult minimum is below 18,000 words");
             if (length.adult_interactive_minimum_words_per_route !== 18000 || length.adult_interactive_minimum_words_per_scene !== 6000) throw new Error("Adult interactive routes must be at least 18,000 words with 6,000 words per scene.");
             const interactiveSceneMinimums = {"6+":500,"9+":600,"12+":800,"14+":900};
