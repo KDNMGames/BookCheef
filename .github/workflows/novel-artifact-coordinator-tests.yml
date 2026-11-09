@@ -5,6 +5,8 @@ on:
     paths:
       - "scripts/coordinate-novel-artifacts.mjs"
       - "scripts/coordinate-novel-artifacts.test.mjs"
+      - "scripts/provider-quota-coordinator.mjs"
+      - "scripts/provider-quota-coordinator.test.mjs"
       - ".github/workflows/novel-artifact-coordinator-tests.yml"
   workflow_dispatch:
 
@@ -23,5 +25,7 @@ jobs:
         run: |
           node --check scripts/coordinate-novel-artifacts.mjs
           node --check scripts/coordinate-novel-artifacts.test.mjs
+          node --check scripts/provider-quota-coordinator.mjs
+          node --check scripts/provider-quota-coordinator.test.mjs
       - name: Run coordinator tests
-        run: node --test scripts/coordinate-novel-artifacts.test.mjs
+        run: node --test scripts/coordinate-novel-artifacts.test.mjs scripts/provider-quota-coordinator.test.mjs
