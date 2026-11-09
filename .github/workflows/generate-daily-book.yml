@@ -55,10 +55,14 @@ jobs:
           GEMINI_FREE_INCLUDED: ${{ vars.GEMINI_FREE_INCLUDED }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: node scripts/generate-daily-book.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/generate-daily-book.mjs 2>&1 | tee generation.log
 
       - name: Coordinate worker package
         id: coordinate
@@ -77,6 +81,22 @@ jobs:
             await worker.releaseLease();
           }
           NODE
+
+      - name: Report generation workflow failure to Telegram admins
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          set -euo pipefail
+          REASON="$(tail -n 10 generation.log 2>/dev/null | tr '\n' ' ' | cut -c1-1800 || true)"
+          [ -n "$REASON" ] || REASON="GitHub Actions завершил один из этапов с ошибкой. Подробности — в журнале запуска."
+          MESSAGE="❌ BookCheef: создание или подготовка книги прервано. Причина: $REASON"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-bookcheef-report-token: $TELEGRAM_BOT_TOKEN" \
+            https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot \
+            -d "$(jq -n --arg text "$MESSAGE" '{action:"admin_notification",text:$text}')"
 
       - name: Commit generated package
         if: steps.coordinate.outputs.package_path != ''
