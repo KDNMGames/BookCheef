@@ -8,11 +8,11 @@ const CONFIG_PATH = "book-publications/automation-config.json";
 const ROTATION_PATH = "book-publications/rotation-state.json";
 const INBOX = "book-publications/inbox";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const CURSOR_API_KEY = process.env.CURSOR_API_KEY;
+const CURSOR_API_KEY = process.env.CURSOR_FREE_INCLUDED === "true" ? process.env.CURSOR_API_KEY : undefined;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 let openRouterDisabled = false;
-let cursorDisabled = false;
+let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = false;
 
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
