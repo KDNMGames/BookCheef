@@ -1,0 +1,13 @@
+{
+  "tasks": [
+    {
+      "task_id": "book-1794235055077-ordinary",
+      "book_type": "ordinary",
+      "checkpoint_path": "book-publications/workers/ordinary/deferred/book-1794235055077-ordinary.json",
+      "created_at": "2026-11-09T14:37:35.078Z",
+      "retry_after": "2026-11-09T20:37:35.076Z",
+      "last_error": "Cursor Agent is in cooldown."
+    }
+  ],
+  "updated_at": "2026-11-09T14:37:35.078Z"
+}

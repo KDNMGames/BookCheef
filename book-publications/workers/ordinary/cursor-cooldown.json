@@ -1,0 +1,6 @@
+{
+  "provider": "cursor-agent",
+  "detected_at": "2026-11-09T14:37:35.076Z",
+  "retry_after": "2026-11-09T20:37:35.076Z",
+  "reason": "Cursor Agent is in cooldown."
+}
