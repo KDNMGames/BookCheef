@@ -53,46 +53,88 @@
       "source": "prior BookCheef outreach record"
     }
   ],
-  "sent_log": [],
+  "sent_log": [
+    {
+      "email": "pr@podpisnie.ru",
+      "date": "2026-11-09T02:23:16.208Z",
+      "message_id": "1a1be1dc3c9806b4",
+      "organization": "Подписные издания",
+      "method": "Gmail API",
+      "campaign": "2026-11-09 first batch"
+    },
+    {
+      "email": "smm@goodwinbooks.ru",
+      "date": "2026-11-09T02:23:16.208Z",
+      "message_id": "1a1be1dc96c733c8",
+      "organization": "Издательство Гудвин",
+      "method": "Gmail API",
+      "campaign": "2026-11-09 first batch"
+    },
+    {
+      "email": "press@boomkniga.ru",
+      "date": "2026-11-09T02:23:16.208Z",
+      "message_id": "1a1be1de2835f267",
+      "organization": "Издательство Бумкнига",
+      "method": "Gmail API",
+      "campaign": "2026-11-09 first batch"
+    },
+    {
+      "email": "pr@samokatbook.ru",
+      "date": "2026-11-09T02:23:16.208Z",
+      "message_id": "1a1be1de92054aad",
+      "organization": "Издательский дом Самокат",
+      "method": "Gmail API",
+      "campaign": "2026-11-09 first batch"
+    },
+    {
+      "email": "info@buklya.com",
+      "date": "2026-11-09T02:23:16.208Z",
+      "message_id": "1a1be1df276b9e02",
+      "organization": "Литературный портал Букля",
+      "method": "Gmail API",
+      "campaign": "2026-11-09 first batch"
+    }
+  ],
   "notes": [
     "The eight suppressed addresses above were contacted before this ledger was introduced; their history is not duplicated in sent_log.",
     "Do not add a contact to approved_contacts until its official public business source and recipient-specific message have been reviewed.",
     "A successful connection check does not authorize or trigger email sending.",
-    "Five new candidate contacts and individualized draft emails were prepared on 2026-11-09. They remain needs_review; no email was sent and they are not yet approved_contacts."
+    "Five new candidate contacts and individualized draft emails were prepared on 2026-11-09. They remain needs_review; no email was sent and they are not yet approved_contacts.",
+    "First outreach batch processed after explicit owner approval on 2026-11-09. Sent records contain Gmail message IDs; failed messages remain unsent."
   ],
   "prospects": [
     {
       "email": "pr@podpisnie.ru",
       "organization": "Подписные издания",
-      "status": "needs_review",
+      "status": "sent",
       "source_url": "https://www.podpisnie.ru/contacts/",
       "note": "Официальная страница: PR и сотрудничество"
     },
     {
       "email": "smm@goodwinbooks.ru",
       "organization": "Издательство Гудвин",
-      "status": "needs_review",
+      "status": "sent",
       "source_url": "https://goodwinbooks.ru/contacts",
       "note": "Официальная страница: PR, сотрудничество, коллаборации"
     },
     {
       "email": "press@boomkniga.ru",
       "organization": "Издательство Бумкнига",
-      "status": "needs_review",
+      "status": "sent",
       "source_url": "https://boomkniga.ru/contacts/",
       "note": "Официальная страница: СМИ и блогерам"
     },
     {
       "email": "pr@samokatbook.ru",
       "organization": "Издательский дом Самокат",
-      "status": "needs_review",
+      "status": "sent",
       "source_url": "https://samokatbook.ru/sotrudnichetstvo/",
       "note": "Официальная страница: СМИ, блогеры и партнёры"
     },
     {
       "email": "info@buklya.com",
       "organization": "Литературный портал Букля",
-      "status": "needs_review",
+      "status": "sent",
       "source_url": "https://buklya.com/kontakty",
       "note": "Официальная страница: авторам и партнёрам"
     }
