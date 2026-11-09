@@ -97,13 +97,13 @@
           "14+": 2700
         },
         "child_interactive_minimum_words_per_scene_by_age": {
-          "6+": 450,
-          "9+": 550,
-          "12+": 650,
-          "14+": 750
+          "6+": 500,
+          "9+": 600,
+          "12+": 800,
+          "14+": 900
         },
-        "adult_interactive_minimum_words_per_route": 15000,
-        "adult_interactive_minimum_words_per_scene": 5000,
+        "adult_interactive_minimum_words_per_route": 18000,
+        "adult_interactive_minimum_words_per_scene": 6000,
         "generation_strategy": "structured draft followed by separate chapter or scene expansion requests",
         "reject_short_books": true
       }
