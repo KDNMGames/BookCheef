@@ -1,0 +1,61 @@
+name: BookCheef Gmail token expiry alerts
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bookcheef-gmail-token-alerts
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check OAuth token age and notify administrators
+        env:
+          TOKEN_AUTHORIZED_AT: ${{ vars.GMAIL_TOKEN_AUTHORIZED_AT }}
+          TELEGRAM_INTERNAL_SECRET: ${{ secrets.TELEGRAM_INTERNAL_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${TOKEN_AUTHORIZED_AT}" ]]; then
+            echo "Missing repository variable GMAIL_TOKEN_AUTHORIZED_AT (YYYY-MM-DD)."
+            exit 1
+          fi
+          if [[ -z "${TELEGRAM_INTERNAL_SECRET}" ]]; then
+            echo "Missing repository secret TELEGRAM_INTERNAL_SECRET."
+            exit 1
+          fi
+
+          authorized_epoch="$(date -u -d "${TOKEN_AUTHORIZED_AT} 00:00:00" +%s)"
+          today_epoch="$(date -u -d "$(date -u +%F) 00:00:00" +%s)"
+          days_elapsed="$(( (today_epoch - authorized_epoch) / 86400 ))"
+
+          case "${days_elapsed}" in
+            5)
+              message="⚠️ BookCheef: Gmail OAuth-токену уже 5 дней из 7. Пожалуйста, обнови авторизацию в ближайшие 1–2 дня."
+              ;;
+            6)
+              message="🚨 BookCheef: Gmail OAuth-токен истекает примерно через сутки. Обнови авторизацию сегодня."
+              ;;
+            7)
+              message="⛔ BookCheef: стандартный 7-дневный срок Gmail OAuth-токена в режиме Testing истёк. Нужно пройти авторизацию заново и обновить дату GMAIL_TOKEN_AUTHORIZED_AT в GitHub."
+              ;;
+            *)
+              echo "No reminder scheduled for token age: ${days_elapsed} day(s)."
+              exit 0
+              ;;
+          esac
+
+          payload="$(jq -n --arg text "${message}" '{action:"admin_notification",text:$text}')"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-telegram-internal-secret: ${TELEGRAM_INTERNAL_SECRET}" \
+            --data "${payload}" \
+            "https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot"
