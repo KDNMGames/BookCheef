@@ -814,12 +814,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
     try { await fs.rename(workPath, deferredPath); } catch (error) { if (error.code !== "ENOENT") throw error; }
     deferredEntry = { task_id: taskId, book_type: bookType, checkpoint_path: deferredPath, created_at: new Date().toISOString() };
     deferredQueue.tasks.push(deferredEntry);
-    const nextPosition = position % cycle.length + 1;
-    rotation.cycle_position = nextPosition;
-    rotation.updated_at = new Date().toISOString();
-    rotation.note = "Generation task deferred after free-provider quota exhaustion; rotation advanced to another book type without publishing incomplete content.";
-    await fs.writeFile(ROTATION_PATH, JSON.stringify(rotation, null, 2) + "\n");
-    console.log("Deferred the current book task and advanced rotation to position " + nextPosition + ".");
+    console.log("Deferred the current task in its isolated worker store. Global publication rotation is left untouched until a book is verified as published.");
   }
   deferredEntry.retry_after = nextRetry;
   deferredEntry.last_error = String(lastError?.message || "Free provider quota unavailable").slice(0, 500);
@@ -832,20 +827,16 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
 }
 if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
 
+const outboxDir=path.join(workerState.workerDir,"outbox");
+await fs.mkdir(outboxDir,{recursive:true});
 const fileName=today+"-"+slugify(pkg.title)+"-"+requestedWorkerType+".json";
-const filePath=path.join(INBOX,fileName);
+const filePath=path.join(outboxDir,fileName);
 await fs.writeFile(filePath,JSON.stringify(pkg,null,2)+"\n",{flag:"wx"});
-const pendingQueuePath="book-publications/pending-publications.json";
-const pendingQueue=JSON.parse(await fs.readFile(pendingQueuePath,"utf8"));
-pendingQueue.packages=Array.isArray(pendingQueue.packages)?pendingQueue.packages:[];
-pendingQueue.packages.push({path:filePath,title:pkg.title,publication_key:pkg.publication_key,created_at:new Date().toISOString()});
-pendingQueue.updated_at=new Date().toISOString();
-await fs.writeFile(pendingQueuePath,JSON.stringify(pendingQueue,null,2)+"\n");
 await fs.rm(workPath, { force: true });
 await workerState.atomicWriteJson(workerState.queuePath, {
   worker_type: requestedWorkerType,
   updated_at: new Date().toISOString(),
-  last_completed: { title: pkg.title, publication_key: pkg.publication_key, package_path: filePath }
+  last_completed: { title: pkg.title, publication_key: pkg.publication_key, package_path: filePath, status: "awaiting_coordination" }
 });
 if (deferredTask) {
   deferredQueue.tasks = deferredQueue.tasks.filter(task => task.task_id !== deferredTask.task_id);
