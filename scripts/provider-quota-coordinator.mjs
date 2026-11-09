@@ -25,6 +25,7 @@ export class ProviderQuotaWaitError extends Error {
     this.code = "PROVIDER_QUOTA_WAIT";
     this.retryAfter = result.retry_after || null;
     this.provider = result.provider_key || null;
+    this.reason = result.reason || "shared_quota_policy";
   }
 }
 
