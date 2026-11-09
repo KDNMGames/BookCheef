@@ -40,6 +40,7 @@ function validateArtifact(artifact) {
 }
 
 async function atomicWriteJson(filePath, value) {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
   const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   await fs.writeFile(tempPath, JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
   try {
