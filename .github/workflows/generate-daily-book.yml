@@ -53,6 +53,13 @@ jobs:
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: node scripts/generate-daily-book.mjs
 
+      - name: Coordinate worker package
+        id: coordinate
+        if: steps.book.outputs.package_path != ''
+        env:
+          COORDINATOR_PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+        run: node scripts/coordinate-worker-packages.mjs
+
       - name: Release isolated worker lease
         if: always()
         run: |
@@ -65,16 +72,18 @@ jobs:
           NODE
 
       - name: Commit generated package
-        if: steps.book.outputs.created == 'true'
+        if: steps.coordinate.outputs.package_path != ''
         env:
-          PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+          PACKAGE_PATH: ${{ steps.coordinate.outputs.package_path }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$PACKAGE_PATH" book-publications/pending-publications.json book-publications/deferred-books.json
           git add -A book-publications/workers
-          git commit -m "Create daily BookCheef book package"
+          if ! git diff --cached --quiet; then
+            git commit -m "Coordinate BookCheef worker publication package"
+          fi
           git pull --rebase origin main
           git push
 
@@ -109,7 +118,7 @@ jobs:
         if: steps.book.outputs.package_path != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          PACKAGE_PATH: ${{ steps.book.outputs.package_path }}
+          PACKAGE_PATH: ${{ steps.coordinate.outputs.package_path }}
         run: |
           set -euo pipefail
           test -n "$PACKAGE_PATH"
