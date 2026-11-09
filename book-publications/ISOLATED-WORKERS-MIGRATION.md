@@ -1,7 +1,6 @@
 # BookCheef isolated generation workers
 
-This migration introduces the state boundary for independent book-generation workers.
-It is deliberately not enabled by the current daily workflow yet.
+This migration introduces state boundaries and a safe, sequential handoff path for independent generation workers. Parallel generation is intentionally not enabled yet.
 
 ## Worker identities
 
@@ -9,59 +8,33 @@ It is deliberately not enabled by the current daily workflow yet.
 - `interactive` — branching/choice books
 - `novel` — long-form novel chapters
 
-Each worker owns `book-publications/workers/<type>/`:
-
-- `lease.json` — exclusive worker lease with expiry and run ownership
-- `queue.json` — that worker's task queue
-- `checkpoints/<task-id>.json` — resumable task state
-- `deferred/<task-id>.json` — tasks parked after provider quota/rate limits
-- `provider-cooldowns.json` — worker-local provider observations
-
-The shared publication inbox and Supabase publisher remain outside worker state.
-The target architecture requires workers not to edit the global rotation state or append
-to the shared publication queue directly. The current Phase 2 adapter has not reached
-that boundary yet: ordinary/interactive generation still appends to the legacy shared
-pending-publication queue and may advance global rotation when a task is deferred. Do
-not run multiple workers until the coordinator replaces these shared writes.
+Each worker owns `book-publications/workers/<type>/`: lease, queue, checkpoints, deferred tasks, cooldown observations, and (for book workers) an outbox. The shared publication inbox and publisher remain outside worker state.
 
 ## Concurrency contract
 
-1. A worker must acquire its type-specific lease before reading or writing worker state.
-2. A live lease cannot be stolen. An expired lease can be reclaimed only after the
-   existing lease file is atomically renamed out of the way.
-3. A worker may only release a lease whose `run_id` matches its own.
-4. Checkpoints and queue snapshots are written through a temporary file and rename.
-5. Provider cooldowns are observations, not a global quota lock. Provider-level
-   throttling must be coordinated separately before increasing parallelism.
-6. Publication stays serialized by the existing `bookcheef-publication` workflow
-   concurrency group.
+1. A worker acquires its type-specific lease before touching worker state.
+2. A live lease cannot be stolen; stale lease recovery is ownership-safe.
+3. A worker only releases its own lease.
+4. Worker state is written atomically.
+5. Provider cooldowns are observations, not a shared quota lock. Provider-wide throttling is still required before parallel calls to free providers.
+6. All artifact packages are imported sequentially by one coordinator process. Each package handoff is idempotent by `publication_key`.
 
-## Rollout status
+## Implemented
 
-Phase 1: isolated path layout, lease ownership, atomic JSON writes, and unit tests.
+- Worker-specific paths, leases, atomic JSON writes, and unit tests.
+- Ordinary/interactive generation writes newly created packages to its worker outbox.
+- `coordinate-worker-packages.mjs` validates package structure, deduplicates by `publication_key`, updates the pending queue, records worker handoff, and moves packages to the publication inbox.
+- `coordinate-worker-artifacts.mjs` accepts a downloaded artifact tree shaped as `<artifact-root>/<worker-type>/outbox/*.json`. It processes ordinary, interactive, then novel packages sequentially through the existing coordinator. It emits the resulting inbox paths as a GitHub Actions multiline output. Re-running after a partial handoff is safe because already-imported source files have been moved and package keys are deduplicated.
+- The novel generator now acquires a `novel` lease and writes a worker-scoped completion checkpoint. Its chapter and shared manifest are still committed by its own serialized workflow.
+- CI checks syntax and tests worker leases, package coordination, and artifact coordination.
 
-Phase 2 (partially implemented): ordinary/interactive generator now uses its worker's
-checkpoint, deferred-task file, cooldown files, lease, and completion queue record.
-A matching legacy work-in-progress/current.json checkpoint is copied into the worker
-store without deleting the original. The existing legacy deferred queue is preserved
-but is not yet automatically migrated. The novel chapter generator now acquires its own `novel` lease and writes a worker-scoped completion checkpoint. Its chapter and manifest are still committed to the shared draft tree by its serialized workflow; artifact handoff and provider cooldown handling remain outstanding.
-The shared inbox, pending-publication queue, and rotation state are still written by
-the daily generator, so this is not yet safe for parallel runs.
+## Not enabled / remaining work
 
-Phase 3 (partially implemented): the daily generator writes new packages only to its
-worker outbox. `coordinate-worker-packages.mjs` validates the package, serializes local
-queue updates with an exclusive lock, deduplicates by `publication_key`, atomically
-updates the pending queue, records the worker handoff, and moves the package into the
-publication inbox. Unit tests cover successful handoff, duplicate keys, type mismatch,
-and path traversal. The daily workflow runs the coordinator before committing and
-dispatching the publisher. Cross-workflow publication locking and artifact handoff
-for genuinely parallel runner machines are still outstanding. Legacy deferred tasks
-and the novel chapter generator are not yet migrated.
+- The daily workflow is still single-worker. No matrix or parallel generation is active.
+- The artifact coordinator is tested but not yet wired to a matrix workflow; worker jobs must upload their isolated outboxes and state, and one downstream job must download all artifacts and run the coordinator.
+- The ordinary/interactive generator still reads shared pending queue and rotation state. It needs a true artifact-only mode that cannot commit or mutate shared queue/rotation/cooldown state.
+- Novel chapter/manifest changes still target the shared draft tree. Novel output needs artifact handoff and a serialized manifest merge.
+- Legacy deferred tasks still need a safe migration.
+- Provider-wide throttling and cross-workflow publisher/queue serialization are required before any parallel run.
 
-Phase 4: enable a two-worker matrix for ordinary and interactive generation, with
-novel generation remaining independently scheduled. Add provider-wide throttling
-and end-to-end tests before raising concurrency.
-
-Until phases 2–4 are complete, the existing daily workflow remains single-worker.
-No new paid provider, billing setting, or API credential is introduced by this
-migration.
+No AI generation is performed by the tests. No paid provider, billing setting, API credential, or paid credit is added by this migration.
