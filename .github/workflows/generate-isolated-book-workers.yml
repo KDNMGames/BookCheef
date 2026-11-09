@@ -31,6 +31,15 @@ jobs:
       - name: Test isolated worker mode and state
         run: node --test scripts/book-worker-mode.test.mjs scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/coordinate-worker-artifacts.test.mjs
 
+      - name: Require explicitly enabled free Cursor allowance
+        env:
+          CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
+        run: |
+          if [ "$CURSOR_FREE_INCLUDED" != "true" ]; then
+            echo "Stopped safely: isolated workers are configured to use only Cursor when its included free allowance is explicitly enabled."
+            exit 1
+          fi
+
       - name: Install Cursor Agent fallback
         if: vars.CURSOR_FREE_INCLUDED == 'true'
         run: |
@@ -42,12 +51,9 @@ jobs:
         env:
           BOOKCHEEF_WORKER_MODE: isolated
           BOOKCHEEF_WORKER_TYPE: ${{ matrix.worker_type }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
           CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: node scripts/generate-daily-book.mjs
 
       - name: Upload worker artifact
