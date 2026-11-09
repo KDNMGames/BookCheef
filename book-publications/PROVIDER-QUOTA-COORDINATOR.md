@@ -19,8 +19,8 @@ The setup SQL is deliberately **not applied to the live database** by this chang
 1. The SQL setup has already been applied to the existing Supabase Free project as migration `20261109123700_bookcheef_provider_quota_coordinator`; both private tables and RPC functions are present and verified.
 2. In GitHub repository Settings → Secrets and variables → Actions → Secrets, add:
    - `SUPABASE_URL` — the existing BookCheef project API URL.
-   - `SUPABASE_SERVICE_ROLE_KEY` — the server-side service-role key for that same project.
-3. Never place the service-role key in Vite variables, frontend code, committed files, artifacts, or logs. It is intended only for trusted GitHub Actions jobs.
+   - `SUPABASE_SECRET_KEY` — create a server-side secret API key (`sb_secret_...`) for that project. The client sends it only in the `apikey` header; Supabase's API gateway maps it to the service role. For older projects, the legacy `service_role` JWT can be supplied as `SUPABASE_SERVICE_ROLE_KEY` instead.
+3. Never place this elevated key in Vite variables, frontend code, committed files, artifacts, or logs. It is intended only for trusted GitHub Actions jobs.
 4. In GitHub Actions Variables, set `BOOKCHEEF_SHARED_QUOTA_ENABLED=true` only after the SQL setup and both Supabase secrets are in place.
 5. Keep `CURSOR_FREE_INCLUDED=true` and `GEMINI_FREE_INCLUDED=true` disabled unless the corresponding provider's included-free API entitlement has been explicitly confirmed. A Gemini Pro subscription does not by itself establish free Gemini API quota. This quota coordinator does not change those safeguards.
 
