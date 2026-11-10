@@ -1,8 +1,8 @@
 {
-  "requested_at": "2026-11-10T00:20:00Z",
-  "requested_by": "User requested repair; resume oldest saved draft",
+  "requested_at": "2026-11-10T00:41:07.826Z",
+  "requested_by": "User requested an immediate generator health check",
   "requested_type": "resume oldest deferred book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
   "retry_reason": "The oldest saved interactive checkpoint has been migrated into its correct worker. Resume it first; preserve every scene checkpoint; use only free OpenRouter models with upstream failover. Do not start another title.",
-  "reason": "Run one generation cycle after fixing legacy interactive checkpoint recovery, global deferred-task ordering, free-model failover and shared quota handling. Paid APIs remain disabled."
+  "reason": "Manual generator health check after automatic repair/discard safeguards passed CI. Resume only the oldest pending task; preserve checkpoints; use explicitly free providers only; do not start another title; report quota cooldowns without deleting drafts."
 }
