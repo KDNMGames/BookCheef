@@ -47,9 +47,12 @@
       ],
       "secondary_provider_order": [
         "Gemini API only when explicitly verified free and enabled",
+        "Groq API only with a user-supplied key on the Free tier; stop on free-tier rate limits",
         "Cursor only when explicitly verified included-free and enabled",
         "otherwise preserve checkpoint and defer"
-      ]
+      ],
+      "groq_fallback_requires_explicit_free_plan_key": true,
+      "paid_api_fallbacks": false
     },
     "image_providers": {
       "primary": "cloudflare",
@@ -133,5 +136,6 @@
     "assistant_may_edit_repository_config_and_workflows": true,
     "require_successful_migration_test_before_disabling_chatgpt_automation": true,
     "last_updated_by": "ChatGPT - continue daily output using idle isolated worker while another book is cooling down"
-  }
+  },
+  "last_updated_by": "ChatGPT - added optional Groq Free tier fallback and resilient provider rotation"
 }
