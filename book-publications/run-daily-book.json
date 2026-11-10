@@ -1,8 +1,8 @@
 {
   "requested_at": "2026-11-10T00:00:00Z",
-  "requested_by": "User explicitly requested to start book generation",
-  "requested_type": "generate next book",
+  "requested_by": "User requested generator repair; resume the oldest saved draft",
+  "requested_type": "resume existing book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Resume any existing checkpoint first. Use free providers only, preserve all checkpoints, defer exhausted providers, and never publish incomplete books.",
-  "reason": "Start one generation cycle now. Respect worker leases, shared provider quotas, publication-key duplicate protection, quality validation, verified publication flow, and exclude the archived novel Last Day of the Universe."
+  "retry_reason": "Resume the saved book «Границы тишины» from its checkpoint. OpenRouter free-model connectivity test succeeded; try free OpenRouter models in rotation. Cursor and Gemini remain disabled unless a free entitlement is explicitly confirmed.",
+  "reason": "Run one generation cycle after fixing deferred-task priority, free-model failover, provider quota coordination, and earliest retry scheduling. Do not start another title. Free APIs only; no paid fallback."
 }
