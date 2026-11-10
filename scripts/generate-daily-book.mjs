@@ -54,7 +54,33 @@ let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
 
+
+async function readGenerationControl() {
+  const base = (process.env.SUPABASE_URL || "").replace(/\\/$/, "");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
+  if (!base || !key) throw new Error("Generation control cannot be checked: Supabase service credentials are missing.");
+  const response = await fetch(base + "/rest/v1/bookcheef_generation_control?id=eq.true&select=enabled,updated_at,updated_by", {
+    headers: { apikey: key, Authorization: "Bearer " + key },
+    signal: AbortSignal.timeout(10000)
+  });
+  if (!response.ok) throw new Error("Generation control check failed: HTTP " + response.status);
+  const rows = await response.json();
+  if (!Array.isArray(rows) || !rows.length || typeof rows[0].enabled !== "boolean") {
+    throw new Error("Generation control row is missing or invalid; refusing to generate.");
+  }
+  return rows[0];
+}
+async function assertGenerationEnabled() {
+  const control = await readGenerationControl();
+  if (!control.enabled) {
+    console.log("BookCheef generation is STOPPED by Telegram admin (" + (control.updated_by || "unknown") + "). No new AI requests will be started.");
+    return false;
+  }
+  return true;
+}
+
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, "utf8"));
+if (!(await assertGenerationEnabled())) { if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, 'package_path=\ncreated=false\nstopped=true\n'); process.exit(0); }
 if (geminiDisabled) console.log("Gemini API is disabled unless GEMINI_FREE_INCLUDED=true confirms an included free allowance; Gemini Pro subscription alone is not treated as API credit.");
 const { mode: workerMode, isolated: isolatedMode, workerType: explicitWorkerType } = resolveBookWorkerMode(process.env);
 const rotation = isolatedMode ? {} : JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
@@ -293,6 +319,11 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
 }
 
 async function generateWithFallback(prompt, { json = false, timeout = 900000 } = {}) {
+  if (!(await assertGenerationEnabled())) {
+    const error = new Error("BookCheef generation was stopped by an administrator.");
+    error.code = "GENERATION_STOPPED";
+    throw error;
+  }
   if (GEMINI_API_KEY && !geminiDisabled) {
     try {
       const output = await generateWithGemini(prompt, { json, timeout });
