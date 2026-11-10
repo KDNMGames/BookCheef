@@ -7,6 +7,7 @@ import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
 import { selectDeferredTask } from "./deferred-task-policy.mjs";
 import { classifyOpenRouterFailure, earliestRetryAfter } from "./openrouter-failure-policy.mjs";
+import { normalizeOrdinaryBookStructure } from "./ordinary-book-structure.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -526,30 +527,7 @@ function normalizePackage(pkg) {
   }
   if (typeof pkg.is_interactive !== "boolean") pkg.is_interactive = bookType === "interactive";
   if (pkg.series == null) pkg.series = "";
-  if (Array.isArray(pkg.illustrations) && typeof pkg.book_content === "string" && bookType === "ordinary") {
-    const headings = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)].map(match => ({
-      title: match[1].trim(),
-      index: match.index,
-      end: match.index + match[0].length
-    }));
-    const norm = value => String(value || "").normalize("NFKC").toLocaleLowerCase("ru")
-      .replace(/^глава\s+\d+[.:\s-]*/i, "")
-      .replace(/[«»“”"'’]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-    for (let i = 0; i < pkg.illustrations.length; i++) {
-      const item = pkg.illustrations[i];
-      if (!item || !item.chapter || !item.number || !headings.length) continue;
-      const wanted = norm(item.chapter);
-      let heading = headings.find(h => norm(h.title) === wanted) ||
-        headings.find(h => norm(h.title).includes(wanted) || wanted.includes(norm(h.title)));
-      if (!heading) heading = headings[Math.min(i, headings.length - 1)];
-      item.chapter = heading.title;
-      const marker = "{{illustration:" + item.chapter + ":" + item.number + "}}";
-      if (!pkg.book_content.includes(marker)) {
-        const insertAt = heading.end;
-        pkg.book_content = pkg.book_content.slice(0, insertAt) + "\n\n" + marker + "\n\n" + pkg.book_content.slice(insertAt);
-      }
-    }
-  }
+  if (bookType === "ordinary") normalizeOrdinaryBookStructure(pkg);
   return pkg;
 }
 
