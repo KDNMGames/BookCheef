@@ -655,7 +655,15 @@ async function generatePackage(attempt, previousError = "") {
     if (!content.trim()) {
       const detail = choice?.finish_reason ? " (finish_reason: " + choice.finish_reason + ")" : "";
       const providerError = body.error?.message || body.provider_error || "";
-      throw new Error(("OpenRouter returned empty content" + detail + (providerError ? ": " + providerError : ".")).slice(0, 700));
+      const upstreamProvider = body.provider || body.provider_name || body.choices?.[0]?.provider || "";
+      const failure = new Error(("OpenRouter returned empty content" + detail +
+        (upstreamProvider ? " (provider: " + upstreamProvider + ")" : "") +
+        (providerError ? ": " + providerError : ".")).slice(0, 700));
+      // An HTTP 200 with no message is an upstream model failure, not a book-content
+      // validation error. Rotate to the next configured free model instead of retrying
+      // the same model until the whole book is deferred.
+      failure.code = "MODEL_PROVIDER_LIMIT";
+      throw failure;
     }
     const cleaned = content.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/, "");
     return JSON.parse(cleaned);
