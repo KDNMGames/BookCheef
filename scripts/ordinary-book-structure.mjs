@@ -1,11 +1,14 @@
 export function normalizeOrdinaryBookStructure(pkg) {
   if (!pkg || typeof pkg.book_content !== "string") return pkg;
 
-  // Accept both Markdown headings and plain Russian chapter labels returned by models.
-  pkg.book_content = pkg.book_content.replace(
-    /^(Глава\s+\d+\s*[:.)—–-]\s*.+)$/gmi,
-    "## $1"
-  );
+  // Models return chapter titles in several equivalent forms: "# Глава 1",
+  // "### Глава 1 — ...", plain "Глава 1: ...", or numbered "1. ...".
+  // Canonicalize these to level-two Markdown headings before chapter counting.
+  pkg.book_content = pkg.book_content
+    .replace(/^\\s*#{1,6}\\s*((?:глава|часть)\\s+(?:\\d+|[а-яё]+)(?:\\s*[:.)—–-]\\s*|\\s+).+)\\s*$/gmi, "## $1")
+    .replace(/^\\s*((?:глава|часть)\\s+(?:\\d+|[а-яё]+)(?:\\s*[:.)—–-]\\s*|\\s+).+)\\s*$/gmi, "## $1")
+    .replace(/^\\s*#{1,6}\\s*((?:chapter|part)\\s+\\d+(?:\\s*[:.)—–-]\\s*|\\s+).+)\\s*$/gmi, "## $1")
+    .replace(/^\\s*(\\d{1,2}[.)]\\s+[^\\n]{3,})\\s*$/gm, "## $1");
 
   // Discard model-generated markers that do not have matching illustration definitions.
   pkg.book_content = pkg.book_content
