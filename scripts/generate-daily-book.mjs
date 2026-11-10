@@ -5,7 +5,7 @@ import { createCheckpointStore } from "./book-checkpoint.mjs";
 import { createBookWorkerState } from "./book-worker-state.mjs";
 import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
-import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers, shouldNotifyDeferredWait } from "./deferred-task-policy.mjs";
+import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers, shouldNotifyDeferredWait, releaseDeferredTasksWhenProviderReady } from "./deferred-task-policy.mjs";
 import { classifyOpenRouterFailure, earliestRetryAfter } from "./openrouter-failure-policy.mjs";
 import { normalizeOrdinaryBookStructure } from "./ordinary-book-structure.mjs";
 import { normalizeLegacyInteractivePackage } from "./legacy-interactive-book.mjs";
@@ -558,6 +558,19 @@ try {
   if (error.code !== "ENOENT") throw new Error("Could not safely recover the legacy unfinished checkpoint: " + error.message);
 }
 
+const providersReady = Boolean(
+  (OPENROUTER_API_KEY && !openRouterDisabled) ||
+  (GEMINI_API_KEY && !geminiDisabled) ||
+  (GROQ_API_KEY && !groqDisabled) ||
+  (CURSOR_API_KEY && !cursorDisabled)
+);
+const providerRetryRelease = releaseDeferredTasksWhenProviderReady(deferredQueue.tasks, providersReady, Date.now());
+if (providerRetryRelease.released > 0) {
+  deferredQueue.tasks = providerRetryRelease.tasks;
+  deferredQueue.updated_at = new Date().toISOString();
+  await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+  console.log("Rechecking " + providerRetryRelease.released + " deferred task(s) now because at least one enabled free provider is outside cooldown.");
+}
 const deferredSelection = selectDeferredTask(deferredQueue.tasks, Date.now());
 if (deferredSelection.status === "wait") {
   const waitingTask = deferredSelection.task;
