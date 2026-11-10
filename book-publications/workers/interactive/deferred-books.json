@@ -5,13 +5,13 @@
       "book_type": "interactive",
       "checkpoint_path": "book-publications/workers/interactive/deferred/recovered-1794234842863-interactive.json",
       "created_at": "2026-11-09T14:34:02.863Z",
-      "retry_after": "2026-11-10T04:04:20.086Z",
+      "retry_after": "2026-11-11T00:44:40.413Z",
       "recovered_from_legacy_checkpoint": true,
       "migrated_from_worker": "ordinary",
-      "last_error": "Provider quota is reserved or cooling down until 2026-11-10T04:04:20.086Z (provider_cooldown).",
+      "last_error": "Cursor Agent is in cooldown.",
       "last_notified_retry_after": "2026-11-10T04:04:20.086Z",
       "last_wait_notice_at": "2026-11-10T00:41:17.946Z"
     }
   ],
-  "updated_at": "2026-11-10T00:41:17.946Z"
+  "updated_at": "2026-11-10T18:44:41.654Z"
 }
