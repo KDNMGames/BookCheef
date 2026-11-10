@@ -119,6 +119,37 @@ const DEFERRED_QUEUE_PATH = path.join(workerState.workerDir, "deferred-books.jso
 const COOLDOWN_PATH = path.join(workerState.workerDir, "openrouter-cooldown.json");
 const CURSOR_COOLDOWN_PATH = path.join(workerState.workerDir, "cursor-cooldown.json");
 const GEMINI_COOLDOWN_PATH = path.join(workerState.workerDir, "gemini-cooldown.json");
+// Migrate stranded legacy checkpoints before any all-providers-cooling-down early exit.
+try {
+  const legacyCheckpoint = JSON.parse(await fs.readFile(WORK_PATH, "utf8"));
+  if (legacyCheckpoint?.pkg?.title && legacyCheckpoint?.pkg?.book_content) {
+    const queue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8").catch(error => {
+      if (error.code === "ENOENT") return '{"tasks":[]}';
+      throw error;
+    }));
+    queue.tasks = Array.isArray(queue.tasks) ? queue.tasks : [];
+    const stamp = Date.parse(legacyCheckpoint.updated_at || "") || Date.now();
+    const taskId = "recovered-" + stamp + "-" + requestedWorkerType;
+    if (!queue.tasks.some(task => task.task_id === taskId)) {
+      const recoveredPath = workerState.deferredPath(taskId);
+      await fs.rename(WORK_PATH, recoveredPath);
+      queue.tasks.push({
+        task_id: taskId,
+        book_type: legacyCheckpoint.book_type || requestedWorkerType,
+        checkpoint_path: recoveredPath,
+        created_at: legacyCheckpoint.updated_at || new Date(stamp).toISOString(),
+        retry_after: new Date().toISOString(),
+        recovered_from_legacy_checkpoint: true
+      });
+      queue.updated_at = new Date().toISOString();
+      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(queue, null, 2) + "\\n");
+      console.log("Recovered stranded checkpoint: " + legacyCheckpoint.pkg.title);
+    }
+  }
+} catch (error) {
+  if (error.code !== "ENOENT") throw new Error("Legacy checkpoint recovery failed safely: " + error.message);
+}
+
 const cooldownSeconds = 21600;
 try {
   const state = JSON.parse(await fs.readFile(COOLDOWN_PATH, "utf8"));
