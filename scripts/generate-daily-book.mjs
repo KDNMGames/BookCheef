@@ -823,8 +823,10 @@ async function expandOrdinaryBook(pkg) {
   normalizeOrdinaryBookStructure(pkg);
   const matches = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)];
   const age = String(pkg.age || "12+");
-  if (matches.length !== 12) throw new Error("A three-hour ordinary book requires exactly 12 planned chapters; received " + matches.length + ".");
-  const fragmentsPerChapter = 3, targetWordsPerFragment = 1150, minimumWordsPerFragment = 900, totalMinimum = 30000;
+  if (matches.length < 10 || matches.length > 14) throw new Error("A three-hour ordinary book requires 10-14 chapters; received " + matches.length + ".");
+  const targetWordsPerFragment = 1150, minimumWordsPerFragment = 900, totalMinimum = 30000;
+  // Preserve older saved outlines (10-14 chapters) while guaranteeing >=30,000 words.
+  const fragmentsPerChapter = Math.max(3, Math.ceil(totalMinimum / (matches.length * minimumWordsPerFragment)));
   const progress = pkg.generation_progress ||= { version: 2, ordinary: { chapters: {} } };
   progress.ordinary ||= { chapters: {} }; progress.ordinary.chapters ||= {};
   const completedParts = [];
@@ -849,18 +851,18 @@ async function expandOrdinaryBook(pkg) {
         draft: state.outline,
         priorContext: (previous.slice(-1800) + "\\n" + state.fragments.join("\\n\\n").slice(-2200)).slice(-3800),
         targetWords: targetWordsPerFragment, minimumWords: minimumWordsPerFragment,
-        partLabel: "Глава " + (i + 1) + " из 12, фрагмент " + (fragment + 1) + " из 3" + (fragment === 0 ? " — начало главы" : " — непрерывное продолжение предыдущего фрагмента"),
+        partLabel: "Глава " + (i + 1) + " из " + matches.length + ", фрагмент " + (fragment + 1) + " из " + fragmentsPerChapter + (fragment === 0 ? " — начало главы" : " — непрерывное продолжение предыдущего фрагмента"),
         partIndex: i * fragmentsPerChapter + fragment
       });
       state.fragments.push(textPart);
       const chapterText = "## " + heading + "\\n\\n" + (markerList.length ? markerList.join("\\n") + "\\n\\n" : "") + state.fragments.join("\\n\\n");
       const remainingOutlines = i + 1 < matches.length ? pkg.book_content.slice(matches[i + 1].index) : "";
       await saveWork({ ...pkg, book_content: [...completedParts, chapterText, remainingOutlines].filter(Boolean).join("\\n\\n") });
-      console.log("Checkpoint saved after fragment " + (fragment + 1) + "/3 of chapter " + (i + 1) + ".");
+      console.log("Checkpoint saved after fragment " + (fragment + 1) + "/" + fragmentsPerChapter + " of chapter " + (i + 1) + ".");
     }
     const chapterText = "## " + heading + "\\n\\n" + (markerList.length ? markerList.join("\\n") + "\\n\\n" : "") + state.fragments.join("\\n\\n");
     const chapterWords = countWords(state.fragments.join(" "));
-    if (chapterWords < 2700) throw new Error("Chapter " + heading + " is below its 2,700-word minimum (" + chapterWords + ").");
+    if (chapterWords < 2700) throw new Error("Chapter " + heading + " is below its " + (fragmentsPerChapter * minimumWordsPerFragment) + "-word minimum (" + chapterWords + ").");
     completedParts.push(chapterText); previous = state.fragments.join("\\n\\n");
     const remainingOutlines = i + 1 < matches.length ? pkg.book_content.slice(matches[i + 1].index) : "";
     await saveWork({ ...pkg, book_content: [...completedParts, remainingOutlines].filter(Boolean).join("\\n\\n") });
