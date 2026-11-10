@@ -1,0 +1,75 @@
+{
+  "publication_key": "bookcheef-tam-gde-poet-glubina-20261111",
+  "recorded_at": "2026-11-10T21:18:37.853Z",
+  "policy": "Only machine-verified CC0/Public Domain files with no attribution requirement are accepted.",
+  "assets": [
+    {
+      "role": "cover",
+      "url": "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/generated/bookcheef-tam-gde-poet-glubina-20261111/42903669053-1/cover.jpg",
+      "provider": "Wikimedia Commons",
+      "file_title": "File:Green-sea-turtle.jpg",
+      "file_page_url": "https://commons.wikimedia.org/wiki/File:Green-sea-turtle.jpg",
+      "license_name": "Public domain",
+      "license_url": "",
+      "attribution_required": false,
+      "commercial_use": true,
+      "verified_at": "2026-11-10T21:18:20.828Z"
+    },
+    {
+      "role": "illustration",
+      "number": 1,
+      "chapter": "Глава 1. Сигнал под водой",
+      "url": "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/generated/bookcheef-tam-gde-poet-glubina-20261111/42903669053-1/illustration-1.jpg",
+      "provider": "Wikimedia Commons",
+      "file_title": "File:Lighthouse in Oswego2.jpg",
+      "file_page_url": "https://commons.wikimedia.org/wiki/File:Lighthouse_in_Oswego2.jpg",
+      "license_name": "Public domain",
+      "license_url": "",
+      "attribution_required": false,
+      "commercial_use": true,
+      "verified_at": "2026-11-10T21:18:23.383Z"
+    },
+    {
+      "role": "illustration",
+      "number": 2,
+      "chapter": "Глава 3. Лес из водорослей",
+      "url": "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/generated/bookcheef-tam-gde-poet-glubina-20261111/42903669053-1/illustration-2.jpg",
+      "provider": "Wikimedia Commons",
+      "file_title": "File:Underwater life ocean.jpg",
+      "file_page_url": "https://commons.wikimedia.org/wiki/File:Underwater_life_ocean.jpg",
+      "license_name": "Public domain",
+      "license_url": "",
+      "attribution_required": false,
+      "commercial_use": true,
+      "verified_at": "2026-11-10T21:18:25.437Z"
+    },
+    {
+      "role": "illustration",
+      "number": 3,
+      "chapter": "Глава 5. Тихие великаны",
+      "url": "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/generated/bookcheef-tam-gde-poet-glubina-20261111/42903669053-1/illustration-3.jpg",
+      "provider": "Wikimedia Commons",
+      "file_title": "File:Humpback Whale underwater shot.jpg",
+      "file_page_url": "https://commons.wikimedia.org/wiki/File:Humpback_Whale_underwater_shot.jpg",
+      "license_name": "Public domain",
+      "license_url": "",
+      "attribution_required": false,
+      "commercial_use": true,
+      "verified_at": "2026-11-10T21:18:27.459Z"
+    },
+    {
+      "role": "illustration",
+      "number": 4,
+      "chapter": "Глава 7. Свет в темноте",
+      "url": "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/generated/bookcheef-tam-gde-poet-glubina-20261111/42903669053-1/illustration-4.jpg",
+      "provider": "Wikimedia Commons",
+      "file_title": "File:Unidentifiedjellyfish luminiscent.jpg",
+      "file_page_url": "https://commons.wikimedia.org/wiki/File:Unidentifiedjellyfish_luminiscent.jpg",
+      "license_name": "Public domain",
+      "license_url": "",
+      "attribution_required": false,
+      "commercial_use": true,
+      "verified_at": "2026-11-10T21:18:29.324Z"
+    }
+  ]
+}

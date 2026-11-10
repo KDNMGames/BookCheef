@@ -1,13 +1,13 @@
 {
-  "cycle_position": 2,
-  "published_count": 6,
-  "updated_at": "2026-11-10T20:53:33.534Z",
+  "cycle_position": 3,
+  "published_count": 7,
+  "updated_at": "2026-11-10T21:18:44.987Z",
   "note": "New rotation order from the next publication: 1 interactive, 2 ordinary, 3 ordinary. Existing two published books retained; current pending interactive package is first.",
   "last_publication": {
-    "title": "Эхо внешнего контура",
-    "author": "Астэр Неваль",
-    "age": "14+",
-    "type": "interactive",
-    "publication_key": "bookcheef-2026-11-09-ekho-vneshnego-kontura"
+    "title": "Там, где поёт глубина",
+    "author": "BookCheef — оригинальная история",
+    "age": "12+",
+    "type": "ordinary",
+    "publication_key": "bookcheef-tam-gde-poet-glubina-20261111"
   }
 }
