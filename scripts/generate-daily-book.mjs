@@ -854,14 +854,16 @@ async function expandOrdinaryBook(pkg) {
       });
       state.fragments.push(textPart);
       const chapterText = "## " + heading + "\\n\\n" + (markerList.length ? markerList.join("\\n") + "\\n\\n" : "") + state.fragments.join("\\n\\n");
-      await saveWork({ ...pkg, book_content: [...completedParts, chapterText].join("\\n\\n") });
+      const remainingOutlines = i + 1 < matches.length ? pkg.book_content.slice(matches[i + 1].index) : "";
+      await saveWork({ ...pkg, book_content: [...completedParts, chapterText, remainingOutlines].filter(Boolean).join("\\n\\n") });
       console.log("Checkpoint saved after fragment " + (fragment + 1) + "/3 of chapter " + (i + 1) + ".");
     }
     const chapterText = "## " + heading + "\\n\\n" + (markerList.length ? markerList.join("\\n") + "\\n\\n" : "") + state.fragments.join("\\n\\n");
     const chapterWords = countWords(state.fragments.join(" "));
     if (chapterWords < 2700) throw new Error("Chapter " + heading + " is below its 2,700-word minimum (" + chapterWords + ").");
     completedParts.push(chapterText); previous = state.fragments.join("\\n\\n");
-    await saveWork({ ...pkg, book_content: completedParts.join("\\n\\n") });
+    const remainingOutlines = i + 1 < matches.length ? pkg.book_content.slice(matches[i + 1].index) : "";
+    await saveWork({ ...pkg, book_content: [...completedParts, remainingOutlines].filter(Boolean).join("\\n\\n") });
   }
   pkg.book_content = completedParts.join("\\n\\n");
   const total = countWords(pkg.book_content);
