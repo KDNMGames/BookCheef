@@ -10,15 +10,25 @@ const task = (id, created, retry, type = "ordinary") => ({
   retry_after: retry
 });
 
-test("does not start a new book while the oldest deferred task is cooling down", () => {
+test("resumes the oldest ready task while an earlier task is cooling down", () => {
   const tasks = [
     task("older", "2026-11-10T01:00:00Z", "2026-11-10T04:00:00Z"),
     task("newer", "2026-11-10T02:00:00Z", "2026-11-10T02:30:00Z")
   ];
   const result = selectDeferredTask(tasks, Date.parse("2026-11-10T03:00:00Z"));
+  assert.equal(result.status, "resume");
+  assert.equal(result.task.task_id, "newer");
+});
+
+
+test("waits only when every deferred task is still cooling down", () => {
+  const tasks = [
+    task("older", "2026-11-10T01:00:00Z", "2026-11-10T04:00:00Z"),
+    task("newer", "2026-11-10T02:00:00Z", "2026-11-10T05:00:00Z")
+  ];
+  const result = selectDeferredTask(tasks, Date.parse("2026-11-10T03:00:00Z"));
   assert.equal(result.status, "wait");
   assert.equal(result.task.task_id, "older");
-  assert.equal(result.retryAfter, "2026-11-10T04:00:00.000Z");
 });
 
 test("resumes the oldest deferred task when its retry time has arrived", () => {
