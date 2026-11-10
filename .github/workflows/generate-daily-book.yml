@@ -55,8 +55,19 @@ jobs:
             exit 1
           fi
           curl https://cursor.com/install -fsS | bash
+          # Cursor's Linux installer may expose the agent through ~/.local/bin;
+          # retain ~/.cursor/bin as a compatibility location across installer versions.
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
-          "$HOME/.cursor/bin/agent" --version
+          export PATH="$HOME/.local/bin:$HOME/.cursor/bin:$PATH"
+          AGENT_BIN="$(command -v agent || true)"
+          if [ -z "$AGENT_BIN" ]; then
+            echo "Cursor installer completed, but the agent executable was not found in ~/.local/bin or ~/.cursor/bin."
+            find "$HOME/.local" "$HOME/.cursor" -type f -name agent -o -type l -name agent 2>/dev/null | head -20 || true
+            exit 127
+          fi
+          echo "Cursor Agent executable: $AGENT_BIN"
+          agent --version
 
       - name: Generate a book or resume the oldest pending package
         id: book
