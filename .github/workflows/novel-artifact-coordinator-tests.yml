@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "scripts/generate-daily-book.mjs"
+      - "scripts/ordinary-book-structure.mjs"
+      - "scripts/ordinary-book-structure.test.mjs"
       - "scripts/provider-quota-coordinator.mjs"
       - "scripts/provider-quota-coordinator.test.mjs"
       - "book-publications/automation-config.json"
@@ -37,6 +39,8 @@ jobs:
           node --check scripts/provider-quota-coordinator.mjs
           node --check scripts/provider-quota-coordinator.test.mjs
           node --check scripts/generate-daily-book.mjs
+          node --check scripts/ordinary-book-structure.mjs
+          node --check scripts/ordinary-book-structure.test.mjs
           node -e "JSON.parse(require('node:fs').readFileSync('book-publications/automation-config.json', 'utf8'))"
       - name: Run quota coordinator tests
         run: node --test scripts/provider-quota-coordinator.test.mjs
