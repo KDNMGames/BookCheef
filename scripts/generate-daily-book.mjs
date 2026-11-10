@@ -824,7 +824,7 @@ async function expandOrdinaryBook(pkg) {
   const matches = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)];
   const age = String(pkg.age || "12+");
   if (matches.length < 10 || matches.length > 14) throw new Error("A three-hour ordinary book requires 10-14 chapters; received " + matches.length + ".");
-  const targetWordsPerFragment = 1150, minimumWordsPerFragment = 900, totalMinimum = 30000;
+  const targetWordsPerFragment = 1150, minimumWordsPerFragment = 900, totalMinimum = 36000;
   // Preserve older saved outlines (10-14 chapters) while guaranteeing >=30,000 words.
   const fragmentsPerChapter = Math.max(3, Math.ceil(totalMinimum / (matches.length * minimumWordsPerFragment)));
   const progress = pkg.generation_progress ||= { version: 2, ordinary: { chapters: {} } };
@@ -891,7 +891,7 @@ async function expandInteractiveBook(pkg) {
   if (bookType !== "interactive") return pkg;
   const age = String(pkg.age || "12+"), nodes = pkg.interactive_content?.nodes;
   if (!Array.isArray(nodes) || nodes.length !== 5) throw new Error("Interactive three-hour book requires exactly five story nodes.");
-  const fragmentsPerNode = 10, targetWordsPerFragment = 1150, minimumWordsPerFragment = 1000, minimumWordsPerRoute = 30000;
+  const fragmentsPerNode = 12, targetWordsPerFragment = 1250, minimumWordsPerFragment = 1000, minimumWordsPerRoute = 36000;
   const progress = pkg.generation_progress ||= { version: 2, interactive: { nodes: {} } };
   progress.interactive ||= { nodes: {} }; progress.interactive.nodes ||= {};
   for (let i = 0; i < nodes.length; i++) {
@@ -1023,7 +1023,7 @@ function validate(pkg) {
     if (ids.size!==5 || !["scene-1","scene-2a","scene-2b","ending-a","ending-b"].every(id=>ids.has(id))) throw new Error("Interactive scene IDs are invalid.");
     const byId=new Map(data.nodes.map(n=>[n.id,n]));
     for (const node of data.nodes) {
-      const ageMinimum=10000; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or below the 10,000-word minimum: "+node.id);
+      const ageMinimum=12000; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or below the 10,000-word minimum: "+node.id);
       for (const choice of node.choices) if (!choice.text?.trim() || !ids.has(choice.next)) throw new Error("Invalid branch in "+node.id);
       const index=Number(node.id==="scene-1"?1:node.id==="scene-2a"?2:node.id==="scene-2b"?3:node.id==="ending-a"?4:5);
       const illustration=pkg.illustrations.find(x=>x.number===index && x.chapter===node.title);
