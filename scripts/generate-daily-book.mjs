@@ -6,6 +6,7 @@ import { createBookWorkerState } from "./book-worker-state.mjs";
 import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
 import { selectDeferredTask } from "./deferred-task-policy.mjs";
+import { classifyOpenRouterFailure, earliestRetryAfter } from "./openrouter-failure-policy.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -408,7 +409,7 @@ async function generatePackage(attempt, previousError = "") {
   if (!modelCandidates.length) {
     throw new Error("Free-only policy blocked generation: no explicitly free OpenRouter models are configured.");
   }
-  const modelIndex = Math.min(modelCandidates.length - 1, Math.floor((attempt - 1) / 2));
+  const modelIndex = (attempt - 1) % modelCandidates.length;
   const model = modelCandidates[modelIndex] || "openrouter/free";
   console.log("Using text model " + model + " (attempt " + attempt + ").");
   const retryInstruction = attempt > 1
@@ -454,7 +455,8 @@ async function generatePackage(attempt, previousError = "") {
       const failure = new Error((message + (provider ? " (provider: " + provider + ")" : "")).slice(0, 700));
       failure.status = response.status;
       failure.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
-      if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
+      const failureCode = classifyOpenRouterFailure({ status: response.status, message, providerName: provider });
+      if (failureCode) failure.code = failureCode;
       throw failure;
     }
     const choice = body.choices?.[0];
@@ -473,11 +475,20 @@ async function generatePackage(attempt, previousError = "") {
     return JSON.parse(cleaned);
     });
   } catch (error) {
+    if (error.code === "MODEL_PROVIDER_LIMIT") {
+      if (attempt < maxAttempts) {
+        console.warn("OpenRouter upstream provider failed for " + model + "; the next attempt will use another free model.");
+        throw error;
+      }
+      await saveOpenRouterCooldown(error.message);
+      return await generateWithFallback(systemPrompt + "\n\n" + userPrompt + retryInstruction +
+        "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
+    }
     if (error.code === "PROVIDER_QUOTA_WAIT") {
       openRouterDisabled = true;
       console.warn("OpenRouter is temporarily unavailable under the shared quota policy; trying another provider.");
-      return await generateWithFallback(systemPrompt + "\\n\\n" + userPrompt + retryInstruction +
-        "\\n\\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
+      return await generateWithFallback(systemPrompt + "\n\n" + userPrompt + retryInstruction +
+        "\n\nОБЯЗАТЕЛЬНО: верни только один полный JSON-объект без Markdown и пояснений.", { json: true, timeout: 900000 });
     }
     if (error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) {
       await saveOpenRouterCooldown(error.message);
@@ -549,9 +560,12 @@ function countWords(value) {
 
 async function expandPart({ title, age, genre, bookTitle, description, author, draft, priorContext, targetWords, minimumWords, partLabel, partIndex }) {
   const provider = config.daily_book.text_provider || {};
-  const models = [provider.model, ...(provider.fallback_models || [])].filter(Boolean);
+  const models = [provider.model, ...(provider.fallback_models || [])]
+    .filter(Boolean)
+    .filter(candidate => candidate === "openrouter/free" || candidate.endsWith(":free"));
+  if (!models.length) throw new Error("Free-only policy blocked chapter expansion: no explicitly free OpenRouter models are configured.");
   let lastError;
-  for (let retry = 0; retry < 3; retry++) {
+  for (let retry = 0; retry < models.length; retry++) {
     const model = models[(partIndex + retry) % Math.max(1, models.length)] || "openrouter/free";
     try {
       const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
@@ -565,27 +579,33 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
       if (openRouterDisabled || !OPENROUTER_API_KEY) {
         generatedText = await generateWithFallback(systemText + "\n\n" + userText, { timeout: 900000 });
       } else {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer " + OPENROUTER_API_KEY,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
-            "X-Title": "BookCheef Long-form Chapter Writer"
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: "system", content: systemText }, { role: "user", content: userText }],
-            temperature: 0.72,
-            max_tokens: 10000
-          }),
-          signal: AbortSignal.timeout(180000)
-        });
+        const response = await withProviderQuota("openrouter", "expand-" + partIndex + "-" + retry, async () =>
+          await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + OPENROUTER_API_KEY,
+              "Content-Type": "application/json",
+              "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
+              "X-Title": "BookCheef Long-form Chapter Writer"
+            },
+            body: JSON.stringify({
+              model,
+              messages: [{ role: "system", content: systemText }, { role: "user", content: userText }],
+              temperature: 0.72,
+              max_tokens: 10000
+            }),
+            signal: AbortSignal.timeout(180000)
+          })
+        );
         const body = await response.json().catch(() => ({}));
         if (!response.ok) {
-          const message = body.error?.message || "OpenRouter HTTP " + response.status;
-          const failure = new Error(message);
-          if (response.status === 429 || /rate.?limit|quota|daily limit|credits exhausted/i.test(message)) failure.code = "RATE_LIMIT";
+          const message = body.error?.message || body.error?.metadata?.raw || "OpenRouter HTTP " + response.status;
+          const providerName = body.error?.metadata?.provider_name || body.error?.provider || "";
+          const failure = new Error((message + (providerName ? " (provider: " + providerName + ")" : "")).slice(0, 700));
+          failure.status = response.status;
+          failure.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
+          const failureCode = classifyOpenRouterFailure({ status: response.status, message, providerName });
+          if (failureCode) failure.code = failureCode;
           throw failure;
         }
         const raw = body.choices?.[0]?.message?.content;
@@ -597,6 +617,27 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
       return generatedText;
     } catch (error) {
       lastError = error;
+      if (error.code === "MODEL_PROVIDER_LIMIT") {
+        if (retry < models.length - 1) {
+          console.warn("Upstream provider failed for " + model + "; trying the next free OpenRouter model.");
+          await new Promise(resolve => setTimeout(resolve, Math.max(15, Number(quotaPolicy.min_interval_seconds ?? 15)) * 1000));
+          continue;
+        }
+        await saveOpenRouterCooldown(error.message);
+        try {
+          const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
+          const userText = "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. Описание: " + description + "\nКонтекст: " + (priorContext || "Начало истории.") + "\nЧерновик: " + draft + "\nСохрани события, напиши полноценную прозу, выведи только текст части.";
+          const fallbackText = await generateWithFallback(systemText + "\n\n" + userText, { timeout: 900000 });
+          const fallbackWords = countWords(fallbackText);
+          if (fallbackWords < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Free-provider fallback part too short: " + fallbackWords + " words.");
+          return fallbackText;
+        } catch (fallbackError) {
+          lastError = fallbackError;
+          console.warn("Free-provider fallback also failed: " + fallbackError.message);
+          throw fallbackError;
+        }
+      }
+      if (error.code === "PROVIDER_QUOTA_WAIT") throw error;
       if ((error.code === "RATE_LIMIT" || /rate.?limit|quota|daily limit|credits exhausted/i.test(error.message || "")) && !openRouterDisabled && OPENROUTER_API_KEY) {
         await saveOpenRouterCooldown(error.message);
         try {
@@ -865,8 +906,8 @@ if (pkg) {
     lastError = error;
     pkg = null;
     console.error("Resumed book expansion stopped: " + error.message);
-    if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" ||
-        /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || "")) {
+    if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" || error.code === "PROVIDER_QUOTA_WAIT" ||
+        (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || ""))) {
       if (error.code !== "PROVIDER_QUOTA_WAIT") {
         if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
         else await saveOpenRouterCooldown(error.message);
@@ -895,12 +936,16 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
   }
 }
 }
-if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVIDERS_COOLDOWN" || /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(lastError?.message || ""))) {
+if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVIDERS_COOLDOWN" || lastError?.code === "PROVIDER_QUOTA_WAIT" || /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(lastError?.message || ""))) {
   const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
     .map(async file => { try { return Date.parse(JSON.parse(await fs.readFile(file, "utf8")).retry_after || ""); } catch { return 0; } });
   const cooldowns = await Promise.all(retryAfter);
-  const sharedRetry = Date.parse(lastError?.retryAfter || "");
-  const nextRetry = new Date(Math.max(Date.now() + 15 * 60 * 1000, sharedRetry || 0, ...cooldowns.filter(Number.isFinite))).toISOString();
+  const sharedRetry = lastError?.retryAfter || "";
+  const nextRetry = earliestRetryAfter({
+    now: Date.now(),
+    retryAfterValues: [sharedRetry, ...cooldowns],
+    fallbackDelayMs: 15 * 60 * 1000
+  });
   let deferredEntry = deferredTask;
   if (!deferredEntry) {
     const taskId = "book-" + Date.now() + "-" + bookType;
