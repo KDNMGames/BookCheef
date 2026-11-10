@@ -37,3 +37,9 @@ export function selectOldestDeferredTaskAcrossWorkers(queues) {
   });
   return tasks[0] || null;
 }
+
+export function shouldNotifyDeferredWait(task, retryAfter, now = Date.now(), minIntervalMs = 60 * 60 * 1000) {
+  if (!task || task.last_notified_retry_after !== retryAfter) return true;
+  const lastNotice = Date.parse(task.last_wait_notice_at || "");
+  return !Number.isFinite(lastNotice) || now - lastNotice >= minIntervalMs;
+}
