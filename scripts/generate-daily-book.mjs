@@ -43,11 +43,18 @@ async function notifyBookCheefAdmins(text) {
 }
 
 async function notifyProviderLimit(provider, reason, retryAfter) {
+  const hasAnotherEnabledProvider =
+    (OPENROUTER_API_KEY && !openRouterDisabled && provider !== "OpenRouter (бесплатные модели)") ||
+    (GEMINI_API_KEY && !geminiDisabled && provider !== "Google Gemini API") ||
+    (CURSOR_API_KEY && !cursorDisabled && provider !== "Cursor Agent");
+  const nextStep = hasAnotherEnabledProvider
+    ? "Генератор попробует другой явно разрешённый бесплатный источник."
+    : "Других включённых бесплатных источников сейчас нет; генерация будет отложена, а черновик и контрольные точки сохранятся.";
   await notifyBookCheefAdmins(
     "⚠️ BookCheef: бесплатный лимит ИИ-провайдера «" + provider + "» исчерпан или временно недоступен. " +
     "Пауза до: " + retryAfter + ". " +
     "Причина: " + String(reason || "провайдер сообщил об ограничении").slice(0, 700) + ". " +
-    "Генератор попробует другой разрешённый бесплатный источник; если все источники недоступны, черновик останется сохранённым. Платные API не используются."
+    nextStep + " Платные API не используются."
   );
 }
 let openRouterDisabled = false;
