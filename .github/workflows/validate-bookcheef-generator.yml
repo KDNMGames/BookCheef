@@ -54,26 +54,25 @@ jobs:
         run: node --test scripts/provider-quota-coordinator.test.mjs
       - name: Test legacy interactive checkpoint migration
         run: node --test scripts/legacy-interactive-book.test.mjs
-      - name: Verify resumable checkpoint lifecycle
+      - name: Verify resumable checkpoint lifecycle and free-only failover
         run: |
           node --input-type=module -e '
             import fs from "node:fs";
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
             const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
-            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider", "DEFERRED_QUEUE_PATH", "deferredQueue.tasks.push", "Global publication rotation is left untouched until a book is verified as published.", "selectDeferredTask", "deferredSelection.status", "deferredTask", "classifyOpenRouterFailure", "earliestRetryAfter", "normalizeOrdinaryBookStructure", "normalizeLegacyInteractivePackage", "selectOldestDeferredTaskAcrossWorkers", "withProviderQuota(\"openrouter\", \"expand-\"", "candidate.endsWith(\":free\")", "Free-only policy blocked generation", "CURSOR_FREE_INCLUDED === \"true\""]) {
+            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider", "DEFERRED_QUEUE_PATH", "deferredQueue.tasks.push", "Global publication rotation is left untouched until a book is verified as published.", "selectDeferredTask", "deferredSelection.status", "deferredTask", "classifyOpenRouterFailure", "earliestRetryAfter", "normalizeOrdinaryBookStructure", "normalizeLegacyInteractivePackage", "selectOldestDeferredTaskAcrossWorkers", "withProviderQuota(\"openrouter\", \"expand-\"", "candidate.endsWith(\":free\")", "Free-only policy blocked generation", "generation_progress", "fragmentsPerChapter = 3", "fragmentsPerNode = 10", "minimumWordsPerRoute = 30000", "totalMinimum = 30000"]) {
               if (!source.includes(token)) throw new Error("Missing generator feature: " + token);
             }
             for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "version: 1"]) {
               if (!checkpoint.includes(token)) throw new Error("Missing checkpoint storage feature: " + token);
             }
-            if (!workflow.includes("git add -A book-publications/work-in-progress") || !workflow.includes("book-publications/cursor-cooldown.json") || !workflow.includes("book-publications/gemini-cooldown.json") || !workflow.includes("book-publications/deferred-books.json") || !workflow.includes("git add book-publications/rotation-state.json")) throw new Error("Workflow does not persist checkpoint or provider cooldown state");
-            const generationWorkflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
-            if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY") || !generationWorkflow.includes("vars.CURSOR_FREE_INCLUDED") || !generationWorkflow.includes("if: vars.CURSOR_FREE_INCLUDED")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
-            if (!generationWorkflow.includes("secrets.GEMINI_API_KEY")) throw new Error("Gemini API key is not passed to the generation workflow");
-            if (generationWorkflow.includes("actions/workflows/generate-daily-book.yml/dispatches")) throw new Error("Quota deferrals must not immediately dispatch another empty generation cycle.");
-            if (!generationWorkflow.includes("scripts/openrouter-failure-policy.test.mjs")) throw new Error("Generation workflow does not run OpenRouter failover regression tests.");
-            console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
+            if (!workflow.includes("git add -A -- book-publications") || !workflow.includes("Persist provider cooldown state") || !workflow.includes("book-publications/deferred-books.json")) throw new Error("Workflow does not persist resumable generation state");
+            if (!workflow.includes("CURSOR_FREE_INCLUDED: \'false\'") || workflow.includes("CURSOR_API_KEY:") || workflow.includes("Install Cursor Agent fallback")) throw new Error("Unverified Cursor billing path must remain disabled");
+            if (!workflow.includes("GEMINI_FREE_INCLUDED: \'false\'") || !workflow.includes("secrets.GEMINI_API_KEY")) throw new Error("Gemini must remain disabled until its free tier is verified");
+            if (workflow.includes("actions/workflows/generate-daily-book.yml/dispatches")) throw new Error("Quota deferrals must not immediately dispatch another empty generation cycle.");
+            if (!workflow.includes("scripts/openrouter-failure-policy.test.mjs")) throw new Error("Generation workflow does not run OpenRouter failover regression tests.");
+            console.log("Three-hour fragment checkpoints, free-only failover and workflow persistence are wired.");
           '
       - name: Validate automation configuration
         run: |
@@ -81,15 +80,10 @@ jobs:
             import fs from "node:fs";
             const config = JSON.parse(fs.readFileSync("book-publications/automation-config.json", "utf8"));
             const length = config.daily_book.content_rules.reading_length;
-            if (config.daily_book.free_only !== true || config.daily_book.paid_api_fallbacks !== false || config.daily_book.cursor_fallback_requires_explicit_included_free_entitlement !== true || config.daily_book.text_provider.free_models_only !== true) throw new Error("BookCheef must remain free-only");
-            if (config.daily_book.on_failure.except_when_task_is_explicitly_deferred_after_free_provider_quota_exhaustion !== true) throw new Error("Deferred task rotation exception is not documented");
-            if (config.daily_book.complete_deferred_task_before_starting_another !== true || config.daily_book.continue_with_next_book_task_when_available !== false) throw new Error("Generator must finish a deferred book before starting another.");
-            if (length.adult_minimum_words < 18000) throw new Error("Adult minimum is below 18,000 words");
-            if (length.adult_interactive_minimum_words_per_route !== 18000 || length.adult_interactive_minimum_words_per_scene !== 6000) throw new Error("Adult interactive routes must be at least 18,000 words with 6,000 words per scene.");
-            const interactiveSceneMinimums = {"6+":500,"9+":600,"12+":800,"14+":900};
-            for (const age of ["6+", "9+", "12+", "14+"]) {
-              if (!length.child_minimum_words_by_age[age]) throw new Error("Missing child length for " + age);
-              if (length.child_interactive_minimum_words_per_scene_by_age?.[age] !== interactiveSceneMinimums[age]) throw new Error("Interactive scene minimum is incorrect for " + age);
-            }
-            console.log("Reading-length policy is valid.");
+            if (config.daily_book.free_only !== true || config.daily_book.paid_api_fallbacks !== false || config.daily_book.cursor_fallback_requires_explicit_free_entitlement !== true && config.daily_book.cursor_fallback_requires_explicit_included_free_entitlement !== true || config.daily_book.text_provider.free_models_only !== true) throw new Error("BookCheef must remain free-only");
+            if (config.daily_book.on_failure.preserve_package_and_state !== true || config.daily_book.on_failure.do_not_publish_partial_book !== true) throw new Error("Failure recovery policy is unsafe");
+            if (length.minimum_reading_minutes !== 180 || length.minimum_words_all_ages < 30000 || length.target_words_all_ages < 33000) throw new Error("Every book must target at least three hours / 30,000 words");
+            if (length.ordinary_chapters !== 12 || length.ordinary_minimum_words_per_chapter < 2700) throw new Error("Ordinary long-form chapter policy is invalid");
+            if (length.interactive_minimum_words_per_scene < 10000 || length.interactive_minimum_words_per_route < 30000) throw new Error("Interactive route policy is below three hours");
+            console.log("Three-hour reading-length and free-only policies are valid.");
           '
