@@ -5,10 +5,10 @@ export function normalizeOrdinaryBookStructure(pkg) {
   // "### Глава 1 — ...", plain "Глава 1: ...", or numbered "1. ...".
   // Canonicalize these to level-two Markdown headings before chapter counting.
   pkg.book_content = pkg.book_content
-    .replace(/^\\s*#{1,6}\\s*((?:глава|часть)\\s+(?:\\d+|[а-яё]+)(?:\\s*[:.)—–-]\\s*|\\s+).+)\\s*$/gmi, "## $1")
-    .replace(/^\\s*((?:глава|часть)\\s+(?:\\d+|[а-яё]+)(?:\\s*[:.)—–-]\\s*|\\s+).+)\\s*$/gmi, "## $1")
-    .replace(/^\\s*#{1,6}\\s*((?:chapter|part)\\s+\\d+(?:\\s*[:.)—–-]\\s*|\\s+).+)\\s*$/gmi, "## $1")
-    .replace(/^\\s*(\\d{1,2}[.)]\\s+[^\\n]{3,})\\s*$/gm, "## $1");
+    .replace(/^\s*#{1,6}\s*((?:глава|часть)\s+(?:\d+|[а-яё]+)(?:\s*[:.)—–-]\s*|\s+).+)\s*$/gmi, "## $1")
+    .replace(/^\s*((?:глава|часть)\s+(?:\d+|[а-яё]+)(?:\s*[:.)—–-]\s*|\s+).+)\s*$/gmi, "## $1")
+    .replace(/^\s*#{1,6}\s*((?:chapter|part)\s+\d+(?:\s*[:.)—–-]\s*|\s+).+)\s*$/gmi, "## $1")
+    .replace(/^\s*(\d{1,2}[.)]\s+[^\n]{3,})\s*$/gm, "## $1");
 
   // Discard model-generated markers that do not have matching illustration definitions.
   pkg.book_content = pkg.book_content
