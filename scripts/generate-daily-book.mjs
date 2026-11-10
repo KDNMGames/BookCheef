@@ -543,8 +543,8 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 ТРЕБОВАНИЯ К ТЕКСТУ:
 - Русский язык, естественный и грамотный, без повторов и искусственного растягивания.
 - Возраст выбирай по реальному содержанию. Текст должен соответствовать возрасту.
-- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ. Итоговая взрослая книга (16+/18+) — не менее 18 000 слов (примерно 2–2,5 часа чтения), 10–14 глав. Детская/подростковая: 6+ — не менее 1 500 слов; 9+ — 1 800; 12+ — 2 400; 14+ — 2 700 слов; 5–9 глав. Генерация проходит в два этапа: сейчас верни структурный JSON-черновик с полноценными сюжетными заготовками по 100–180 слов на главу; затем каждая глава будет отдельно расширена до требуемого объёма. Не пытайся уместить весь роман в один ответ. Не допускай повторов и искусственного растягивания.
-- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена. Для 16+/18+ каждый узел должен содержать не менее 6 000 слов, чтобы каждый маршрут (scene-1 → ветка → финал) давал не менее 18 000 слов и около 2 часов чтения. Для детской/подростковой аудитории минимальный объём каждого узла: 6+ — 500 слов, 9+ — 600, 12+ — 800, 14+ — 900. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
+- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ ДЛЯ КАЖДОЙ КНИГИ И ЛЮБОГО ВОЗРАСТА: минимум 30 000 слов основного текста (ориентир не менее 3 часов чтения при умеренном темпе). Целевой объём — 33 000–36 000 слов. Обычная книга: ровно 12 глав, каждая с содержательным планом 120–200 слов; система допишет каждую главу отдельными последовательными фрагментами и сохранит контрольную точку после каждого фрагмента. Не пытайся уместить весь роман в один ответ. Не допускай повторов и искусственного растягивания.
+- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена минимум 10 000 слов. Каждый из двух маршрутов scene-1 → ветка → финал должен содержать минимум 30 000 слов. Система допишет каждую сцену отдельными фрагментами и сохранит контрольную точку после каждого фрагмента. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
 - В интерактивной книге choices — массив объектов {text,next}; next обязан ссылаться на существующий id.
 - Вопросы reader_questions: 3–5 содержательных пар question/answer, не помещай их в book_content.
 - Сноски: минимум одна для возраста 6+ и старше; слово в word должно дословно встречаться в тексте сцен/глав, текст определения соответствует возрасту.
@@ -708,11 +708,14 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
     try {
       const systemText = "Ты — профессиональный автор BookCheef. Пиши только художественный текст на русском языке, без JSON, Markdown-заголовков и комментариев. Не пересказывай события — показывай их сценами. Не повторяй уже изложенное.";
       const userText =
-        "Напиши ПОЛНОЦЕННУЮ расширенную часть книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). " +
+        "Напиши СЛЕДУЮЩИЙ ФРАГМЕНТ большой книги «" + bookTitle + "» (" + age + ", жанр: " + genre + ", авторский голос: " + author + "). " +
         "Раздел: «" + title + "». " + partLabel + ". Целевой объём — не менее " + targetWords + " слов. " +
-        "Описание книги: " + description + "\nКонтекст предыдущих событий (соблюдай непрерывность): " + (priorContext || "Это начало истории.") +
-        "\nЧерновик этой части, который нужно развить и существенно расширить, сохранив все важные события и смысл: " + draft +
-        "\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера, эмоциональное развитие; не добавляй новые несогласованные сюжетные линии; не пересказывай черновик; не заканчивай всю книгу, если это не финальная глава. Выведи только текст этой части. Проверь, что объём близок к целевому.";
+        "Описание книги: " + description + "\nКонтекст уже написанного (это канон; не повторяй его): " + (priorContext || "Это начало истории.") +
+        "\nПлан и обязательные события раздела: " + draft +
+        "\nТребования: цельная художественная проза; полноценные сцены, диалоги, причинно-следственные связи, атмосфера и эмоциональное развитие. " +
+        "Если это первый фрагмент — начни раздел естественно; если это продолжение — продолжай с места остановки, не пересказывай и не повторяй предыдущие сцены. " +
+        "Соблюдай план, характеры, факты и хронологию; не добавляй несогласованные сюжетные линии. " +
+        "Выведи только художественный текст этого фрагмента, без заголовка, пояснений и заключения всей книги. Объём должен быть не менее " + targetWords + " слов.";
       let generatedText;
       if (openRouterDisabled || !OPENROUTER_API_KEY) {
         generatedText = await generateWithFallback(systemText + "\n\n" + userText, { timeout: 900000 });
@@ -795,55 +798,76 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
       console.warn("Long-form expansion retry " + (retry + 1) + " for " + title + ": " + error.message);
     }
   }
+  if ((GEMINI_API_KEY && !geminiDisabled) || (CURSOR_API_KEY && !cursorDisabled)) {
+    try {
+      console.warn("All configured OpenRouter free models failed for " + title + "; handing this exact fragment to the next enabled free provider.");
+      const fallbackText = await generateWithFallback(
+        "Ты — профессиональный автор BookCheef. Продолжи книгу без повторов.\\n\\n" +
+        "Напиши фрагмент раздела «" + title + "» объёмом не менее " + targetWords + " слов. " +
+        "План: " + draft + "\\nКонтекст уже написанного: " + (priorContext || "Начало истории.") +
+        "\\nОписание: " + description + ". Авторский голос: " + author + ". " + partLabel +
+        ". Соблюдай сюжетную непрерывность. Выведи только художественный текст.",
+        { timeout: 900000 }
+      );
+      if (countWords(fallbackText) < minimumWords) throw new Error("Fallback fragment too short: " + countWords(fallbackText) + " words.");
+      return fallbackText;
+    } catch (fallbackError) {
+      lastError = new Error((lastError?.message || "OpenRouter free models failed") + "; secondary provider failed: " + fallbackError.message);
+    }
+  }
   throw new Error("Could not expand " + title + ": " + (lastError?.message || "unknown error"));
 }
 
 async function expandOrdinaryBook(pkg) {
   if (bookType !== "ordinary") return pkg;
   normalizeOrdinaryBookStructure(pkg);
-  const matches = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)];
+  const matches = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)];
   const age = String(pkg.age || "12+");
-  const adult = age === "16+" || age === "18+";
-  const minChapters = adult ? 10 : (age === "12+" || age === "14+" ? 6 : 5);
-  const maxChapters = adult ? 14 : 9;
-  if (matches.length < minChapters || matches.length > maxChapters) {
-    throw new Error("Chapter count does not fit the selected reading age: " + matches.length + "; expected " + minChapters + "-" + maxChapters + ".");
-  }
-  const targetWords = adult ? 1900 : age === "6+" ? 300 : age === "9+" ? 350 : age === "12+" ? 400 : 450;
-  const minWords = adult ? 1800 : age === "6+" ? 250 : age === "9+" ? 300 : age === "12+" ? 350 : 400;
-  const totalMinimum = adult ? 18000 : age === "6+" ? 1500 : age === "9+" ? 1800 : age === "12+" ? 2400 : 2700;
-  const parts = [];
+  if (matches.length !== 12) throw new Error("A three-hour ordinary book requires exactly 12 planned chapters; received " + matches.length + ".");
+  const fragmentsPerChapter = 3, targetWordsPerFragment = 1150, minimumWordsPerFragment = 900, totalMinimum = 30000;
+  const progress = pkg.generation_progress ||= { version: 2, ordinary: { chapters: {} } };
+  progress.ordinary ||= { chapters: {} }; progress.ordinary.chapters ||= {};
+  const completedParts = [];
   let previous = "";
   for (let i = 0; i < matches.length; i++) {
     const heading = matches[i][1].trim();
     const start = matches[i].index + matches[i][0].length;
     const end = i + 1 < matches.length ? matches[i + 1].index : pkg.book_content.length;
-    let draft = pkg.book_content.slice(start, end).trim();
-    const markerPattern = /\{\{illustration:[^}]+\}\}/g;
-    const markers = [...draft.matchAll(markerPattern)].map(x => x[0]);
-    draft = draft.replace(markerPattern, "").trim();
-    const currentWords = countWords(draft);
-    let expanded = draft;
-    if (currentWords < minWords) {
-      console.log("Expanding chapter " + (i + 1) + "/" + matches.length + ": " + heading + " (" + currentWords + " words; target " + targetWords + ").");
-      expanded = await expandPart({
-        title: heading, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
-        author: pkg.author, draft, priorContext: previous.slice(-1800), targetWords, minimumWords: minWords,
-        partLabel: "Глава " + (i + 1) + " из " + matches.length, partIndex: i
+    const raw = pkg.book_content.slice(start, end).trim();
+    const markerPattern = /\\{\\{illustration:[^}]+\\}\\}/g;
+    const markers = [...raw.matchAll(markerPattern)].map(x => x[0]);
+    const outline = raw.replace(markerPattern, "").trim();
+    const state = progress.ordinary.chapters[heading] ||= { outline, fragments: [] };
+    if (!state.outline) state.outline = outline;
+    if (!Array.isArray(state.fragments)) state.fragments = [];
+    const illustration = pkg.illustrations.find(x => x.chapter === heading);
+    const markerList = [...new Set([...markers, ...(illustration ? ["{{illustration:" + heading + ":" + illustration.number + "}}"] : [])])];
+    for (let fragment = state.fragments.length; fragment < fragmentsPerChapter; fragment++) {
+      console.log("Writing chapter " + (i + 1) + "/12, fragment " + (fragment + 1) + "/3 for " + heading + ".");
+      const textPart = await expandPart({
+        title: heading, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description, author: pkg.author,
+        draft: state.outline,
+        priorContext: (previous.slice(-1800) + "\\n" + state.fragments.join("\\n\\n").slice(-2200)).slice(-3800),
+        targetWords: targetWordsPerFragment, minimumWords: minimumWordsPerFragment,
+        partLabel: "Глава " + (i + 1) + " из 12, фрагмент " + (fragment + 1) + " из 3" + (fragment === 0 ? " — начало главы" : " — непрерывное продолжение предыдущего фрагмента"),
+        partIndex: i * fragmentsPerChapter + fragment
       });
+      state.fragments.push(textPart);
+      const chapterText = "## " + heading + "\\n\\n" + (markerList.length ? markerList.join("\\n") + "\\n\\n" : "") + state.fragments.join("\\n\\n");
+      await saveWork({ ...pkg, book_content: [...completedParts, chapterText].join("\\n\\n") });
+      console.log("Checkpoint saved after fragment " + (fragment + 1) + "/3 of chapter " + (i + 1) + ".");
     }
-    if (countWords(expanded) < minWords) throw new Error("Chapter " + heading + " is below the required word count.");
-    const markerForChapter = pkg.illustrations.find(x => x.chapter === heading);
-    const allMarkers = [...new Set([...markers, ...(markerForChapter ? ["{{illustration:" + heading + ":" + markerForChapter.number + "}}"] : [])])];
-    parts.push("## " + heading + "\n\n" + (allMarkers.length ? allMarkers.join("\n") + "\n\n" : "") + expanded);
-    const remaining = i + 1 < matches.length ? pkg.book_content.slice(matches[i + 1].index) : "";
-    await saveWork({ ...pkg, book_content: parts.join("\n\n") + (remaining ? "\n\n" + remaining : "") });
-    previous = expanded;
+    const chapterText = "## " + heading + "\\n\\n" + (markerList.length ? markerList.join("\\n") + "\\n\\n" : "") + state.fragments.join("\\n\\n");
+    const chapterWords = countWords(state.fragments.join(" "));
+    if (chapterWords < 2700) throw new Error("Chapter " + heading + " is below its 2,700-word minimum (" + chapterWords + ").");
+    completedParts.push(chapterText); previous = state.fragments.join("\\n\\n");
+    await saveWork({ ...pkg, book_content: completedParts.join("\\n\\n") });
   }
-  pkg.book_content = parts.join("\n\n");
+  pkg.book_content = completedParts.join("\\n\\n");
   const total = countWords(pkg.book_content);
-  if (total < totalMinimum) throw new Error("Book is too short after chapter expansion: " + total + " words; minimum " + totalMinimum + ".");
-  console.log("Long-form ordinary book completed: " + total + " words, " + matches.length + " chapters.");
+  if (total < totalMinimum) throw new Error("Three-hour book length check failed: " + total + " words; minimum " + totalMinimum + ".");
+  delete pkg.generation_progress; await saveWork(pkg);
+  console.log("Three-hour ordinary book completed: " + total + " words across 12 chapters.");
   return pkg;
 }
 
@@ -861,30 +885,39 @@ function interactiveContext(nodes, nodeId) {
 
 async function expandInteractiveBook(pkg) {
   if (bookType !== "interactive") return pkg;
-  const age = String(pkg.age || "12+");
-  const adult = age === "16+" || age === "18+";
-  const targetWords = adult ? 6600 : age === "6+" ? 600 : age === "9+" ? 700 : age === "12+" ? 900 : 1000;
-  const minWords = adult ? 6000 : age === "6+" ? 500 : age === "9+" ? 600 : age === "12+" ? 800 : 900;
-  for (let i = 0; i < pkg.interactive_content.nodes.length; i++) {
-    const node = pkg.interactive_content.nodes[i];
-    const current = countWords(node.text);
-    if (current < minWords) {
-      console.log("Expanding interactive scene " + node.id + " (" + current + " words; target " + targetWords + ").");
-      node.text = await expandPart({
-        title: node.title, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description,
-        author: pkg.author, draft: node.text, priorContext: interactiveContext(pkg.interactive_content.nodes, node.id),
-        targetWords, minimumWords: minWords, partLabel: "Интерактивная сцена " + (i + 1) + " из 5", partIndex: i
+  const age = String(pkg.age || "12+"), nodes = pkg.interactive_content?.nodes;
+  if (!Array.isArray(nodes) || nodes.length !== 5) throw new Error("Interactive three-hour book requires exactly five story nodes.");
+  const fragmentsPerNode = 10, targetWordsPerFragment = 1150, minimumWordsPerFragment = 1000, minimumWordsPerRoute = 30000;
+  const progress = pkg.generation_progress ||= { version: 2, interactive: { nodes: {} } };
+  progress.interactive ||= { nodes: {} }; progress.interactive.nodes ||= {};
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i], state = progress.interactive.nodes[node.id] ||= { outline: String(node.text || ""), fragments: [] };
+    if (!state.outline) state.outline = String(node.text || "");
+    if (!Array.isArray(state.fragments)) state.fragments = [];
+    for (let fragment = state.fragments.length; fragment < fragmentsPerNode; fragment++) {
+      console.log("Writing interactive node " + node.id + ", fragment " + (fragment + 1) + "/10.");
+      const textPart = await expandPart({
+        title: node.title, age, genre: pkg.genre, bookTitle: pkg.title, description: pkg.description, author: pkg.author,
+        draft: state.outline,
+        priorContext: (interactiveContext(nodes, node.id) + "\\n" + state.fragments.join("\\n\\n")).slice(-4200),
+        targetWords: targetWordsPerFragment, minimumWords: minimumWordsPerFragment,
+        partLabel: "Сцена " + (i + 1) + " из 5, фрагмент " + (fragment + 1) + " из 10" + (fragment === 0 ? " — начало сцены" : " — непрерывное продолжение предыдущего фрагмента"),
+        partIndex: i * fragmentsPerNode + fragment
       });
+      state.fragments.push(textPart); node.text = state.fragments.join("\\n\\n");
+      await saveWork(pkg);
+      console.log("Interactive checkpoint saved: " + node.id + " fragment " + (fragment + 1) + "/10.");
     }
-    if (countWords(node.text) < minWords) throw new Error("Interactive scene " + node.id + " is too short.");
+    node.text = state.fragments.join("\\n\\n");
+    if (countWords(node.text) < 10000) throw new Error("Interactive node " + node.id + " is below its 10,000-word minimum.");
     await saveWork(pkg);
   }
-  const byId = new Map(pkg.interactive_content.nodes.map(n => [n.id, n]));
+  const byId = new Map(nodes.map(node => [node.id, node]));
   const routeA = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2a").text) + countWords(byId.get("ending-a").text);
   const routeB = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2b").text) + countWords(byId.get("ending-b").text);
-  const routeMinimum = adult ? 18000 : minWords * 3;
-  if (routeA < routeMinimum || routeB < routeMinimum) throw new Error("Interactive route is below its reading-length minimum.");
-  console.log("Long-form interactive routes: " + routeA + " and " + routeB + " words.");
+  if (routeA < minimumWordsPerRoute || routeB < minimumWordsPerRoute) throw new Error("Interactive three-hour route check failed: " + routeA + " / " + routeB + " words; each route requires 30,000.");
+  delete pkg.generation_progress; await saveWork(pkg);
+  console.log("Three-hour interactive routes completed: " + routeA + " and " + routeB + " words.");
   return pkg;
 }
 
@@ -973,7 +1006,7 @@ function validate(pkg) {
   if (pkg.cover.prompt.length > 1800) throw new Error("Cover prompt is too long.");
   const tokens = [...combinedText.matchAll(/\{\{illustration:([^:}]+):(\d+)\}\}/g)];
   if (bookType === "ordinary") {
-    const ordinaryWords=countWords(pkg.book_content); const adult=pkg.age==="16+"||pkg.age==="18+"; const minimum=adult?18000:pkg.age==="6+"?1500:pkg.age==="9+"?1800:pkg.age==="12+"?2400:2700; if(ordinaryWords<minimum) throw new Error("Ordinary book is too short ("+ordinaryWords+" words; minimum "+minimum+").");
+    const ordinaryWords=countWords(pkg.book_content); const minimum=30000; if(ordinaryWords<minimum) throw new Error("Ordinary book is too short for a three-hour reading session ("+ordinaryWords+" words; minimum "+minimum+").");
     for (const item of pkg.illustrations) {
       if (!pkg.book_content.includes("{{illustration:" + item.chapter + ":" + item.number + "}}")) throw new Error("Missing illustration marker for " + item.chapter);
     }
@@ -986,7 +1019,7 @@ function validate(pkg) {
     if (ids.size!==5 || !["scene-1","scene-2a","scene-2b","ending-a","ending-b"].every(id=>ids.has(id))) throw new Error("Interactive scene IDs are invalid.");
     const byId=new Map(data.nodes.map(n=>[n.id,n]));
     for (const node of data.nodes) {
-      const ageMinimum=pkg.age==="16+"||pkg.age==="18+"?6000:pkg.age==="6+"?500:pkg.age==="9+"?600:pkg.age==="12+"?800:900; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or too short: "+node.id);
+      const ageMinimum=10000; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or below the 10,000-word minimum: "+node.id);
       for (const choice of node.choices) if (!choice.text?.trim() || !ids.has(choice.next)) throw new Error("Invalid branch in "+node.id);
       const index=Number(node.id==="scene-1"?1:node.id==="scene-2a"?2:node.id==="scene-2b"?3:node.id==="ending-a"?4:5);
       const illustration=pkg.illustrations.find(x=>x.number===index && x.chapter===node.title);
