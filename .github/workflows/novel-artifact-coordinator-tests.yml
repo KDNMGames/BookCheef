@@ -1,6 +1,14 @@
 name: BookCheef provider quota coordinator tests
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/generate-daily-book.mjs"
+      - "scripts/provider-quota-coordinator.mjs"
+      - "scripts/provider-quota-coordinator.test.mjs"
+      - "book-publications/automation-config.json"
+      - ".github/workflows/novel-artifact-coordinator-tests.yml"
   pull_request:
     paths:
       - "scripts/provider-quota-coordinator.mjs"
