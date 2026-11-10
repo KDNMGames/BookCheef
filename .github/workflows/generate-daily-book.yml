@@ -58,8 +58,8 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          # Explicitly allow Cursor's built-in Free Agent allowance; do not override its model.
-          CURSOR_FREE_INCLUDED: 'true'
+          # Cursor CLI/API billing entitlement is not verified; disable it to prevent unexpected charges.
+          CURSOR_FREE_INCLUDED: 'false'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # Fail closed until the owner confirms this project's Gemini API Free Tier and no billing link.
           GEMINI_FREE_INCLUDED: 'false'
