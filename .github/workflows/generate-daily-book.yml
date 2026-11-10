@@ -34,6 +34,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Process confirmed full queue cleanup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: node scripts/clear-generation-queue.mjs
+
       - name: Test isolated worker state
         run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/deferred-task-policy.test.mjs scripts/openrouter-failure-policy.test.mjs scripts/ordinary-book-structure.test.mjs scripts/provider-quota-coordinator.test.mjs scripts/legacy-interactive-book.test.mjs
 
