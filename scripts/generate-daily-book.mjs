@@ -88,6 +88,8 @@ const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (co
 const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) || 1);
 const scheduledWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
 let oldestDeferredTask = null;
+let readyDeferredTask = null;
+let deferredQueueSnapshots = null;
 if (!isolatedMode && !process.env.BOOKCHEEF_WORKER_TYPE) {
   const queues = {};
   for (const workerType of ["ordinary", "interactive"]) {
@@ -98,9 +100,28 @@ if (!isolatedMode && !process.env.BOOKCHEEF_WORKER_TYPE) {
       queues[workerType] = { tasks: [] };
     }
   }
+  deferredQueueSnapshots = queues;
   oldestDeferredTask = selectOldestDeferredTaskAcrossWorkers(queues);
+  const now = Date.now();
+  readyDeferredTask = Object.entries(queues).flatMap(([workerType, queue]) =>
+    (Array.isArray(queue?.tasks) ? queue.tasks : []).map(task => ({ ...task, book_type: task?.book_type || workerType }))
+  ).filter(task => {
+    const retryAt = Date.parse(task.retry_after || "");
+    return ["ordinary", "interactive"].includes(task.book_type) &&
+      typeof task.checkpoint_path === "string" && task.checkpoint_path.length > 0 &&
+      (!Number.isFinite(retryAt) || retryAt <= now);
+  }).sort((a, b) => (Date.parse(a.created_at || "") || 0) - (Date.parse(b.created_at || "") || 0))[0] || null;
 }
-const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || oldestDeferredTask?.book_type || scheduledWorkerType;
+let requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || readyDeferredTask?.book_type || oldestDeferredTask?.book_type || scheduledWorkerType;
+if (!process.env.BOOKCHEEF_WORKER_TYPE && !isolatedMode && !readyDeferredTask && oldestDeferredTask) {
+  const idleWorker = ["ordinary", "interactive"].find(type =>
+    !(deferredQueueSnapshots?.[type]?.tasks || []).length
+  );
+  if (idleWorker) {
+    requestedWorkerType = idleWorker;
+    console.log("The oldest saved book is waiting for a free-provider retry window. Starting one task in the idle " + idleWorker + " worker instead of stalling daily production.");
+  }
+}
 if (!isolatedMode && !process.env.BOOKCHEEF_WORKER_TYPE && requestedWorkerType !== scheduledWorkerType) {
   const rotationIndex = configuredCycle.indexOf(requestedWorkerType);
   if (rotationIndex >= 0) {
