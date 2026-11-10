@@ -45,7 +45,7 @@ test("canonicalizes Markdown heading levels and numbered chapter headings", () =
       "Текст второй главы.",
       "3. Решение",
       "Текст третьей главы."
-    ].join("\\n\\n"),
+    ].join("\n\n"),
     illustrations: [
       { number: 1, chapter: "Первая", prompt: "one" },
       { number: 2, chapter: "Вторая", prompt: "two" },
@@ -53,7 +53,7 @@ test("canonicalizes Markdown heading levels and numbered chapter headings", () =
     ]
   };
   normalizeOrdinaryBookStructure(pkg);
-  const headings = [...pkg.book_content.matchAll(/^##\\s+(.+)$/gm)].map(x => x[1]);
+  const headings = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)].map(x => x[1]);
   assert.deepEqual(headings, [
     "Глава 1 — Первый контакт",
     "Глава 2: Неожиданный сигнал",
@@ -64,9 +64,9 @@ test("canonicalizes Markdown heading levels and numbered chapter headings", () =
 
 test("canonicalizes chapter words written in Russian", () => {
   const pkg = {
-    book_content: "Глава первая. Начало пути\\nТекст.\\n\\nГлава вторая. Новый мир\\nТекст.",
+    book_content: "Глава первая. Начало пути\nТекст.\n\nГлава вторая. Новый мир\nТекст.",
     illustrations: []
   };
   normalizeOrdinaryBookStructure(pkg);
-  assert.equal([...pkg.book_content.matchAll(/^##\\s+/gm)].length, 2);
+  assert.equal([...pkg.book_content.matchAll(/^##\s+/gm)].length, 2);
 });
