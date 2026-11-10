@@ -83,7 +83,7 @@ jobs:
             const length = config.daily_book.content_rules.reading_length;
             if (config.daily_book.free_only !== true || config.daily_book.paid_api_fallbacks !== false || config.daily_book.cursor_fallback_requires_explicit_free_entitlement !== true && config.daily_book.cursor_fallback_requires_explicit_included_free_entitlement !== true || config.daily_book.text_provider.free_models_only !== true) throw new Error("BookCheef must remain free-only");
             if (config.daily_book.on_failure.preserve_package_and_state !== true || config.daily_book.on_failure.do_not_publish_partial_book !== true) throw new Error("Failure recovery policy is unsafe");
-            if (length.minimum_reading_minutes !== 180 || length.minimum_words_all_ages < 36000 || length.target_words_all_ages < 39000) throw new Error("Every book must target at least three hours / 30,000 words");
+            if (length.minimum_reading_minutes !== 180 || length.minimum_words_all_ages < 36000 || length.target_words_all_ages < 39000) throw new Error("Every book must target at least three hours / 36,000 words");
             if (length.ordinary_chapters !== 12 || length.ordinary_minimum_words_per_chapter < 3000) throw new Error("Ordinary long-form chapter policy is invalid");
             if (length.interactive_minimum_words_per_scene < 12000 || length.interactive_minimum_words_per_route < 36000) throw new Error("Interactive route policy is below three hours");
             console.log("Three-hour reading-length and free-only policies are valid.");
