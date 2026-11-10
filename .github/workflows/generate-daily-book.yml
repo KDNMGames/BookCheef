@@ -35,7 +35,7 @@ jobs:
           node-version: 22
 
       - name: Test isolated worker state
-        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/deferred-task-policy.test.mjs
+        run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/deferred-task-policy.test.mjs scripts/openrouter-failure-policy.test.mjs
 
       - name: Install Cursor Agent fallback
         if: vars.CURSOR_FREE_INCLUDED == 'true'
