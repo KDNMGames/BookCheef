@@ -13,6 +13,8 @@ on:
       - "scripts/openrouter-failure-policy.test.mjs"
       - "scripts/ordinary-book-structure.mjs"
       - "scripts/ordinary-book-structure.test.mjs"
+      - "scripts/provider-quota-coordinator.mjs"
+      - "scripts/provider-quota-coordinator.test.mjs"
       - "book-publications/automation-config.json"
       - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/validate-bookcheef-generator.yml"
@@ -36,6 +38,7 @@ jobs:
           node --check scripts/deferred-task-policy.mjs
           node --check scripts/openrouter-failure-policy.mjs
           node --check scripts/ordinary-book-structure.mjs
+          node --check scripts/provider-quota-coordinator.mjs
       - name: Exercise checkpoint save and recovery
         run: node --test scripts/book-checkpoint.test.mjs
       - name: Test deferred task priority and cooldown waiting
@@ -44,6 +47,8 @@ jobs:
         run: node --test scripts/openrouter-failure-policy.test.mjs
       - name: Test ordinary-book heading and illustration recovery
         run: node --test scripts/ordinary-book-structure.test.mjs
+      - name: Test shared provider quota classification
+        run: node --test scripts/provider-quota-coordinator.test.mjs
       - name: Verify resumable checkpoint lifecycle
         run: |
           node --input-type=module -e '
