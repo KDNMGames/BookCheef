@@ -1006,6 +1006,16 @@ if (pkg && !startReportSent) {
   await notifyBookCheefAdmins("🛠 BookCheef: сейчас создаётся книга «" + (currentBookTitle || "без названия") + "» (" + bookType + ").");
   startReportSent = true;
 }
+// Repair stale type flags in saved checkpoints when the actual structure is unambiguous.
+if (pkg && bookType === "ordinary" && !Array.isArray(pkg.interactive_content?.nodes) && pkg.is_interactive === true) {
+  pkg.is_interactive = false;
+  await saveWork(pkg);
+  console.log("Automatically repaired stale is_interactive=true metadata on an ordinary draft.");
+} else if (pkg && bookType === "interactive" && Array.isArray(pkg.interactive_content?.nodes) && pkg.is_interactive !== true) {
+  pkg.is_interactive = true;
+  await saveWork(pkg);
+  console.log("Automatically repaired stale is_interactive metadata on an interactive draft.");
+}
 const maxAttempts = Math.max(1, Number(config.daily_book.text_provider?.max_attempts) || 8);
 if (pkg) {
   try {
