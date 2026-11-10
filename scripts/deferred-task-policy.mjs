@@ -47,3 +47,19 @@ export function shouldNotifyDeferredWait(task, retryAfter, now = Date.now(), min
   const lastNotice = Date.parse(task.last_wait_notice_at || "");
   return !Number.isFinite(lastNotice) || now - lastNotice >= minIntervalMs;
 }
+
+export function releaseDeferredTasksWhenProviderReady(tasks, providersReady, now = Date.now()) {
+  if (!Array.isArray(tasks) || !providersReady) return { released: 0, tasks };
+  const retryAfter = new Date(now).toISOString();
+  let released = 0;
+  const updated = tasks.map(task => {
+    if (!task || !task.checkpoint_path) return task;
+    const retryAt = Date.parse(task.retry_after || "");
+    if (Number.isFinite(retryAt) && retryAt > now) {
+      released += 1;
+      return { ...task, retry_after: retryAfter, provider_retry_recheck_at: retryAfter };
+    }
+    return task;
+  });
+  return { released, tasks: updated };
+}
