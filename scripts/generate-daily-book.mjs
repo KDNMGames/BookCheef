@@ -5,9 +5,10 @@ import { createCheckpointStore } from "./book-checkpoint.mjs";
 import { createBookWorkerState } from "./book-worker-state.mjs";
 import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
-import { selectDeferredTask } from "./deferred-task-policy.mjs";
+import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers } from "./deferred-task-policy.mjs";
 import { classifyOpenRouterFailure, earliestRetryAfter } from "./openrouter-failure-policy.mjs";
 import { normalizeOrdinaryBookStructure } from "./ordinary-book-structure.mjs";
+import { normalizeLegacyInteractivePackage } from "./legacy-interactive-book.mjs";
 
 const ROOT = process.cwd();
 const CONFIG_PATH = "book-publications/automation-config.json";
@@ -59,7 +60,30 @@ const { mode: workerMode, isolated: isolatedMode, workerType: explicitWorkerType
 const rotation = isolatedMode ? {} : JSON.parse(await fs.readFile(ROTATION_PATH, "utf8"));
 const configuredCycle = isolatedMode ? [process.env.BOOKCHEEF_WORKER_TYPE] : (config.daily_book.rotation || ["interactive", "ordinary", "ordinary"]);
 const configuredPosition = isolatedMode ? 1 : (Number(rotation.cycle_position) || 1);
-const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
+const scheduledWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || configuredCycle[(configuredPosition - 1) % configuredCycle.length];
+let oldestDeferredTask = null;
+if (!isolatedMode && !process.env.BOOKCHEEF_WORKER_TYPE) {
+  const queues = {};
+  for (const workerType of ["ordinary", "interactive"]) {
+    try {
+      queues[workerType] = JSON.parse(await fs.readFile("book-publications/workers/" + workerType + "/deferred-books.json", "utf8"));
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+      queues[workerType] = { tasks: [] };
+    }
+  }
+  oldestDeferredTask = selectOldestDeferredTaskAcrossWorkers(queues);
+}
+const requestedWorkerType = process.env.BOOKCHEEF_WORKER_TYPE || oldestDeferredTask?.book_type || scheduledWorkerType;
+if (!isolatedMode && !process.env.BOOKCHEEF_WORKER_TYPE && requestedWorkerType !== scheduledWorkerType) {
+  const rotationIndex = configuredCycle.indexOf(requestedWorkerType);
+  if (rotationIndex >= 0) {
+    rotation.cycle_position = rotationIndex + 1;
+    rotation.updated_at = new Date().toISOString();
+    await fs.writeFile(ROTATION_PATH, JSON.stringify(rotation, null, 2) + "\n");
+    console.log("Prioritizing oldest deferred " + requestedWorkerType + " book before the scheduled rotation.");
+  }
+}
 const workerState = createBookWorkerState({ workerType: requestedWorkerType });
 
 const quotaPolicy = config.provider_quota || {};
@@ -119,31 +143,58 @@ const DEFERRED_QUEUE_PATH = path.join(workerState.workerDir, "deferred-books.jso
 const COOLDOWN_PATH = path.join(workerState.workerDir, "openrouter-cooldown.json");
 const CURSOR_COOLDOWN_PATH = path.join(workerState.workerDir, "cursor-cooldown.json");
 const GEMINI_COOLDOWN_PATH = path.join(workerState.workerDir, "gemini-cooldown.json");
-// Migrate stranded legacy checkpoints before any all-providers-cooling-down early exit.
+// Migrate stranded legacy checkpoints to the worker type that matches their actual content.
 try {
   const legacyCheckpoint = JSON.parse(await fs.readFile(WORK_PATH, "utf8"));
   if (legacyCheckpoint?.pkg?.title && legacyCheckpoint?.pkg?.book_content) {
-    const queue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8").catch(error => {
+    legacyCheckpoint.pkg = normalizeLegacyInteractivePackage(legacyCheckpoint.pkg);
+    const recoveredWorkerType = legacyCheckpoint.pkg.is_interactive === true ||
+      Array.isArray(legacyCheckpoint.pkg.interactive_content?.nodes)
+      ? "interactive"
+      : (legacyCheckpoint.book_type === "interactive" ? "interactive" : "ordinary");
+    legacyCheckpoint.book_type = recoveredWorkerType;
+    const stamp = Date.parse(legacyCheckpoint.updated_at || "") || Date.now();
+    const targetWorker = recoveredWorkerType === requestedWorkerType
+      ? workerState
+      : createBookWorkerState({ workerType: recoveredWorkerType, runId: "recovery-" + stamp });
+    const targetQueuePath = path.join(targetWorker.workerDir, "deferred-books.json");
+    const queue = JSON.parse(await fs.readFile(targetQueuePath, "utf8").catch(error => {
       if (error.code === "ENOENT") return '{"tasks":[]}';
       throw error;
     }));
     queue.tasks = Array.isArray(queue.tasks) ? queue.tasks : [];
-    const stamp = Date.parse(legacyCheckpoint.updated_at || "") || Date.now();
-    const taskId = "recovered-" + stamp + "-" + requestedWorkerType;
+    const taskId = "recovered-" + stamp + "-" + recoveredWorkerType;
     if (!queue.tasks.some(task => task.task_id === taskId)) {
-      const recoveredPath = workerState.deferredPath(taskId);
-      await fs.rename(WORK_PATH, recoveredPath);
+      const recoveredPath = targetWorker.deferredPath(taskId);
+      await targetWorker.atomicWriteJson(recoveredPath, legacyCheckpoint);
+      await fs.rm(WORK_PATH, { force: true });
       queue.tasks.push({
         task_id: taskId,
-        book_type: legacyCheckpoint.book_type || requestedWorkerType,
+        book_type: recoveredWorkerType,
         checkpoint_path: recoveredPath,
         created_at: legacyCheckpoint.updated_at || new Date(stamp).toISOString(),
         retry_after: new Date().toISOString(),
         recovered_from_legacy_checkpoint: true
       });
       queue.updated_at = new Date().toISOString();
-      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(queue, null, 2) + "\n");
-      console.log("Recovered stranded checkpoint: " + legacyCheckpoint.pkg.title);
+      await fs.writeFile(targetQueuePath, JSON.stringify(queue, null, 2) + "\n");
+      console.log("Recovered stranded checkpoint: " + legacyCheckpoint.pkg.title + " -> " + recoveredWorkerType + " worker.");
+    } else {
+      await fs.rm(WORK_PATH, { force: true });
+    }
+    if (recoveredWorkerType !== requestedWorkerType) {
+      if (!isolatedMode) {
+        const rotationIndex = configuredCycle.indexOf(recoveredWorkerType);
+        if (rotationIndex >= 0) {
+          rotation.cycle_position = rotationIndex + 1;
+          rotation.updated_at = new Date().toISOString();
+          await fs.writeFile(ROTATION_PATH, JSON.stringify(rotation, null, 2) + "\n");
+        }
+      }
+      console.log("Checkpoint was moved to its correct worker; the next scheduled cycle will resume it.");
+      await workerState.releaseLease();
+      if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
+      process.exit(0);
     }
   }
 } catch (error) {
