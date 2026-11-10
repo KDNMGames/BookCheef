@@ -76,6 +76,32 @@ test("completes a successful reservation after the operation", async () => {
   assert.equal(calls[1].body.p_outcome, "success");
 });
 
+test("does not globally cool down OpenRouter for a single upstream model-provider limit", async () => {
+  const calls = [];
+  const quota = createProviderQuotaCoordinator({
+    supabaseUrl: "https://example.supabase.co",
+    serviceRoleKey: "secret",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, body: JSON.parse(options.body) });
+      if (url.endsWith("bookcheef_reserve_provider_request")) {
+        return response([{ allowed: true, reservation_id: "00000000-0000-4000-8000-000000000004" }]);
+      }
+      return response(true);
+    }
+  });
+  await assert.rejects(
+    quota.run({ providerKey: "openrouter", taskId: "book-model-429" }, async () => {
+      const error = new Error("Upstream Google AI Studio rate limit");
+      error.status = 429;
+      error.code = "MODEL_PROVIDER_LIMIT";
+      throw error;
+    }),
+    /Google AI Studio/
+  );
+  assert.equal(calls[1].body.p_outcome, "failed");
+  assert.equal(calls[1].body.p_cooldown_seconds, 0);
+});
+
 test("records provider cooldown after a quota error", async () => {
   const calls = [];
   const quota = createProviderQuotaCoordinator({
