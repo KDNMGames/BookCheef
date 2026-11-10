@@ -56,7 +56,7 @@ let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
 
 
 async function readGenerationControl() {
-  const base = (process.env.SUPABASE_URL || "").replace(/\\/$/, "");
+  const base = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
   if (!base || !key) throw new Error("Generation control cannot be checked: Supabase service credentials are missing.");
   const response = await fetch(base + "/rest/v1/bookcheef_generation_control?id=eq.true&select=enabled,updated_at,updated_by", {
