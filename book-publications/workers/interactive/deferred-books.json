@@ -5,10 +5,11 @@
       "book_type": "interactive",
       "checkpoint_path": "book-publications/workers/interactive/deferred/recovered-1794234842863-interactive.json",
       "created_at": "2026-11-09T14:34:02.863Z",
-      "retry_after": "2026-11-09T23:58:39.302Z",
+      "retry_after": "2026-11-10T04:04:20.086Z",
       "recovered_from_legacy_checkpoint": true,
-      "migrated_from_worker": "ordinary"
+      "migrated_from_worker": "ordinary",
+      "last_error": "Provider quota is reserved or cooling down until 2026-11-10T04:04:20.086Z (provider_cooldown)."
     }
   ],
-  "updated_at": "2026-11-10T00:15:00.000Z"
+  "updated_at": "2026-11-10T00:18:34.368Z"
 }
