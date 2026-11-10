@@ -7,16 +7,16 @@ export function normalizeOrdinaryBookStructure(pkg) {
     "## $1"
   );
 
+  // Discard model-generated markers that do not have matching illustration definitions.
+  pkg.book_content = pkg.book_content
+    .replace(/\{\{illustration:[^}]+\}\}/g, "")
+    .replace(/\n{3,}/g, "\n\n");
+
   const headings = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)].map(match => ({
     title: match[1].trim(),
     end: match.index + match[0].length
   }));
   if (!headings.length || !Array.isArray(pkg.illustrations)) return pkg;
-
-  // Discard model-generated markers that do not have matching illustration definitions.
-  pkg.book_content = pkg.book_content
-    .replace(/\{\{illustration:[^}]+\}\}/g, "")
-    .replace(/\n{3,}/g, "\n\n");
 
   const norm = value => String(value || "").normalize("NFKC").toLocaleLowerCase("ru")
     .replace(/^глава\s+\d+[. :\s-]*/i, "")
