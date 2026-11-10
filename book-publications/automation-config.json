@@ -96,13 +96,13 @@
       "preserve_author_bibles_and_series_continuity": true,
       "reading_length": {
         "minimum_reading_minutes": 180,
-        "target_reading_minutes": 200,
-        "minimum_words_all_ages": 30000,
-        "target_words_all_ages": 33000,
+        "target_reading_minutes": 210,
+        "minimum_words_all_ages": 36000,
+        "target_words_all_ages": 39000,
         "ordinary_chapters": 12,
-        "ordinary_minimum_words_per_chapter": 2700,
-        "interactive_minimum_words_per_scene": 10000,
-        "interactive_minimum_words_per_route": 30000,
+        "ordinary_minimum_words_per_chapter": 3000,
+        "interactive_minimum_words_per_scene": 12000,
+        "interactive_minimum_words_per_route": 36000,
         "generation_strategy": "12-chapter or 5-node outline, then sequential 900-1200 word fragments; checkpoint after every fragment; retry across explicitly free models and enabled free providers; reject incomplete or short books",
         "reject_short_books": true
       }
