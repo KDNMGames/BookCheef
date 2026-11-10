@@ -1157,7 +1157,7 @@ if (!pkg && lastError?.code === "GENERATION_STOPPED") {
   await workerState.releaseLease();
   process.exit(0);
 }
-if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVIDERS_COOLDOWN" || lastError?.code === "PROVIDER_QUOTA_WAIT" || /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(lastError?.message || ""))) {
+if (!pkg && lastError && lastError?.code !== "GENERATION_STOPPED") {
   const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
     .map(async file => { try { return Date.parse(JSON.parse(await fs.readFile(file, "utf8")).retry_after || ""); } catch { return 0; } });
   const cooldowns = await Promise.all(retryAfter);
@@ -1181,7 +1181,7 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   deferredQueue.updated_at = new Date().toISOString();
   await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
   console.log("Book task safely deferred until " + nextRetry + "; the next scheduled run will resume this same book when a free provider is available.");
-  await notifyBookCheefAdmins("⏸ BookCheef: создание книги" + (currentBookTitle ? " «" + currentBookTitle + "»" : "") + " прервано и перенесено. Причина: " + String(lastError?.message || "исчерпана бесплатная квота ИИ-провайдера").slice(0, 900) + ". Черновик сохранён. Повторная попытка после: " + nextRetry + ". Платные API не использовались.");
+  await notifyBookCheefAdmins("⏸ BookCheef: создание книги" + (currentBookTitle ? " «" + currentBookTitle + "»" : "") + " временно отложено. Причина: " + String(lastError?.message || "ошибка генерации или проверки").slice(0, 900) + ". Контрольная точка и метаданные сохранены; задача не удалена. Следующая попытка после: " + nextRetry + ". Будут использоваться только разрешённые бесплатные модели; платные API не используются.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\ndeferred=true\nretry_after=" + nextRetry + "\n");
   await workerState.releaseLease();
   process.exit(0);
