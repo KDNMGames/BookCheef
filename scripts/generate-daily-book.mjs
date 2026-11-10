@@ -18,6 +18,8 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const CURSOR_API_KEY = process.env.CURSOR_FREE_INCLUDED === "true" ? process.env.CURSOR_API_KEY : undefined;
 const GEMINI_API_KEY = process.env.GEMINI_FREE_INCLUDED === "true" ? process.env.GEMINI_API_KEY : undefined;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const GROQ_API_KEY = process.env.GROQ_FREE_INCLUDED === "true" ? process.env.GROQ_API_KEY : undefined;
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
 const TELEGRAM_REPORT_ENDPOINT = "https://wendffewxxmnaglfksfg.supabase.co/functions/v1/telegram-bot";
 async function notifyBookCheefAdmins(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -46,6 +48,7 @@ async function notifyProviderLimit(provider, reason, retryAfter) {
   const hasAnotherEnabledProvider =
     (OPENROUTER_API_KEY && !openRouterDisabled && provider !== "OpenRouter (бесплатные модели)") ||
     (GEMINI_API_KEY && !geminiDisabled && provider !== "Google Gemini API") ||
+    (GROQ_API_KEY && !groqDisabled && provider !== "Groq API (бесплатный тариф)") ||
     (CURSOR_API_KEY && !cursorDisabled && provider !== "Cursor Agent");
   const nextStep = hasAnotherEnabledProvider
     ? "Генератор попробует другой явно разрешённый бесплатный источник."
@@ -60,6 +63,7 @@ async function notifyProviderLimit(provider, reason, retryAfter) {
 let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
+let groqDisabled = process.env.GROQ_FREE_INCLUDED !== "true";
 
 
 async function readGenerationControl() {
@@ -197,6 +201,7 @@ const DEFERRED_QUEUE_PATH = path.join(workerState.workerDir, "deferred-books.jso
 const COOLDOWN_PATH = path.join(workerState.workerDir, "openrouter-cooldown.json");
 const CURSOR_COOLDOWN_PATH = path.join(workerState.workerDir, "cursor-cooldown.json");
 const GEMINI_COOLDOWN_PATH = path.join(workerState.workerDir, "gemini-cooldown.json");
+const GROQ_COOLDOWN_PATH = path.join(workerState.workerDir, "groq-cooldown.json");
 // Migrate stranded legacy checkpoints to the worker type that matches their actual content.
 try {
   const legacyCheckpoint = JSON.parse(await fs.readFile(WORK_PATH, "utf8"));
@@ -280,15 +285,23 @@ try {
     console.log("Gemini is cooling down until " + new Date(until).toISOString() + ".");
   }
 } catch (error) { if (error.code !== "ENOENT") throw error; }
+try {
+  const state = JSON.parse(await fs.readFile(GROQ_COOLDOWN_PATH, "utf8"));
+  const until = Date.parse(state.retry_after || "");
+  if (Number.isFinite(until) && until > Date.now()) {
+    groqDisabled = true;
+    console.log("Groq is cooling down until " + new Date(until).toISOString() + ".");
+  }
+} catch (error) { if (error.code !== "ENOENT") throw error; }
 
-if (openRouterDisabled && cursorDisabled && geminiDisabled) {
+if (openRouterDisabled && cursorDisabled && geminiDisabled && groqDisabled) {
   console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   await workerState.releaseLease();
   process.exit(0);
 }
 
-if (!OPENROUTER_API_KEY && !CURSOR_API_KEY && !GEMINI_API_KEY) {
+if (!OPENROUTER_API_KEY && !CURSOR_API_KEY && !GEMINI_API_KEY && !GROQ_API_KEY) {
   throw new Error("No text AI provider credentials are configured. Add OPENROUTER_API_KEY, CURSOR_API_KEY, or GEMINI_API_KEY.");
 }
 
@@ -304,6 +317,61 @@ async function saveGeminiCooldown(reason) {
   console.warn("Gemini paused until " + retryAfter + ".");
   await notifyProviderLimit("Google Gemini API", reason, retryAfter);
 }
+
+async function saveGroqCooldown(reason) {
+  const retryAfter = new Date(Date.now() + cooldownSeconds * 1000).toISOString();
+  await fs.writeFile(GROQ_COOLDOWN_PATH, JSON.stringify({
+    provider: "groq",
+    detected_at: new Date().toISOString(),
+    retry_after: retryAfter,
+    reason: String(reason || "Groq free-tier limit or temporary failure").slice(0, 700)
+  }, null, 2) + "\n");
+  groqDisabled = true;
+  console.warn("Groq paused until " + retryAfter + ".");
+  await notifyProviderLimit("Groq API (бесплатный тариф)", reason, retryAfter);
+}
+
+async function generateWithGroq(prompt, { json = false, timeout = 180000 } = {}) {
+  if (!GROQ_API_KEY || groqDisabled) {
+    const error = new Error(groqDisabled ? "Groq is in cooldown." : "GROQ_API_KEY is not configured.");
+    error.code = groqDisabled ? "ALL_PROVIDERS_COOLDOWN" : "NO_FALLBACK_PROVIDER";
+    throw error;
+  }
+  return await withProviderQuota("groq", "groq", async () => {
+    console.log("Switching text generation to Groq free tier (" + GROQ_MODEL + ").");
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + GROQ_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: "system", content: "Ты — профессиональный автор и редактор BookCheef. Следуй инструкции пользователя точно." },
+          { role: "user", content: prompt }
+        ],
+        max_completion_tokens: 16000,
+        ...(json ? { response_format: { type: "json_object" } } : {})
+      }),
+      signal: AbortSignal.timeout(timeout)
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = body.error?.message || "Groq HTTP " + response.status;
+      const error = new Error(String(message).slice(0, 1000));
+      error.status = response.status;
+      error.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
+      if (response.status === 429 || response.status >= 500 || /rate.?limit|quota|limit reached|temporarily unavailable/i.test(message)) error.code = "RATE_LIMIT";
+      throw error;
+    }
+    const output = body.choices?.[0]?.message?.content;
+    if (typeof output !== "string" || !output.trim()) {
+      const error = new Error("Groq returned an empty response.");
+      error.code = "EMPTY_PROVIDER_RESPONSE";
+      throw error;
+    }
+    return output.trim();
+  });
+}
+
 
 async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {}) {
   if (!GEMINI_API_KEY || geminiDisabled) {
@@ -357,14 +425,27 @@ async function generateWithFallback(prompt, { json = false, timeout = 900000 } =
       const output = await generateWithGemini(prompt, { json, timeout });
       return json ? parseModelJson(output) : output;
     } catch (error) {
-      if (!["RATE_LIMIT", "ALL_PROVIDERS_COOLDOWN", "PROVIDER_QUOTA_WAIT"].includes(error.code)) throw error;
-      if (error.code === "PROVIDER_QUOTA_WAIT") geminiDisabled = true;
-      console.warn("Gemini quota unavailable; checking the next explicitly enabled provider.");
+      console.warn("Gemini failed; switching to the next explicitly enabled free provider: " + String(error.message || error).slice(0, 300));
+      await saveGeminiCooldown(error.message || "Gemini generation failed");
+    }
+  }
+  if (GROQ_API_KEY && !groqDisabled) {
+    try {
+      const output = await generateWithGroq(prompt, { json, timeout });
+      return json ? parseModelJson(output) : output;
+    } catch (error) {
+      console.warn("Groq failed; switching to the next explicitly enabled free provider: " + String(error.message || error).slice(0, 300));
+      await saveGroqCooldown(error.message || "Groq generation failed");
     }
   }
   if (CURSOR_API_KEY && !cursorDisabled) {
-    const output = await runCursorAgent(prompt, { timeout });
-    return json ? parseModelJson(output) : output;
+    try {
+      const output = await runCursorAgent(prompt, { timeout });
+      return json ? parseModelJson(output) : output;
+    } catch (error) {
+      console.warn("Cursor Agent fallback failed: " + String(error.message || error).slice(0, 300));
+      throw error;
+    }
   }
   const error = new Error("No other explicitly enabled free AI provider is available; paid or disabled providers will not be attempted.");
   error.code = "NO_FALLBACK_PROVIDER";
