@@ -45,6 +45,7 @@ for (const relativePath of [
 ]) await removeIfExists(relativePath);
 
 await fs.mkdir("book-publications/inbox", { recursive: true });
+await fs.mkdir("book-publications/work-in-progress", { recursive: true });
 await fs.writeFile("book-publications/pending-publications.json", JSON.stringify({ packages: [], updated_at: new Date().toISOString() }, null, 2) + "\n");
 await fs.writeFile("book-publications/deferred-books.json", JSON.stringify({ tasks: [], updated_at: new Date().toISOString() }, null, 2) + "\n");
 const rotationPath = "book-publications/rotation-state.json";
