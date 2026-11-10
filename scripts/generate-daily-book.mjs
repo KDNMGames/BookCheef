@@ -1091,7 +1091,38 @@ if (!pkg) {
     deferredQueue.tasks = deferredQueue.tasks.filter(task => task?.task_id !== deferredTask.task_id);
     deferredQueue.updated_at = new Date().toISOString();
     await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+
+    // Remove duplicate queue references and their checkpoint files, but only for this exact task id.
+    for (const otherType of ["ordinary", "interactive"]) {
+      if (otherType === requestedWorkerType) continue;
+      const otherQueuePath = path.join("book-publications/workers", otherType, "deferred-books.json");
+      let otherQueue;
+      try { otherQueue = JSON.parse(await fs.readFile(otherQueuePath, "utf8")); }
+      catch (error) { if (error.code === "ENOENT") continue; throw error; }
+      const duplicates = (Array.isArray(otherQueue.tasks) ? otherQueue.tasks : [])
+        .filter(task => task?.task_id === deferredTask.task_id);
+      if (!duplicates.length) continue;
+      otherQueue.tasks = otherQueue.tasks.filter(task => task?.task_id !== deferredTask.task_id);
+      otherQueue.updated_at = new Date().toISOString();
+      await fs.writeFile(otherQueuePath, JSON.stringify(otherQueue, null, 2) + "\n");
+      const otherDeferredRoot = path.resolve("book-publications/workers", otherType, "deferred");
+      for (const duplicate of duplicates) {
+        if (typeof duplicate.checkpoint_path !== "string") continue;
+        const duplicatePath = path.resolve(duplicate.checkpoint_path);
+        if (duplicatePath.startsWith(otherDeferredRoot + path.sep)) {
+          await fs.rm(duplicatePath, { force: true });
+        }
+      }
+    }
   }
+  // Clear a matching legacy checkpoint left by older generator versions.
+  const legacyWorkPath = path.resolve("book-publications/work-in-progress/current.json");
+  try {
+    const legacy = JSON.parse(await fs.readFile(legacyWorkPath, "utf8"));
+    const sameTitle = String(legacy?.pkg?.title || "").normalize("NFKC").trim().toLocaleLowerCase("ru") ===
+      String(currentBookTitle || "").normalize("NFKC").trim().toLocaleLowerCase("ru");
+    if (sameTitle && currentBookTitle) await fs.rm(legacyWorkPath, { force: true });
+  } catch (error) { if (error.code !== "ENOENT" && !(error instanceof SyntaxError)) throw error; }
   await notifyBookCheefAdmins(
     "🗑 BookCheef: черновик «" + failedTitle + "» удалён после " + maxAttempts +
     " неудачных попыток автоматического исправления. Удалены его контрольные файлы и запись из очереди. " +
