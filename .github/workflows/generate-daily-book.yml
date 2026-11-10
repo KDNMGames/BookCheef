@@ -37,8 +37,9 @@ jobs:
       - name: Test isolated worker state
         run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/deferred-task-policy.test.mjs scripts/openrouter-failure-policy.test.mjs scripts/ordinary-book-structure.test.mjs scripts/provider-quota-coordinator.test.mjs scripts/legacy-interactive-book.test.mjs
 
+      # Cursor Free includes limited built-in Agent usage. Install the CLI;
+      # the generator uses the account's included allowance only (no BYOK/third-party model override).
       - name: Install Cursor Agent fallback
-        if: vars.CURSOR_FREE_INCLUDED == 'true'
         run: |
           curl https://cursor.com/install -fsS | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -49,10 +50,11 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          CURSOR_FREE_INCLUDED: ${{ vars.CURSOR_FREE_INCLUDED }}
-          CURSOR_MODEL: ${{ vars.CURSOR_MODEL }}
+          # Explicitly allow Cursor's built-in Free Agent allowance; do not override its model.
+          CURSOR_FREE_INCLUDED: 'true'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_FREE_INCLUDED: ${{ vars.GEMINI_FREE_INCLUDED }}
+          # Fail closed until the owner confirms this project's Gemini API Free Tier and no billing link.
+          GEMINI_FREE_INCLUDED: 'false'
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
