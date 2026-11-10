@@ -5,7 +5,7 @@ import { createCheckpointStore } from "./book-checkpoint.mjs";
 import { createBookWorkerState } from "./book-worker-state.mjs";
 import { resolveBookWorkerMode } from "./book-worker-mode.mjs";
 import { createProviderQuotaCoordinator } from "./provider-quota-coordinator.mjs";
-import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers } from "./deferred-task-policy.mjs";
+import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers, shouldNotifyDeferredWait } from "./deferred-task-policy.mjs";
 import { classifyOpenRouterFailure, earliestRetryAfter } from "./openrouter-failure-policy.mjs";
 import { normalizeOrdinaryBookStructure } from "./ordinary-book-structure.mjs";
 import { normalizeLegacyInteractivePackage } from "./legacy-interactive-book.mjs";
@@ -229,7 +229,6 @@ try {
 
 if (openRouterDisabled && cursorDisabled && geminiDisabled) {
   console.log("All configured AI providers are in cooldown. Existing checkpoints are preserved; the next scheduled run will retry when a provider becomes available.");
-  await notifyBookCheefAdmins("⏸ BookCheef: создание следующей книги временно приостановлено. Причина: все разрешённые бесплатные ИИ-провайдеры находятся на паузе/исчерпали доступную квоту. Черновики и контрольные точки сохранены; платные API не используются.");
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   await workerState.releaseLease();
   process.exit(0);
@@ -418,13 +417,20 @@ try {
 const deferredSelection = selectDeferredTask(deferredQueue.tasks, Date.now());
 if (deferredSelection.status === "wait") {
   const waitingTask = deferredSelection.task;
+  const waitNow = Date.now();
   console.log("A deferred book is still waiting for its free-provider retry window: " +
     (waitingTask.task_id || "unknown") + " until " + deferredSelection.retryAfter +
     ". No new book will be started, so the queue cannot fill with unfinished drafts.");
-  await notifyBookCheefAdmins("⏸ BookCheef: новая книга пока не запускается. Сначала будет завершена ранее начатая книга" +
-    (waitingTask.task_id ? " (" + waitingTask.task_id + ")" : "") +
-    ". Бесплатный повторный запуск после: " + deferredSelection.retryAfter +
-    ". Черновик и контрольные точки сохраняются; платные API не используются.");
+  if (shouldNotifyDeferredWait(waitingTask, deferredSelection.retryAfter, waitNow)) {
+    waitingTask.last_notified_retry_after = deferredSelection.retryAfter;
+    waitingTask.last_wait_notice_at = new Date(waitNow).toISOString();
+    deferredQueue.updated_at = new Date(waitNow).toISOString();
+    await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+    await notifyBookCheefAdmins("⏸ BookCheef: ранее начатая книга" +
+      (waitingTask.task_id ? " (" + waitingTask.task_id + ")" : "") +
+      " ждёт доступности бесплатного ИИ-провайдера. Следующая попытка после: " +
+      deferredSelection.retryAfter + ". Новые книги пока не запускаются; черновик сохранён.");
+  }
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
   await workerState.releaseLease();
   process.exit(0);
