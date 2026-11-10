@@ -130,13 +130,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A book-publications/workers
-          git add -A book-publications/inbox
-          git add -A book-publications/pending-publications.json
-          git add -A book-publications/provider-cooldown.json book-publications/cursor-cooldown.json book-publications/gemini-cooldown.json
-          git add book-publications/deferred-books.json
-          git add book-publications/rotation-state.json
-          git add -A book-publications/work-in-progress
+          # Stage the full automation state tree; optional provider files may not exist.
+          git add -A -- book-publications
           if ! git diff --cached --quiet; then
             git commit -m "Record BookCheef provider cooldown"
             git pull --rebase origin main
