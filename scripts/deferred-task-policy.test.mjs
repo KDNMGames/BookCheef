@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers } from "./deferred-task-policy.mjs";
+import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers, shouldNotifyDeferredWait } from "./deferred-task-policy.mjs";
 
 const task = (id, created, retry, type = "ordinary") => ({
   task_id: id,
@@ -43,4 +43,15 @@ test("selects the oldest deferred task across ordinary and interactive workers",
   });
   assert.equal(selected.task_id, "interactive-older");
   assert.equal(selected.book_type, "interactive");
+});
+
+test("throttles repeated wait notifications but announces a changed retry time", () => {
+  const task = {
+    last_notified_retry_after: "2026-11-10T04:04:20.000Z",
+    last_wait_notice_at: "2026-11-10T00:00:00.000Z"
+  };
+  const retry = "2026-11-10T04:04:20.000Z";
+  assert.equal(shouldNotifyDeferredWait(task, retry, Date.parse("2026-11-10T00:30:00Z")), false);
+  assert.equal(shouldNotifyDeferredWait(task, retry, Date.parse("2026-11-10T01:00:00Z")), true);
+  assert.equal(shouldNotifyDeferredWait(task, "2026-11-10T05:00:00Z", Date.parse("2026-11-10T00:30:00Z")), true);
 });
