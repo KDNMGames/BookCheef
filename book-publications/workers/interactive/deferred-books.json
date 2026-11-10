@@ -1,0 +1,14 @@
+{
+  "tasks": [
+    {
+      "task_id": "recovered-1794234842863-interactive",
+      "book_type": "interactive",
+      "checkpoint_path": "book-publications/workers/interactive/deferred/recovered-1794234842863-interactive.json",
+      "created_at": "2026-11-09T14:34:02.863Z",
+      "retry_after": "2026-11-09T23:58:39.302Z",
+      "recovered_from_legacy_checkpoint": true,
+      "migrated_from_worker": "ordinary"
+    }
+  ],
+  "updated_at": "2026-11-10T00:15:00.000Z"
+}
