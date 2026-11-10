@@ -8,10 +8,11 @@
       "retry_after": "2026-11-11T00:44:40.413Z",
       "recovered_from_legacy_checkpoint": true,
       "migrated_from_worker": "ordinary",
-      "last_error": "Cursor Agent is in cooldown.",
+      "last_error": "No other explicitly enabled free AI provider is available; paid or disabled providers will not be attempted.",
       "last_notified_retry_after": "2026-11-11T00:44:40.413Z",
-      "last_wait_notice_at": "2026-11-10T20:25:02.375Z"
+      "last_wait_notice_at": "2026-11-10T20:25:02.375Z",
+      "provider_retry_recheck_at": "2026-11-10T21:19:00.645Z"
     }
   ],
-  "updated_at": "2026-11-10T20:25:02.375Z"
+  "updated_at": "2026-11-10T21:24:21.806Z"
 }
