@@ -1,10 +1,11 @@
 export function classifyOpenRouterFailure({ status, message = "", providerName = "" } = {}) {
   const code = Number(status) || 0;
   const detail = String(message || "");
-  const limited = code === 429 || code === 503 ||
+  const hasProvider = Boolean(String(providerName || "").trim());
+  const limited = code === 429 || code === 503 || (hasProvider && code >= 500) ||
     /rate.?limit|quota|resource exhausted|daily limit|credits exhausted|temporarily unavailable/i.test(detail);
   if (!limited) return null;
-  return String(providerName || "").trim() ? "MODEL_PROVIDER_LIMIT" : "RATE_LIMIT";
+  return hasProvider ? "MODEL_PROVIDER_LIMIT" : "RATE_LIMIT";
 }
 
 export function earliestRetryAfter({
