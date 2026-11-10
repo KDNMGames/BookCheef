@@ -46,15 +46,20 @@ jobs:
         run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/deferred-task-policy.test.mjs scripts/openrouter-failure-policy.test.mjs scripts/ordinary-book-structure.test.mjs scripts/provider-quota-coordinator.test.mjs scripts/legacy-interactive-book.test.mjs
 
       - name: Install Cursor CLI for the free-tier fallback
+        id: cursor
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          echo "available=false" >> "$GITHUB_OUTPUT"
           if [ -z "$CURSOR_API_KEY" ]; then
-            echo "CURSOR_API_KEY secret is missing; Cursor fallback will remain unavailable."
-            exit 1
+            echo "CURSOR_API_KEY secret is missing; skipping Cursor without blocking other free providers."
+            exit 0
           fi
-          curl https://cursor.com/install -fsS | bash
+          if ! curl https://cursor.com/install -fsS | bash; then
+            echo "Cursor CLI installation failed; other free providers remain available."
+            exit 0
+          fi
           # Cursor's Linux installer may expose the agent through ~/.local/bin;
           # retain ~/.cursor/bin as a compatibility location across installer versions.
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
@@ -62,19 +67,23 @@ jobs:
           export PATH="$HOME/.local/bin:$HOME/.cursor/bin:$PATH"
           AGENT_BIN="$(command -v agent || true)"
           if [ -z "$AGENT_BIN" ]; then
-            echo "Cursor installer completed, but the agent executable was not found in ~/.local/bin or ~/.cursor/bin."
-            find "$HOME/.local" "$HOME/.cursor" -type f -name agent -o -type l -name agent 2>/dev/null | head -20 || true
-            exit 127
+            echo "Cursor executable was not found after installation; skipping Cursor fallback."
+            find "$HOME/.local" "$HOME/.cursor" \( -type f -o -type l \) -name agent 2>/dev/null | head -20 || true
+            exit 0
           fi
           echo "Cursor Agent executable: $AGENT_BIN"
-          agent --version
+          if ! agent --version; then
+            echo "Cursor Agent failed its version check; skipping Cursor fallback."
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
 
       - name: Generate a book or resume the oldest pending package
         id: book
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           # Owner explicitly enabled Cursor fallback; usage is subject to the Cursor account's free limits.
-          CURSOR_FREE_INCLUDED: 'true'
+          CURSOR_FREE_INCLUDED: ${{ steps.cursor.outputs.available }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # Fail closed until the owner confirms this project's Gemini API Free Tier and no billing link.
