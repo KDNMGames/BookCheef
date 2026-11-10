@@ -15,6 +15,8 @@ on:
       - "scripts/ordinary-book-structure.test.mjs"
       - "scripts/provider-quota-coordinator.mjs"
       - "scripts/provider-quota-coordinator.test.mjs"
+      - "scripts/legacy-interactive-book.mjs"
+      - "scripts/legacy-interactive-book.test.mjs"
       - "book-publications/automation-config.json"
       - ".github/workflows/generate-daily-book.yml"
       - ".github/workflows/validate-bookcheef-generator.yml"
@@ -39,6 +41,7 @@ jobs:
           node --check scripts/openrouter-failure-policy.mjs
           node --check scripts/ordinary-book-structure.mjs
           node --check scripts/provider-quota-coordinator.mjs
+          node --check scripts/legacy-interactive-book.mjs
       - name: Exercise checkpoint save and recovery
         run: node --test scripts/book-checkpoint.test.mjs
       - name: Test deferred task priority and cooldown waiting
@@ -49,6 +52,8 @@ jobs:
         run: node --test scripts/ordinary-book-structure.test.mjs
       - name: Test shared provider quota classification
         run: node --test scripts/provider-quota-coordinator.test.mjs
+      - name: Test legacy interactive checkpoint migration
+        run: node --test scripts/legacy-interactive-book.test.mjs
       - name: Verify resumable checkpoint lifecycle
         run: |
           node --input-type=module -e '
@@ -56,7 +61,7 @@ jobs:
             const source = fs.readFileSync("scripts/generate-daily-book.mjs", "utf8");
             const workflow = fs.readFileSync(".github/workflows/generate-daily-book.yml", "utf8");
             const checkpoint = fs.readFileSync("scripts/book-checkpoint.mjs", "utf8");
-            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider", "DEFERRED_QUEUE_PATH", "deferredQueue.tasks.push", "Global publication rotation is left untouched until a book is verified as published.", "selectDeferredTask", "deferredSelection.status", "deferredTask", "classifyOpenRouterFailure", "earliestRetryAfter", "normalizeOrdinaryBookStructure", "withProviderQuota(\"openrouter\", \"expand-\"", "candidate.endsWith(\":free\")", "Free-only policy blocked generation", "CURSOR_FREE_INCLUDED === \"true\""]) {
+            for (const token of ["createCheckpointStore", "await saveWork(pkg)", "runCursorAgent", "CURSOR_API_KEY", "saveOpenRouterCooldown", "saveCursorCooldown", "saveGeminiCooldown", "generateWithGemini", "generateWithFallback", "GEMINI_API_KEY", "GEMINI_COOLDOWN_PATH", "switching to the next AI provider", "DEFERRED_QUEUE_PATH", "deferredQueue.tasks.push", "Global publication rotation is left untouched until a book is verified as published.", "selectDeferredTask", "deferredSelection.status", "deferredTask", "classifyOpenRouterFailure", "earliestRetryAfter", "normalizeOrdinaryBookStructure", "normalizeLegacyInteractivePackage", "selectOldestDeferredTaskAcrossWorkers", "withProviderQuota(\"openrouter\", \"expand-\"", "candidate.endsWith(\":free\")", "Free-only policy blocked generation", "CURSOR_FREE_INCLUDED === \"true\""]) {
               if (!source.includes(token)) throw new Error("Missing generator feature: " + token);
             }
             for (const token of ["async function saveWork", "async function loadWork", "Resuming saved book", "version: 1"]) {
