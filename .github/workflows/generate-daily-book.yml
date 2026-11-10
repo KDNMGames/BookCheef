@@ -45,12 +45,26 @@ jobs:
       - name: Test isolated worker state
         run: node --test scripts/book-worker-state.test.mjs scripts/coordinate-worker-packages.test.mjs scripts/deferred-task-policy.test.mjs scripts/openrouter-failure-policy.test.mjs scripts/ordinary-book-structure.test.mjs scripts/provider-quota-coordinator.test.mjs scripts/legacy-interactive-book.test.mjs
 
+      - name: Install Cursor CLI for the free-tier fallback
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CURSOR_API_KEY" ]; then
+            echo "CURSOR_API_KEY secret is missing; Cursor fallback will remain unavailable."
+            exit 1
+          fi
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+          "$HOME/.cursor/bin/agent" --version
+
       - name: Generate a book or resume the oldest pending package
         id: book
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          # Cursor CLI/API billing entitlement is not verified; disable it to prevent unexpected charges.
-          CURSOR_FREE_INCLUDED: 'false'
+          # Owner explicitly enabled Cursor fallback; usage is subject to the Cursor account's free limits.
+          CURSOR_FREE_INCLUDED: 'true'
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # Fail closed until the owner confirms this project's Gemini API Free Tier and no billing link.
           GEMINI_FREE_INCLUDED: 'true'
