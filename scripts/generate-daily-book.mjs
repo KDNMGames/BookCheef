@@ -352,11 +352,16 @@ async function generateWithFallback(prompt, { json = false, timeout = 900000 } =
     } catch (error) {
       if (!["RATE_LIMIT", "ALL_PROVIDERS_COOLDOWN", "PROVIDER_QUOTA_WAIT"].includes(error.code)) throw error;
       if (error.code === "PROVIDER_QUOTA_WAIT") geminiDisabled = true;
-      console.warn("Gemini quota unavailable; trying Cursor Agent next.");
+      console.warn("Gemini quota unavailable; checking the next explicitly enabled provider.");
     }
   }
-  const output = await runCursorAgent(prompt, { timeout });
-  return json ? parseModelJson(output) : output;
+  if (CURSOR_API_KEY && !cursorDisabled) {
+    const output = await runCursorAgent(prompt, { timeout });
+    return json ? parseModelJson(output) : output;
+  }
+  const error = new Error("No other explicitly enabled free AI provider is available; paid or disabled providers will not be attempted.");
+  error.code = "NO_FALLBACK_PROVIDER";
+  throw error;
 }
 
 async function saveCursorCooldown(reason) {
@@ -1116,8 +1121,10 @@ if (pkg) {
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" || error.code === "PROVIDER_QUOTA_WAIT" ||
         (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits|fetch failed|network|timed? ?out|ECONNRESET|ETIMEDOUT|502|503|504|gateway/i.test(error.message || ""))) {
       if (error.code !== "PROVIDER_QUOTA_WAIT") {
-        if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
-        else await saveOpenRouterCooldown(error.message);
+        if (openRouterDisabled || !OPENROUTER_API_KEY) {
+          if (GEMINI_API_KEY && !geminiDisabled) await saveGeminiCooldown(error.message);
+          else if (CURSOR_API_KEY && !cursorDisabled) await saveCursorCooldown(error.message);
+        } else await saveOpenRouterCooldown(error.message);
       }
     } else if (error.code === "GENERATION_STOPPED") {
       console.log("Administrator stopped generation while resuming; the checkpoint will be preserved.");
@@ -1139,8 +1146,10 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" || error.code === "PROVIDER_QUOTA_WAIT" ||
         (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits|fetch failed|network|timed? ?out|ECONNRESET|ETIMEDOUT|502|503|504|gateway/i.test(error.message || ""))) {
       if (error.code !== "PROVIDER_QUOTA_WAIT") {
-        if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
-        else await saveOpenRouterCooldown(error.message);
+        if (openRouterDisabled || !OPENROUTER_API_KEY) {
+          if (GEMINI_API_KEY && !geminiDisabled) await saveGeminiCooldown(error.message);
+          else if (CURSOR_API_KEY && !cursorDisabled) await saveCursorCooldown(error.message);
+        } else await saveOpenRouterCooldown(error.message);
       }
       if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\n");
       console.error("No available AI provider for this attempt. The partial checkpoint, if any, is preserved for the next run.");
