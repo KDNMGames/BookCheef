@@ -873,6 +873,17 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
         const raw = body.choices?.[0]?.message?.content;
         generatedText = (typeof raw === "string" ? raw : Array.isArray(raw) ? raw.map(x => x?.text || "").join("\n") : "")
           .trim().replace(/^\x60{3}[^\n]*\n?/,"").replace(/\n?\x60{3}$/,"").trim();
+        if (!generatedText) {
+          const choice = body.choices?.[0];
+          const detail = choice?.finish_reason ? " (finish_reason: " + choice.finish_reason + ")" : "";
+          const providerName = body.provider || body.provider_name || choice?.provider || "";
+          const failure = new Error(("OpenRouter returned an empty chapter fragment" + detail +
+            (providerName ? " (provider: " + providerName + ")" : "")).slice(0, 700));
+          // Treat HTTP 200 empty fragments like upstream model failures so the
+          // worker rotates through free models and then enabled free providers.
+          failure.code = "MODEL_PROVIDER_LIMIT";
+          throw failure;
+        }
       }
       const words = countWords(generatedText);
       if (words < (Number(minimumWords) || Math.floor(targetWords * 0.78))) throw new Error("Part too short: " + words + " words; minimum " + (Number(minimumWords) || Math.floor(targetWords * 0.78)) + ".");
@@ -1264,7 +1275,7 @@ if (!pkg && lastError?.code === "GENERATION_STOPPED") {
   process.exit(0);
 }
 if (!pkg && lastError && lastError?.code !== "GENERATION_STOPPED") {
-  const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
+  const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH, GROQ_COOLDOWN_PATH]
     .map(async file => { try { return Date.parse(JSON.parse(await fs.readFile(file, "utf8")).retry_after || ""); } catch { return 0; } });
   const cooldowns = await Promise.all(retryAfter);
   const sharedRetry = lastError?.retryAfter || "";
