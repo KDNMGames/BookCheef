@@ -52,6 +52,7 @@ jobs:
             if (!generationWorkflow.includes("Install Cursor Agent fallback") || !generationWorkflow.includes("secrets.CURSOR_API_KEY") || !generationWorkflow.includes("vars.CURSOR_FREE_INCLUDED") || !generationWorkflow.includes("if: vars.CURSOR_FREE_INCLUDED")) throw new Error("Cursor fallback is not installed or authenticated in the generation workflow");
             if (!generationWorkflow.includes("secrets.GEMINI_API_KEY")) throw new Error("Gemini API key is not passed to the generation workflow");
             if (generationWorkflow.includes("actions/workflows/generate-daily-book.yml/dispatches")) throw new Error("Quota deferrals must not immediately dispatch another empty generation cycle.");
+            if (!generationWorkflow.includes("scripts/openrouter-failure-policy.test.mjs")) throw new Error("Generation workflow does not run OpenRouter failover regression tests.");
             console.log("Checkpoint save/resume/persist/cleanup wiring is present.");
           '
       - name: Validate automation configuration
