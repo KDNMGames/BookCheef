@@ -300,6 +300,39 @@ try {
   deferredQueue = JSON.parse(await fs.readFile(DEFERRED_QUEUE_PATH, "utf8"));
 } catch (error) { if (error.code !== "ENOENT") throw error; }
 deferredQueue.tasks = Array.isArray(deferredQueue.tasks) ? deferredQueue.tasks : [];
+
+// Rescue any checkpoint left at the legacy "current" path by earlier generator runs.
+// Without this migration, a newer draft can remain stranded while an older deferred
+// task is waiting, and it may never be selected by the deferred-task queue.
+try {
+  const legacyCheckpoint = JSON.parse(await fs.readFile(WORK_PATH, "utf8"));
+  if (legacyCheckpoint?.pkg?.title && legacyCheckpoint?.pkg?.book_content) {
+    const alreadyQueued = deferredQueue.tasks.some(task =>
+      task?.checkpoint_path === WORK_PATH ||
+      (task?.task_id && task.task_id === legacyCheckpoint.task_id)
+    );
+    if (!alreadyQueued) {
+      const stamp = Date.parse(legacyCheckpoint.updated_at || "") || Date.now();
+      const taskId = "recovered-" + stamp + "-" + requestedWorkerType;
+      const recoveredPath = workerState.deferredPath(taskId);
+      await fs.rename(WORK_PATH, recoveredPath);
+      deferredQueue.tasks.push({
+        task_id: taskId,
+        book_type: legacyCheckpoint.book_type || requestedWorkerType,
+        checkpoint_path: recoveredPath,
+        created_at: legacyCheckpoint.updated_at || new Date(stamp).toISOString(),
+        retry_after: new Date().toISOString(),
+        recovered_from_legacy_checkpoint: true
+      });
+      deferredQueue.updated_at = new Date().toISOString();
+      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\\n");
+      console.log("Recovered an older unfinished checkpoint into the deferred queue: " + legacyCheckpoint.pkg.title);
+    }
+  }
+} catch (error) {
+  if (error.code !== "ENOENT") throw new Error("Could not safely recover the legacy unfinished checkpoint: " + error.message);
+}
+
 const deferredSelection = selectDeferredTask(deferredQueue.tasks, Date.now());
 if (deferredSelection.status === "wait") {
   const waitingTask = deferredSelection.task;
