@@ -15,9 +15,13 @@ export function selectDeferredTask(tasks, now = Date.now()) {
     throw new Error("Deferred queue contains tasks without a valid checkpoint path; refusing to start another book.");
   }
 
+  const ready = ordered.filter(candidate => {
+    const retryAt = Date.parse(candidate.retry_after || "");
+    return !Number.isFinite(retryAt) || retryAt <= now;
+  });
+  if (ready.length) return { status: "resume", task: ready[0] };
   const task = ordered[0];
   const retryAt = Date.parse(task.retry_after || "");
-  if (!Number.isFinite(retryAt) || retryAt <= now) return { status: "resume", task };
   return { status: "wait", task, retryAfter: new Date(retryAt).toISOString() };
 }
 
