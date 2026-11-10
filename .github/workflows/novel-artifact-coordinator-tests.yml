@@ -43,4 +43,4 @@ jobs:
           node --check scripts/ordinary-book-structure.test.mjs
           node -e "JSON.parse(require('node:fs').readFileSync('book-publications/automation-config.json', 'utf8'))"
       - name: Run quota coordinator tests
-        run: node --test scripts/provider-quota-coordinator.test.mjs
+        run: node --test scripts/provider-quota-coordinator.test.mjs scripts/ordinary-book-structure.test.mjs
