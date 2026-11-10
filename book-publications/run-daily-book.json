@@ -1,8 +1,8 @@
 {
-  "requested_at": "2026-11-10T00:11:12.121Z",
-  "requested_by": "User asked to continue fixing BookCheef generation; resume saved drafts",
-  "requested_type": "resume oldest unfinished book",
+  "requested_at": "2026-11-10T00:20:00Z",
+  "requested_by": "User requested repair; resume oldest saved draft",
+  "requested_type": "resume oldest deferred book",
   "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "Resume oldest deferred checkpoint first. Recover stranded legacy current checkpoint into deferred queue before cooldown exits. Use free providers only; do not start another book until the current draft is completed and verified.",
-  "reason": "Run one generation cycle now. Keep paid APIs disabled, preserve checkpoints, respect provider cooldowns and worker leases, and exclude archived novel Last Day of the Universe."
+  "retry_reason": "The oldest saved interactive checkpoint has been migrated into its correct worker. Resume it first; preserve every scene checkpoint; use only free OpenRouter models with upstream failover. Do not start another title.",
+  "reason": "Run one generation cycle after fixing legacy interactive checkpoint recovery, global deferred-task ordering, free-model failover and shared quota handling. Paid APIs remain disabled."
 }
