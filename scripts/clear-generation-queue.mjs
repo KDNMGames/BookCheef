@@ -38,12 +38,25 @@ for (const relativePath of [
   "book-publications/deferred-books.json",
   "book-publications/pending-publications.json",
   "book-publications/work-in-progress",
-  "book-publications/inbox"
+  "book-publications/inbox",
+  "book-publications/provider-cooldown.json",
+  "book-publications/cursor-cooldown.json",
+  "book-publications/gemini-cooldown.json"
 ]) await removeIfExists(relativePath);
 
 await fs.mkdir("book-publications/inbox", { recursive: true });
 await fs.writeFile("book-publications/pending-publications.json", JSON.stringify({ packages: [], updated_at: new Date().toISOString() }, null, 2) + "\n");
 await fs.writeFile("book-publications/deferred-books.json", JSON.stringify({ tasks: [], updated_at: new Date().toISOString() }, null, 2) + "\n");
+const rotationPath = "book-publications/rotation-state.json";
+try {
+  const rotation = JSON.parse(await fs.readFile(rotationPath, "utf8"));
+  rotation.cycle_position = 1;
+  rotation.updated_at = new Date().toISOString();
+  delete rotation.note;
+  await fs.writeFile(rotationPath, JSON.stringify(rotation, null, 2) + "\n");
+} catch (error) {
+  if (error.code !== "ENOENT") throw error;
+}
 
 const reset = await fetch(base + "/rest/v1/bookcheef_generation_control?id=eq.true", {
   method: "PATCH",
