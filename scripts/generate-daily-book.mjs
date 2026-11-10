@@ -142,7 +142,7 @@ try {
         recovered_from_legacy_checkpoint: true
       });
       queue.updated_at = new Date().toISOString();
-      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(queue, null, 2) + "\\n");
+      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(queue, null, 2) + "\n");
       console.log("Recovered stranded checkpoint: " + legacyCheckpoint.pkg.title);
     }
   }
