@@ -325,7 +325,7 @@ try {
         recovered_from_legacy_checkpoint: true
       });
       deferredQueue.updated_at = new Date().toISOString();
-      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\\n");
+      await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
       console.log("Recovered an older unfinished checkpoint into the deferred queue: " + legacyCheckpoint.pkg.title);
     }
   }
