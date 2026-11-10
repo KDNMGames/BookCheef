@@ -8,8 +8,10 @@
       "retry_after": "2026-11-10T04:04:20.086Z",
       "recovered_from_legacy_checkpoint": true,
       "migrated_from_worker": "ordinary",
-      "last_error": "Provider quota is reserved or cooling down until 2026-11-10T04:04:20.086Z (provider_cooldown)."
+      "last_error": "Provider quota is reserved or cooling down until 2026-11-10T04:04:20.086Z (provider_cooldown).",
+      "last_notified_retry_after": "2026-11-10T04:04:20.086Z",
+      "last_wait_notice_at": "2026-11-10T00:41:17.946Z"
     }
   ],
-  "updated_at": "2026-11-10T00:18:34.368Z"
+  "updated_at": "2026-11-10T00:41:17.946Z"
 }
