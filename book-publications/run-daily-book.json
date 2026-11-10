@@ -1,8 +1,10 @@
 {
-  "requested_at": "2026-11-10T00:41:07.826Z",
-  "requested_by": "User requested an immediate generator health check",
-  "requested_type": "resume oldest deferred book",
-  "image_fallback": "Openverse CC0 then Wikimedia Commons Public Domain",
-  "retry_reason": "The oldest saved interactive checkpoint has been migrated into its correct worker. Resume it first; preserve every scene checkpoint; use only free OpenRouter models with upstream failover. Do not start another title.",
-  "reason": "Manual generator health check after automatic repair/discard safeguards passed CI. Resume only the oldest pending task; preserve checkpoints; use explicitly free providers only; do not start another title; report quota cooldowns without deleting drafts."
+  "requested_at": "2026-11-10T18:17:24.916Z",
+  "requested_by": "ChatGPT - user requested complete three-hour daily book generation redesign",
+  "requested_type": "resume oldest ready deferred book or start the next available isolated worker",
+  "reason": "Start the redesigned resumable 36,000-word BookCheef generation pipeline. Resume saved work first; use only explicitly free OpenRouter models and any separately verified free provider; save a checkpoint after every fragment; never delete unfinished work; do not publish until all length and content checks pass.",
+  "reading_length_minimum_words": 36000,
+  "reading_time_minimum_minutes": 180,
+  "free_only": true,
+  "paid_api_fallbacks": false
 }
