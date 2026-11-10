@@ -1119,8 +1119,10 @@ if (pkg) {
         if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
         else await saveOpenRouterCooldown(error.message);
       }
+    } else if (error.code === "GENERATION_STOPPED") {
+      console.log("Administrator stopped generation while resuming; the checkpoint will be preserved.");
     } else {
-      throw error;
+      console.error("Resumed book did not pass expansion/validation. Keeping the saved checkpoint and deferring it for another safe attempt: " + error.message);
     }
   }
 }
