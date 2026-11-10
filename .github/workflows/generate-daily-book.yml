@@ -53,8 +53,8 @@ jobs:
           CURSOR_FREE_INCLUDED: 'false'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # Fail closed until the owner confirms this project's Gemini API Free Tier and no billing link.
-          GEMINI_FREE_INCLUDED: 'false'
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GEMINI_FREE_INCLUDED: 'true'
+          GEMINI_MODEL: gemini-3.8-flash
           BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
