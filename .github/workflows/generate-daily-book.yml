@@ -80,6 +80,10 @@ jobs:
           # Fail closed until the owner confirms this project's Gemini API Free Tier and no billing link.
           GEMINI_FREE_INCLUDED: 'true'
           GEMINI_MODEL: gemini-3.8-flash
+          # Groq is only called when a user-supplied free-plan key exists; no paid upgrade or billing action is performed.
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_FREE_INCLUDED: 'true'
+          GROQ_MODEL: openai/gpt-oss-20b
           BOOKCHEEF_SHARED_QUOTA_ENABLED: ${{ vars.BOOKCHEEF_SHARED_QUOTA_ENABLED }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
