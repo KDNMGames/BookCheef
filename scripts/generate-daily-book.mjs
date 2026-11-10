@@ -673,6 +673,7 @@ async function expandPart({ title, age, genre, bookTitle, description, author, d
 
 async function expandOrdinaryBook(pkg) {
   if (bookType !== "ordinary") return pkg;
+  normalizeOrdinaryBookStructure(pkg);
   const matches = [...pkg.book_content.matchAll(/^##\s+(.+)$/gm)];
   const age = String(pkg.age || "12+");
   const adult = age === "16+" || age === "18+";
