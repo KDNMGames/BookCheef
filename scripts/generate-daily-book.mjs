@@ -646,7 +646,15 @@ function normalizePackage(pkg) {
   if (!Array.isArray(pkg.footnotes) && Array.isArray(pkg.interactive_content?.footnotes)) {
     pkg.footnotes = pkg.interactive_content.footnotes;
   }
-  if (typeof pkg.is_interactive !== "boolean") pkg.is_interactive = bookType === "interactive";
+  const hasInteractiveStructure = Array.isArray(pkg.interactive_content?.nodes);
+  if (bookType === "ordinary" && hasInteractiveStructure) {
+    throw new Error("Book type mismatch: ordinary task contains interactive scene nodes; move it to the interactive worker before repair.");
+  }
+  if (bookType === "interactive" && !hasInteractiveStructure) {
+    throw new Error("Book type mismatch: interactive task has no interactive scene nodes.");
+  }
+  // Repair stale boolean metadata when the actual package structure matches its worker.
+  pkg.is_interactive = bookType === "interactive";
   if (pkg.series == null) pkg.series = "";
   if (bookType === "ordinary") normalizeOrdinaryBookStructure(pkg);
   return pkg;
@@ -1007,7 +1015,7 @@ if (pkg) {
     pkg = null;
     console.error("Resumed book expansion stopped: " + error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" || error.code === "PROVIDER_QUOTA_WAIT" ||
-        (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || ""))) {
+        (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits|fetch failed|network|timed? ?out|ECONNRESET|ETIMEDOUT|502|503|504|gateway/i.test(error.message || ""))) {
       if (error.code !== "PROVIDER_QUOTA_WAIT") {
         if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
         else await saveOpenRouterCooldown(error.message);
@@ -1016,14 +1024,15 @@ if (pkg) {
       throw error;
     }
   }
-} else {
+}
+if (!pkg) {
 for (let attempt=1; attempt<=maxAttempts; attempt++) {
   try { const candidate=await generatePackage(attempt,lastError?.message||""); console.log("Model output fields:",Object.keys(candidate||{}).join(", ")); const normalized=normalizePackage(candidate); currentBookTitle=normalized.title || currentBookTitle; if (!startReportSent) { await notifyBookCheefAdmins("🛠 BookCheef: сейчас создаётся книга «" + currentBookTitle + "» (" + bookType + ")."); startReportSent=true; } await saveWork(normalized); pkg=validate(await expandBook(normalized)); break; }
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" || error.code === "PROVIDER_QUOTA_WAIT" ||
-        (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(error.message || ""))) {
+        (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits|fetch failed|network|timed? ?out|ECONNRESET|ETIMEDOUT|502|503|504|gateway/i.test(error.message || ""))) {
       if (error.code !== "PROVIDER_QUOTA_WAIT") {
         if (openRouterDisabled || !OPENROUTER_API_KEY) { if (geminiDisabled || !GEMINI_API_KEY) await saveCursorCooldown(error.message); else await saveGeminiCooldown(error.message); }
         else await saveOpenRouterCooldown(error.message);
@@ -1065,7 +1074,34 @@ if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVID
   await workerState.releaseLease();
   process.exit(0);
 }
-if (!pkg) throw new Error("Could not create a valid book after retries: "+(lastError?.message||"unknown error"));
+if (!pkg) {
+  const failureMessage = String(lastError?.message || "unknown error").slice(0, 900);
+  const failedTitle = currentBookTitle || deferredTask?.task_id || "без названия";
+  const cleanupPaths = new Set([workPath]);
+  if (deferredTask?.checkpoint_path) cleanupPaths.add(deferredTask.checkpoint_path);
+  for (const filePath of cleanupPaths) {
+    const resolved = path.resolve(filePath);
+    const allowedRoots = [path.resolve(workerState.checkpointDir), path.resolve(workerState.deferredDir)];
+    if (!allowedRoots.some(root => resolved.startsWith(root + path.sep))) {
+      throw new Error("Refusing to delete a failed draft outside this worker's checkpoint folders: " + filePath);
+    }
+    await fs.rm(resolved, { force: true });
+  }
+  if (deferredTask?.task_id) {
+    deferredQueue.tasks = deferredQueue.tasks.filter(task => task?.task_id !== deferredTask.task_id);
+    deferredQueue.updated_at = new Date().toISOString();
+    await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+  }
+  await notifyBookCheefAdmins(
+    "🗑 BookCheef: черновик «" + failedTitle + "» удалён после " + maxAttempts +
+    " неудачных попыток автоматического исправления. Удалены его контрольные файлы и запись из очереди. " +
+    "Причина: " + failureMessage + ". Опубликованные книги и пользовательские данные не затрагивались."
+  );
+  console.error("Discarded unrecoverable unpublished draft after exhausting repair attempts: " + failureMessage);
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\ndiscarded=true\n");
+  await workerState.releaseLease();
+  process.exit(0);
+}
 
 const outboxDir=path.join(workerState.workerDir,"outbox");
 await fs.mkdir(outboxDir,{recursive:true});
