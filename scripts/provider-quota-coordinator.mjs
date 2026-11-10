@@ -142,8 +142,9 @@ export function createProviderQuotaCoordinator({
     } catch (error) {
       const status = Number(error?.status || error?.statusCode || 0);
       const message = String(error?.message || error || "");
-      const limited = error?.code === "RATE_LIMIT" || status === 429 || status === 503 ||
-        /rate.?limit|quota|resource exhausted|daily limit|usage limit|billing limit|out of credits/i.test(message);
+      const modelSpecificLimit = error?.code === "MODEL_PROVIDER_LIMIT";
+      const limited = !modelSpecificLimit && (error?.code === "RATE_LIMIT" || status === 429 || status === 503 ||
+        /rate.?limit|quota|resource exhausted|daily limit|usage limit|billing limit|out of credits/i.test(message));
       if (limited) {
         outcome = "rate_limited";
         const retrySeconds = Number(error?.retryAfterSeconds || 0);
