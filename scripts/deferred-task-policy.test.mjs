@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectDeferredTask } from "./deferred-task-policy.mjs";
+import { selectDeferredTask, selectOldestDeferredTaskAcrossWorkers } from "./deferred-task-policy.mjs";
 
 const task = (id, created, retry, type = "ordinary") => ({
   task_id: id,
@@ -34,4 +34,13 @@ test("resumes the oldest deferred task when its retry time has arrived", () => {
 test("returns none for an empty queue and rejects malformed queued work", () => {
   assert.deepEqual(selectDeferredTask([], 0), { status: "none", task: null });
   assert.throws(() => selectDeferredTask([{ task_id: "broken" }], 0), /without a valid checkpoint path/);
+});
+
+test("selects the oldest deferred task across ordinary and interactive workers", () => {
+  const selected = selectOldestDeferredTaskAcrossWorkers({
+    ordinary: { tasks: [task("ordinary-newer", "2026-11-10T02:00:00Z", "2026-11-10T04:00:00Z")] },
+    interactive: { tasks: [task("interactive-older", "2026-11-10T01:00:00Z", "2026-11-10T05:00:00Z", "interactive")] }
+  });
+  assert.equal(selected.task_id, "interactive-older");
+  assert.equal(selected.book_type, "interactive");
 });
