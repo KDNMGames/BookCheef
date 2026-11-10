@@ -63,7 +63,7 @@ async function notifyProviderLimit(provider, reason, retryAfter) {
 let openRouterDisabled = false;
 let cursorDisabled = process.env.CURSOR_FREE_INCLUDED !== "true";
 let geminiDisabled = process.env.GEMINI_FREE_INCLUDED !== "true";
-let groqDisabled = process.env.GROQ_FREE_INCLUDED !== "true";
+let groqDisabled = process.env.GROQ_FREE_INCLUDED !== "true" || !GROQ_API_KEY;
 
 
 async function readGenerationControl() {
@@ -302,7 +302,7 @@ if (openRouterDisabled && cursorDisabled && geminiDisabled && groqDisabled) {
 }
 
 if (!OPENROUTER_API_KEY && !CURSOR_API_KEY && !GEMINI_API_KEY && !GROQ_API_KEY) {
-  throw new Error("No text AI provider credentials are configured. Add OPENROUTER_API_KEY, CURSOR_API_KEY, or GEMINI_API_KEY.");
+  throw new Error("No text AI provider credentials are configured. Add an explicitly enabled free provider key (OpenRouter, Gemini, Groq, or Cursor).");
 }
 
 async function saveGeminiCooldown(reason) {
@@ -401,7 +401,6 @@ async function generateWithGemini(prompt, { json = false, timeout = 180000 } = {
     error.retryAfterSeconds = Number(response.headers.get("retry-after")) || 0;
     if (response.status === 429 || response.status === 503 || /quota|rate.?limit|resource exhausted|daily limit|billing/i.test(message)) {
       error.code = "RATE_LIMIT";
-      await saveGeminiCooldown(message);
     }
     throw error;
   }
