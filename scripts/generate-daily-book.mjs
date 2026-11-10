@@ -564,8 +564,8 @@ ${bookType === "interactive" ? ',"interactive_content":{"start":"scene-1","footn
 ТРЕБОВАНИЯ К ТЕКСТУ:
 - Русский язык, естественный и грамотный, без повторов и искусственного растягивания.
 - Возраст выбирай по реальному содержанию. Текст должен соответствовать возрасту.
-- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ ДЛЯ КАЖДОЙ КНИГИ И ЛЮБОГО ВОЗРАСТА: минимум 30 000 слов основного текста (ориентир не менее 3 часов чтения при умеренном темпе). Целевой объём — 33 000–36 000 слов. Обычная книга: ровно 12 глав, каждая с содержательным планом 120–200 слов; система допишет каждую главу отдельными последовательными фрагментами и сохранит контрольную точку после каждого фрагмента. Не пытайся уместить весь роман в один ответ. Не допускай повторов и искусственного растягивания.
-- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена минимум 10 000 слов. Каждый из двух маршрутов scene-1 → ветка → финал должен содержать минимум 30 000 слов. Система допишет каждую сцену отдельными фрагментами и сохранит контрольную точку после каждого фрагмента. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
+- ОБЪЁМ — ОБЯЗАТЕЛЬНОЕ ТРЕБОВАНИЕ ДЛЯ КАЖДОЙ КНИГИ И ЛЮБОГО ВОЗРАСТА: минимум 36 000 слов основного текста (ориентир не менее 3 часов чтения при темпе до 200 слов в минуту). Целевой объём — 39 000–42 000 слов. Обычная книга: ровно 12 глав, каждая с содержательным планом 150–220 слов; система допишет каждую главу отдельными последовательными фрагментами и сохранит контрольную точку после каждого фрагмента. Не пытайся уместить весь роман в один ответ. Не допускай повторов и искусственного растягивания.
+- Интерактивная книга: ровно 5 узлов; каждый узел — полноценная сцена минимум 12 000 слов. Каждый из двух маршрутов scene-1 → ветка → финал должен содержать минимум 36 000 слов. Система допишет каждую сцену отдельными фрагментами и сохранит контрольную точку после каждого фрагмента. Используй граф из пяти узлов: scene-1, scene-2a, scene-2b, ending-a, ending-b. В первой сцене два выбора — к scene-2a и scene-2b. В сценах 2a и 2b предусмотрены переходы к двум различным финалам; оба финала должны быть достижимы. У двух финалов choices: []. Не менее двух действительно разных концовок. Каждому узлу соответствует ровно одна отдельная иллюстрация, всего ровно пять; chapter — точное title узла. В image_start каждого узла помести соответствующий маркер {{illustration:ТОЧНЫЙ TITLE УЗЛА:N}}. В book_content дай заголовок и короткое вступление, сам текст сцен хранится в nodes.
 - В интерактивной книге choices — массив объектов {text,next}; next обязан ссылаться на существующий id.
 - Вопросы reader_questions: 3–5 содержательных пар question/answer, не помещай их в book_content.
 - Сноски: минимум одна для возраста 6+ и старше; слово в word должно дословно встречаться в тексте сцен/глав, текст определения соответствует возрасту.
@@ -846,7 +846,7 @@ async function expandOrdinaryBook(pkg) {
   const age = String(pkg.age || "12+");
   if (matches.length < 10 || matches.length > 14) throw new Error("A three-hour ordinary book requires 10-14 chapters; received " + matches.length + ".");
   const targetWordsPerFragment = 1150, minimumWordsPerFragment = 900, totalMinimum = 36000;
-  // Preserve older saved outlines (10-14 chapters) while guaranteeing >=30,000 words.
+  // Preserve older saved outlines (10-14 chapters) while guaranteeing >=36,000 words.
   const fragmentsPerChapter = Math.max(3, Math.ceil(totalMinimum / (matches.length * minimumWordsPerFragment)));
   const progress = pkg.generation_progress ||= { version: 2, ordinary: { chapters: {} } };
   progress.ordinary ||= { chapters: {} }; progress.ordinary.chapters ||= {};
@@ -892,7 +892,7 @@ async function expandOrdinaryBook(pkg) {
   const total = countWords(pkg.book_content);
   if (total < totalMinimum) throw new Error("Three-hour book length check failed: " + total + " words; minimum " + totalMinimum + ".");
   delete pkg.generation_progress; await saveWork(pkg);
-  console.log("Three-hour ordinary book completed: " + total + " words across 12 chapters.");
+  console.log("Three-hour ordinary book completed: " + total + " words across " + matches.length + " chapters.");
   return pkg;
 }
 
@@ -934,13 +934,13 @@ async function expandInteractiveBook(pkg) {
       console.log("Interactive checkpoint saved: " + node.id + " fragment " + (fragment + 1) + "/10.");
     }
     node.text = state.fragments.join("\\n\\n");
-    if (countWords(node.text) < 10000) throw new Error("Interactive node " + node.id + " is below its 10,000-word minimum.");
+    if (countWords(node.text) < 12000) throw new Error("Interactive node " + node.id + " is below its 12,000-word minimum.");
     await saveWork(pkg);
   }
   const byId = new Map(nodes.map(node => [node.id, node]));
   const routeA = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2a").text) + countWords(byId.get("ending-a").text);
   const routeB = countWords(byId.get("scene-1").text) + countWords(byId.get("scene-2b").text) + countWords(byId.get("ending-b").text);
-  if (routeA < minimumWordsPerRoute || routeB < minimumWordsPerRoute) throw new Error("Interactive three-hour route check failed: " + routeA + " / " + routeB + " words; each route requires 30,000.");
+  if (routeA < minimumWordsPerRoute || routeB < minimumWordsPerRoute) throw new Error("Interactive three-hour route check failed: " + routeA + " / " + routeB + " words; each route requires 36,000.");
   delete pkg.generation_progress; await saveWork(pkg);
   console.log("Three-hour interactive routes completed: " + routeA + " and " + routeB + " words.");
   return pkg;
@@ -1044,7 +1044,7 @@ function validate(pkg) {
     if (ids.size!==5 || !["scene-1","scene-2a","scene-2b","ending-a","ending-b"].every(id=>ids.has(id))) throw new Error("Interactive scene IDs are invalid.");
     const byId=new Map(data.nodes.map(n=>[n.id,n]));
     for (const node of data.nodes) {
-      const ageMinimum=12000; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or below the 10,000-word minimum: "+node.id);
+      const ageMinimum=12000; if (!node.title?.trim() || typeof node.text!=="string" || countWords(node.text)<ageMinimum || !Array.isArray(node.choices)) throw new Error("Interactive scene is incomplete or below the 12,000-word minimum: "+node.id);
       for (const choice of node.choices) if (!choice.text?.trim() || !ids.has(choice.next)) throw new Error("Invalid branch in "+node.id);
       const index=Number(node.id==="scene-1"?1:node.id==="scene-2a"?2:node.id==="scene-2b"?3:node.id==="ending-a"?4:5);
       const illustration=pkg.illustrations.find(x=>x.number===index && x.chapter===node.title);
