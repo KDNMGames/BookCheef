@@ -1,0 +1,6 @@
+{
+  "provider": "gemini",
+  "detected_at": "2026-11-10T21:07:47.073Z",
+  "retry_after": "2026-11-11T03:07:47.073Z",
+  "reason": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later."
+}

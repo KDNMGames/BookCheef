@@ -1,0 +1,6 @@
+{
+  "provider": "openrouter",
+  "detected_at": "2026-11-10T21:07:41.285Z",
+  "retry_after": "2026-11-11T03:07:41.285Z",
+  "reason": "OpenRouter returned empty content."
+}
