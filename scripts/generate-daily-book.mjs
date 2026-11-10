@@ -1072,6 +1072,10 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
   catch(error) {
     lastError=error;
     console.error("Generation/validation attempt "+attempt+" failed: "+error.message);
+    if (error.code === "GENERATION_STOPPED") {
+      console.log("Administrator stopped generation. Preserving the current checkpoint and deferred task.");
+      break;
+    }
     if (error.code === "RATE_LIMIT" || error.code === "ALL_PROVIDERS_COOLDOWN" || error.code === "PROVIDER_QUOTA_WAIT" ||
         (error.code !== "MODEL_PROVIDER_LIMIT" && /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits|fetch failed|network|timed? ?out|ECONNRESET|ETIMEDOUT|502|503|504|gateway/i.test(error.message || ""))) {
       if (error.code !== "PROVIDER_QUOTA_WAIT") {
@@ -1085,6 +1089,15 @@ for (let attempt=1; attempt<=maxAttempts; attempt++) {
     if (attempt<maxAttempts) await new Promise(resolve=>setTimeout(resolve, Math.max(1,Number(config.daily_book.text_provider?.retry_delay_seconds)||30)*1000));
   }
 }
+}
+if (!pkg && lastError?.code === "GENERATION_STOPPED") {
+  if (deferredTask) {
+    deferredQueue.updated_at = new Date().toISOString();
+    await fs.writeFile(DEFERRED_QUEUE_PATH, JSON.stringify(deferredQueue, null, 2) + "\n");
+  }
+  if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, "package_path=\ncreated=false\nstopped=true\n");
+  await workerState.releaseLease();
+  process.exit(0);
 }
 if (!pkg && (lastError?.code === "RATE_LIMIT" || lastError?.code === "ALL_PROVIDERS_COOLDOWN" || lastError?.code === "PROVIDER_QUOTA_WAIT" || /rate.?limit|quota|daily limit|usage limit|billing limit|out of credits/i.test(lastError?.message || ""))) {
   const retryAfter = [COOLDOWN_PATH, CURSOR_COOLDOWN_PATH, GEMINI_COOLDOWN_PATH]
