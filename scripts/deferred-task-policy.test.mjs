@@ -65,3 +65,21 @@ test("throttles repeated wait notifications but announces a changed retry time",
   assert.equal(shouldNotifyDeferredWait(task, retry, Date.parse("2026-11-10T01:00:00Z")), true);
   assert.equal(shouldNotifyDeferredWait(task, "2026-11-10T05:00:00Z", Date.parse("2026-11-10T00:30:00Z")), true);
 });
+
+test("releases deferred retry timers when an enabled provider is outside cooldown", async () => {
+  const { releaseDeferredTasksWhenProviderReady } = await import("./deferred-task-policy.mjs");
+  const tasks = [task("waiting", "2026-11-10T01:00:00Z", "2026-11-11T00:44:40.000Z")];
+  const now = Date.parse("2026-11-10T20:30:00Z");
+  const result = releaseDeferredTasksWhenProviderReady(tasks, true, now);
+  assert.equal(result.released, 1);
+  assert.equal(Date.parse(result.tasks[0].retry_after), now);
+  assert.equal(result.tasks[0].provider_retry_recheck_at, new Date(now).toISOString());
+});
+
+test("does not release deferred tasks when every provider is unavailable", async () => {
+  const { releaseDeferredTasksWhenProviderReady } = await import("./deferred-task-policy.mjs");
+  const tasks = [task("waiting", "2026-11-10T01:00:00Z", "2026-11-11T00:44:40.000Z")];
+  const result = releaseDeferredTasksWhenProviderReady(tasks, false, Date.parse("2026-11-10T20:30:00Z"));
+  assert.equal(result.released, 0);
+  assert.equal(result.tasks[0].retry_after, "2026-11-11T00:44:40.000Z");
+});
