@@ -555,7 +555,7 @@ function parsePlainTextChapter(source: string, chapterNumber: number, fallbackTi
   content = content.replace(/^\\s*[-—:]\\s*/, "").trim();
   const word_count = content.split(/\\s+/).filter(Boolean).length;
   if (word_count < 100) {
-    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE: words=" + word_count + "; title=" + (title ? "yes" : "no"));
+    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE: words=" + word_count + "; chars=" + content.length + "; title=" + (title ? "yes" : "no") + "; response_chars=" + normalized.length + "; preview=" + normalized.slice(0, 120).replace(/\\s+/g, " "));
   }
   return { chapter_number: chapterNumber, title, content, word_count };
 }
@@ -623,7 +623,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
   } else {
     userPrompt = "Напиши главу " + chapterNumber + " из " + chapterCount + " книги на тему: " + topic +
       ". План: " + JSON.stringify(progress.outline) +
-      ". Цель 1600–2200 слов, полноценная художественная проза, не пересказ. Верни ОБЫЧНЫЙ ТЕКСТ строго в формате:\\nCHAPTER_TITLE: название главы\\nCHAPTER_TEXT:\\nзатем полный текст главы несколькими абзацами. После начала CHAPTER_TEXT не добавляй технических комментариев или других меток.";
+      ". Напиши полноценную самостоятельную главу художественной прозы на русском языке объёмом 1600–2200 слов. Не выдавай краткое содержание, план, вступительную фразу или только заголовок. Сразу после меток обязательно напиши полный текст главы: не менее 1200 слов; раскрывай события, сцены, детали и причинно-следственные связи. Если не помещается весь целевой объём, выдай максимально длинную законченную главу, но никогда не завершай ответ после заголовка. Верни обычный текст строго в формате:\\nCHAPTER_TITLE: название главы\\nCHAPTER_TEXT:\\nполный текст главы несколькими содержательными абзацами.";
   }
   const completionResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -636,7 +636,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
     body: JSON.stringify({
       model: "openrouter/free",
       messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
-      max_tokens: 7000,
+      max_tokens: 10000,
       temperature: 0.75,
       stream: false
     })
