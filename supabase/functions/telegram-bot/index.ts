@@ -931,11 +931,12 @@ if (command === "/bookresume") {
       if (!/^[0-9a-f-]{36}$/i.test(requestId)) { await sendText(token, chat.id, "Формат: /bookresume UUID"); return json({ ok: true }); }
       try {
         const request = await getOneShotRequestById(requestId, senderId);
-        if (!request || request.status !== "awaiting_free_provider") { await sendText(token, chat.id, "Запрос не ожидает восстановления квоты."); return json({ ok: true }); }
+        if (!request || !["preflight_blocked", "awaiting_free_provider"].includes(request.status)) { await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true }); }
         const report = await buildBookPreflightReport();
         const provider = report.providers.find((p: any) => p.provider === "OpenRouter");
         if (!provider || provider.preflight_ready !== true || provider.adapter_ready !== true) {
-          await sendText(token, chat.id, "⏸ Бесплатная квота пока не подтверждена. Прогресс сохранён."); return json({ ok: true });
+          const detail = provider?.note || "Бесплатная квота не подтверждена.";
+          await sendText(token, chat.id, "⏸ OpenRouter пока не прошёл проверку: " + detail + "\nПрогресс сохранён. Платные API не использовались."); return json({ ok: true });
         }
         await saveOneShotProgress(request.id, "generating", request.progress || {});
         EdgeRuntime.waitUntil(scheduleOneShotBookWorker(request.id, senderId));
