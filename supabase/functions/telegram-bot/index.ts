@@ -284,7 +284,7 @@ async function getOneShotRequestById(id: string, userId: string) {
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
   if (!base || !key) throw new Error("Supabase service credentials are unavailable");
   const url = base + "/rest/v1/bookcheef_one_shot_requests?id=eq." + encodeURIComponent(id) +
-    "&telegram_user_id=eq." + encodeURIComponent(userId) + "&select=id,topic,status,progress";
+    "&telegram_user_id=eq." + encodeURIComponent(userId) + "&select=id,topic,status,progress,telegram_chat_id,postflight_report";
   const response = await fetch(url, { headers: { apikey: key, Authorization: "Bearer " + key } });
   if (!response.ok) throw new Error("Could not load request: HTTP " + response.status);
   const rows = await response.json();
@@ -380,7 +380,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
     };
   }
   if (Number(parsed.chapter_number) !== chapterNumber || !parsed.title ||
-      typeof parsed.content !== "string" || parsed.content.trim().length < 3000) {
+      typeof parsed.content !== "string" || parsed.content.trim().length < 6500) {
     throw new Error("MODEL_OUTPUT_INVALID_CHAPTER");
   }
   const updatedChapters = chapters.concat([parsed]);
@@ -395,6 +395,101 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
       updated_at: new Date().toISOString()
     }
   };
+}
+
+async function saveOneShotPostflight(id: string, status: string, progress: Record<string, unknown>, report: Record<string, unknown>) {
+  const rawBase = Deno.env.get("SUPABASE_URL") || "";
+  const base = rawBase.endsWith("/") ? rawBase.slice(0, -1) : rawBase;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/bookcheef_one_shot_requests?id=eq." + encodeURIComponent(id), {
+    method: "PATCH",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ status, progress, postflight_report: report, updated_at: new Date().toISOString() })
+  });
+  if (!response.ok) throw new Error("Could not save postflight report: HTTP " + response.status);
+  const rows = await response.json();
+  if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Postflight save was not confirmed");
+  return rows[0];
+}
+
+async function scheduleOneShotBookWorker(requestId: string, userId: string) {
+  const rawBase = Deno.env.get("SUPABASE_URL") || "";
+  const base = rawBase.endsWith("/") ? rawBase.slice(0, -1) : rawBase;
+  const secret = Deno.env.get("TELEGRAM_INTERNAL_SECRET") || "";
+  if (!base || !secret) throw new Error("Worker internal credentials are unavailable");
+  const response = await fetch(base + "/functions/v1/telegram-bot", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-telegram-internal-secret": secret },
+    body: JSON.stringify({ action: "book_worker", request_id: requestId, user_id: userId })
+  });
+  if (!response.ok) throw new Error("Could not schedule next book worker: HTTP " + response.status);
+}
+
+async function runOneShotBookWorker(requestId: string, userId: string) {
+  const request = await getOneShotRequestById(requestId, userId);
+  if (!request || !["awaiting_free_provider", "generating"].includes(request.status)) return;
+  const progress = request.progress && typeof request.progress === "object" ? request.progress : {};
+  const steps = Number(progress.worker_step_count || 0);
+  if (steps >= 20) {
+    await saveOneShotProgress(request.id, "failed", { ...progress, worker_error: "MAX_WORKER_STEPS_REACHED" });
+    await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id, "⚠️ Достигнут предел автоматических шагов. Прогресс сохранён.");
+    return;
+  }
+  try {
+    const result = await generateOneFreeBookStep(request.topic, progress);
+    const nextProgress = { ...result.progress, worker_step_count: steps + 1, worker_updated_at: new Date().toISOString() };
+    if (result.complete) {
+      const chapters = Array.isArray(nextProgress.chapters) ? nextProgress.chapters : [];
+      const fullText = chapters.map((c: any) => String(c.content || "")).join("\n\n");
+      const words = fullText.trim() ? fullText.trim().split(/\s+/).length : 0;
+      const expected = Number(nextProgress.outline?.chapter_count || 0);
+      const report = {
+        completed_at: new Date().toISOString(),
+        expected_chapters: expected,
+        actual_chapters: chapters.length,
+        total_words: words,
+        total_characters: fullText.length,
+        chapters: chapters.map((c: any) => ({
+          number: c.chapter_number, title: String(c.title || "").slice(0, 180),
+          words: String(c.content || "").trim().split(/\s+/).filter(Boolean).length,
+          characters: String(c.content || "").length
+        })),
+        publication: "not_published",
+        illustrations: "not_generated",
+        verdict: chapters.length === expected && words >= 9000
+          ? "draft_complete_requires_editorial_review"
+          : "draft_complete_but_below_target_requires_expansion"
+      };
+      await saveOneShotPostflight(request.id, "editing", nextProgress, report);
+      await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id,
+        "📘 Черновик книги завершён.\nГлав: " + chapters.length + "/" + expected +
+        "\nСлов: " + words + "\nПроверка: " + report.verdict +
+        "\nИллюстрации ещё не созданы. Автопубликации не было. Отчёт сохранён.");
+      return;
+    }
+    const saved = await saveOneShotProgress(request.id, "generating", nextProgress);
+    const message = result.generated === "outline"
+      ? "📑 План готов: " + result.progress.outline.chapter_count + " глав. Генерация продолжится автоматически."
+      : "✍️ Создана глава " + result.chapter_number + "/" + result.progress.outline.chapter_count + ". Контрольная точка сохранена.";
+    await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id, message);
+    EdgeRuntime.waitUntil((async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await scheduleOneShotBookWorker(saved.id, userId);
+    })());
+  } catch (error) {
+    const message = String(error);
+    if (message.includes("FREE_QUOTA_BLOCKED")) {
+      const latest = await getOneShotRequestById(requestId, userId);
+      if (latest) await saveOneShotProgress(latest.id, "awaiting_free_provider", latest.progress || {});
+      await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id,
+        "⏸ Бесплатная квота закончилась. Автогенерация приостановлена, прогресс сохранён. Платные API не использовались. После обновления квоты: /bookresume " + requestId);
+      return;
+    }
+    await saveOneShotProgress(request.id, "failed", { ...progress, worker_error: message.slice(0, 500) });
+    await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id,
+      "❌ Генерация остановлена: " + message.slice(0, 250) + ". Контрольная точка сохранена.");
+  }
 }
 
 
@@ -488,6 +583,14 @@ Deno.serve(async (req: Request) => {
       const delivered = results.filter((x) => x.ok).length;
       return json({ ok: delivered > 0, delivered, total: results.length, results }, delivered > 0 ? 200 : 502);
     }
+
+    if (update.action === "book_worker") {
+      const requestId = String(update.request_id || "");
+      const userId = String(update.user_id || "");
+      if (!/^[0-9a-f-]{36}$/i.test(requestId) || !/^\\d{5,20}$/.test(userId)) return json({ error: "Invalid worker payload" }, 400);
+      EdgeRuntime.waitUntil(runOneShotBookWorker(requestId, userId));
+      return json({ ok: true, action: "book_worker_accepted" }, 202);
+    }
     const text = String(update.text ?? "").trim();
     const photo = String(update.photo_url ?? "").trim();
     if (!text && !photo) return json({ error: "text or photo_url is required" }, 400);
@@ -578,18 +681,41 @@ Deno.serve(async (req: Request) => {
           "📊 ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ BOOKCHEEF\\n\\n" +
           lines.join("\\n") +
           "\\n\\n🛡 Режим: только бесплатные тарифы; платные запросы запрещены." +
-          (saved.status === "awaiting_free_provider" ? "\\n✅ OpenRouter Free Router прошёл проверку. Для запуска следующего шага используй /bookstep " + saved.id : "\\n⏸ Генерация заблокирована: бесплатная квота не подтверждена.") +
+          (saved.status === "awaiting_free_provider" ? "\\n✅ OpenRouter Free Router прошёл проверку. Автоматическая генерация запущена. ID: " + saved.id : "\\n⏸ Генерация заблокирована: бесплатная квота не подтверждена.") +
           "\\n\\nЗапрос сохранён: " + saved.id +
           "\\nТема: " + topic.slice(0, 500) +
           "\\nСтатус: " + saved.status
         );
-        return json({ ok: true, command: "book", request_id: saved.id, status: saved.status, generation_started: false });
+        if (saved.status === "awaiting_free_provider") EdgeRuntime.waitUntil(scheduleOneShotBookWorker(saved.id, senderId));
+        return json({ ok: true, command: "book", request_id: saved.id, status: saved.status, generation_started: saved.status === "awaiting_free_provider" });
       } catch (error) {
         await sendText(token, chat.id, "❌ Не удалось сохранить запрос книги: " + String(error).slice(0, 350));
         return json({ ok: false, command: "book", error: String(error).slice(0, 350) }, 502);
       }
     }
 
+
+    if (command === "/bookresume") {
+      if (!adminIds.has(senderId)) { await sendText(token, chat.id, "Продолжать книги может только администратор."); return json({ ok: true }); }
+      const requestId = text.split(/\\s+/)[1] || "";
+      if (!/^[0-9a-f-]{36}$/i.test(requestId)) { await sendText(token, chat.id, "Формат: /bookresume UUID"); return json({ ok: true }); }
+      try {
+        const request = await getOneShotRequestById(requestId, senderId);
+        if (!request || request.status !== "awaiting_free_provider") { await sendText(token, chat.id, "Запрос не ожидает восстановления квоты."); return json({ ok: true }); }
+        const report = await buildBookPreflightReport();
+        const provider = report.providers.find((p: any) => p.provider === "OpenRouter");
+        if (!provider || provider.preflight_ready !== true || provider.adapter_ready !== true) {
+          await sendText(token, chat.id, "⏸ Бесплатная квота пока не подтверждена. Прогресс сохранён."); return json({ ok: true });
+        }
+        await saveOneShotProgress(request.id, "generating", request.progress || {});
+        EdgeRuntime.waitUntil(scheduleOneShotBookWorker(request.id, senderId));
+        await sendText(token, chat.id, "▶️ Продолжаю книгу с сохранённой контрольной точки.");
+        return json({ ok: true, command: "bookresume_started" });
+      } catch (error) {
+        await sendText(token, chat.id, "Ошибка возобновления: " + String(error).slice(0, 250));
+        return json({ ok: false }, 502);
+      }
+    }
     if (command === "/bookstep") {
       if (!adminIds.has(senderId)) {
         await sendText(token, chat.id, "Запуск шага книги доступен только администратору.");
@@ -851,6 +977,7 @@ Deno.serve(async (req: Request) => {
             { command: "book", description: "Создать запрос на новую книгу" },
             { command: "bookstatus", description: "Статус последней книги" },
             { command: "bookstep", description: "Создать следующий шаг книги" },
+            { command: "bookresume", description: "Продолжить книгу после квоты" },
             { command: "genstatus", description: "Состояние генератора книг" },
             { command: "genstart", description: "Запустить генерацию книг" },
             { command: "genstop", description: "Остановить генерацию книг" },
