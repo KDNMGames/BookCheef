@@ -587,7 +587,7 @@ Deno.serve(async (req: Request) => {
     if (update.action === "book_worker") {
       const requestId = String(update.request_id || "");
       const userId = String(update.user_id || "");
-      if (!/^[0-9a-f-]{36}$/i.test(requestId) || !/^\\d{5,20}$/.test(userId)) return json({ error: "Invalid worker payload" }, 400);
+      if (!/^[0-9a-f-]{36}$/i.test(requestId) || !/^\d{5,20}$/.test(userId)) return json({ error: "Invalid worker payload" }, 400);
       EdgeRuntime.waitUntil(runOneShotBookWorker(requestId, userId));
       return json({ ok: true, action: "book_worker_accepted" }, 202);
     }
@@ -660,7 +660,7 @@ Deno.serve(async (req: Request) => {
       }
       const topic = text.replace(/^\/book(?:@\w+)?\s*/i, "").trim();
       if (topic.length < 3) {
-        await sendText(token, chat.id, "Укажи тему или ТЗ книги.\\nФормат: /book <тема и пожелания>\\n\\nЦель — около 2 часов чтения, с обложкой и иллюстрациями.");
+        await sendText(token, chat.id, "Укажи тему или ТЗ книги.\nФормат: /book <тема и пожелания>\n\nЦель — около 2 часов чтения, с обложкой и иллюстрациями.");
         return json({ ok: true, command: "book_usage" });
       }
       if (topic.length > 2000) {
@@ -678,13 +678,13 @@ Deno.serve(async (req: Request) => {
           return mark + " " + p.provider + ": " + p.status + "; квота: " + quota;
         });
         await sendText(token, chat.id,
-          "📊 ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ BOOKCHEEF\\n\\n" +
-          lines.join("\\n") +
-          "\\n\\n🛡 Режим: только бесплатные тарифы; платные запросы запрещены." +
-          (saved.status === "awaiting_free_provider" ? "\\n✅ OpenRouter Free Router прошёл проверку. Автоматическая генерация запущена. ID: " + saved.id : "\\n⏸ Генерация заблокирована: бесплатная квота не подтверждена.") +
-          "\\n\\nЗапрос сохранён: " + saved.id +
-          "\\nТема: " + topic.slice(0, 500) +
-          "\\nСтатус: " + saved.status
+          "📊 ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ BOOKCHEEF\n\n" +
+          lines.join("\n") +
+          "\n\n🛡 Режим: только бесплатные тарифы; платные запросы запрещены." +
+          (saved.status === "awaiting_free_provider" ? "\n✅ OpenRouter Free Router прошёл проверку. Автоматическая генерация запущена. ID: " + saved.id : "\n⏸ Генерация заблокирована: бесплатная квота не подтверждена.") +
+          "\n\nЗапрос сохранён: " + saved.id +
+          "\nТема: " + topic.slice(0, 500) +
+          "\nСтатус: " + saved.status
         );
         if (saved.status === "awaiting_free_provider") EdgeRuntime.waitUntil(scheduleOneShotBookWorker(saved.id, senderId));
         return json({ ok: true, command: "book", request_id: saved.id, status: saved.status, generation_started: saved.status === "awaiting_free_provider" });
@@ -697,7 +697,7 @@ Deno.serve(async (req: Request) => {
 
     if (command === "/bookresume") {
       if (!adminIds.has(senderId)) { await sendText(token, chat.id, "Продолжать книги может только администратор."); return json({ ok: true }); }
-      const requestId = text.split(/\\s+/)[1] || "";
+      const requestId = text.split(/\s+/)[1] || "";
       if (!/^[0-9a-f-]{36}$/i.test(requestId)) { await sendText(token, chat.id, "Формат: /bookresume UUID"); return json({ ok: true }); }
       try {
         const request = await getOneShotRequestById(requestId, senderId);
