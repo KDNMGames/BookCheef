@@ -609,19 +609,17 @@ function parseModelJsonObject(content: string): any {
 }
 
 async function generateOneFreeBookStep(topic: string, progress: Record<string, any>) {
-  const apiKey = Deno.env.get("OPENROUTER_API_KEY") || "";
-  if (!apiKey) throw new Error("FREE_QUOTA_BLOCKED: API key missing");
-  const keyResponse = await fetch("https://openrouter.ai/api/v1/key", {
-    headers: { Authorization: "Bearer " + apiKey }
-  });
-  if (!keyResponse.ok) throw new Error("FREE_QUOTA_BLOCKED: account check failed");
-  const keyPayload = await keyResponse.json();
-  const account = keyPayload.data || keyPayload;
-  const daily = account.free_model_daily_requests || {};
-  const remaining = Number(daily.remaining);
-  if (account.is_free_tier !== true || !Number.isFinite(remaining) || remaining < 1) {
-    throw new Error("FREE_QUOTA_BLOCKED: free tier or remaining quota not confirmed");
+  const geminiStatus = await checkGeminiFreeAccess();
+  let selectedProvider:any = null;
+  if (geminiStatus.preflight_ready === true && geminiStatus.adapter_ready === true) {
+    selectedProvider = { provider:"Google Gemini", apiKey:Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || "" };
+  } else {
+    const openRouterStatus = await checkOpenRouterFreeAccess();
+    if (openRouterStatus.preflight_ready === true && openRouterStatus.adapter_ready === true) {
+      selectedProvider = { provider:"OpenRouter", apiKey:Deno.env.get("OPENROUTER_API_KEY") || "" };
+    }
   }
+  if (!selectedProvider) throw new Error("FREE_QUOTA_BLOCKED: Gemini is not confirmed free/available and OpenRouter free quota is not available");
 
   const outlineMode = !progress.outline;
   const chapters = Array.isArray(progress.chapters) ? progress.chapters : [];
@@ -640,37 +638,35 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
       ". План: " + JSON.stringify(progress.outline) +
       ". Напиши полноценную самостоятельную главу художественной прозы на русском языке объёмом 1600–2200 слов. Не выдавай краткое содержание, план, вступительную фразу или только заголовок. Сразу после меток обязательно напиши полный текст главы: не менее 1200 слов; раскрывай события, сцены, детали и причинно-следственные связи. Если не помещается весь целевой объём, выдай максимально длинную законченную главу, но никогда не завершай ответ после заголовка. Верни обычный текст строго в формате:\\nCHAPTER_TITLE: название главы\\nCHAPTER_TEXT:\\nполный текст главы несколькими содержательными абзацами.";
   }
-  const completionResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + apiKey,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
-      "X-OpenRouter-Title": "BookCheef Free Book Generator"
-    },
-    body: JSON.stringify({
-      model: "openrouter/free",
-      messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
-      max_tokens: 10000,
-      temperature: 0.75,
-      stream: false
-    })
-  });
-  if (!completionResponse.ok) {
-    if (completionResponse.status === 402 || completionResponse.status === 429) {
-      throw new Error("FREE_QUOTA_BLOCKED: HTTP " + completionResponse.status);
+  let content = "";
+  let finishReason = "unknown";
+  let model = "unknown";
+  const usedProvider = selectedProvider.provider;
+  if (selectedProvider.provider === "Google Gemini") {
+    const generated = await generateGeminiText(selectedProvider.apiKey, systemPrompt, userPrompt);
+    content = generated.content;
+    finishReason = generated.finishReason;
+    model = generated.model;
+  } else {
+    const apiKey = selectedProvider.apiKey;
+    const completionResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method:"POST",
+      headers:{Authorization:"Bearer " + apiKey,"Content-Type":"application/json","HTTP-Referer":"https://kdnmgames.github.io/BookCheef/","X-OpenRouter-Title":"BookCheef Free Book Generator"},
+      body:JSON.stringify({model:"openrouter/free",messages:[{role:"system",content:systemPrompt},{role:"user",content:userPrompt}],max_tokens:10000,temperature:0.75,stream:false})
+    });
+    if (!completionResponse.ok) {
+      if (completionResponse.status === 402 || completionResponse.status === 429) throw new Error("FREE_QUOTA_BLOCKED: OpenRouter HTTP " + completionResponse.status);
+      throw new Error("OpenRouter error: HTTP " + completionResponse.status);
     }
-    throw new Error("OpenRouter error: HTTP " + completionResponse.status);
+    const completion = await completionResponse.json();
+    const firstChoice = Array.isArray(completion.choices) ? completion.choices[0] : null;
+    const message = firstChoice?.message && typeof firstChoice.message === "object" ? firstChoice.message : {};
+    const rawContent = message.content;
+    content = typeof rawContent === "string" ? rawContent : Array.isArray(rawContent)
+      ? rawContent.map((part:any)=>typeof part === "string" ? part : (typeof part?.text === "string" ? part.text : "")).filter(Boolean).join("\n") : "";
+    finishReason = String(firstChoice?.finish_reason || "unknown");
+    model = String(completion.model || "unknown");
   }
-  const completion = await completionResponse.json();
-  const firstChoice = Array.isArray(completion.choices) ? completion.choices[0] : null;
-  const message = firstChoice && firstChoice.message && typeof firstChoice.message === "object" ? firstChoice.message : {};
-  const rawContent = message.content;
-  const content = typeof rawContent === "string"
-    ? rawContent
-    : Array.isArray(rawContent)
-      ? rawContent.map((part: any) => typeof part === "string" ? part : (typeof part?.text === "string" ? part.text : "")).filter(Boolean).join("\\n")
-      : "";
   if (!content.trim()) {
     const finishReason = String(firstChoice?.finish_reason || "unknown");
     const model = String(completion.model || "unknown");
@@ -692,8 +688,8 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
       parsed = outlineMode ? parsePlainTextOutline(content) : parsePlainTextChapter(content, chapterNumber, String(progress.outline?.chapters?.[chapterNumber - 1]?.title || ""));
     }
   } catch (error) {
-    const finishReason = String(completion.choices?.[0]?.finish_reason || "unknown");
-    throw new Error("MODEL_OUTPUT_PARSE_FAILED: " + String(error).slice(0, 160) + "; finish_reason=" + finishReason);
+    const diagnosticFinishReason = finishReason;
+    throw new Error("MODEL_OUTPUT_PARSE_FAILED: " + String(error).slice(0, 160) + "; finish_reason=" + diagnosticFinishReason + "; provider=" + usedProvider + "; model=" + model);
   }
 
   if (outlineMode) {
