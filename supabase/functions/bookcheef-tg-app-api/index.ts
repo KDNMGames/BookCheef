@@ -115,7 +115,7 @@ Deno.serve(async (req: Request) => {
       const base = env("SUPABASE_URL").replace(/\/$/, "");
       const response = await fetch(base + "/functions/v1/telegram-bot", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-telegram-internal-secret": internalSecret },
+        headers: { "Content-Type": "application/json", "apikey": env("SUPABASE_SERVICE_ROLE_KEY"), "Authorization": "Bearer " + env("SUPABASE_SERVICE_ROLE_KEY"), "x-telegram-internal-secret": internalSecret },
         body: JSON.stringify({ action: "create_book_request", topic, user_id: userId, chat_id: userId }),
       });
       const result = await response.json().catch(() => ({}));
