@@ -56,7 +56,76 @@ async function sendBookDraftDocument(token: string, chatId: number | string, fil
   return payload;
 }
 
-function validateAndAssembleOneShotDraft(topic: string, progress: Record<string, any>) {
+
+function openverseQueryFromPrompt(value: unknown) {
+  return String(value || "").replace(/https?:\/\/\S+/g, " ").replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ").trim().split(" ").slice(0, 12).join(" ").slice(0, 180);
+}
+async function findAndStoreOpenverseImage(query: string, requestId: string, assetKey: string) {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !serviceKey || !query) return null;
+  try {
+    const api = "https://api.openverse.org/v1/images/?q=" + encodeURIComponent(query) + "&license_type=commercial&license=cc0%2Cpdm%2Cby%2Cby-sa&filter_dead=true&page_size=5";
+    const searchResponse = await fetch(api, { headers: { "Accept": "application/json", "User-Agent": "BookCheef/1.0 (book illustration sourcing)" } });
+    if (!searchResponse.ok) return null;
+    const payload = await searchResponse.json();
+    const results = Array.isArray(payload.results) ? payload.results : [];
+    for (const item of results.slice(0, 5)) {
+      const license = String(item.license || "").toLowerCase();
+      if (!["cc0", "pdm", "by", "by-sa"].includes(license)) continue;
+      const sourceUrl = String(item.foreign_landing_url || "");
+      const imageUrl = String(item.url || "");
+      let parsed: URL;
+      try { parsed = new URL(imageUrl); } catch { continue; }
+      if (parsed.protocol !== "https:") continue;
+      try {
+        const imageResponse = await fetch(imageUrl, { headers: { "Accept": "image/avif,image/webp,image/png,image/jpeg,image/gif" } });
+        if (!imageResponse.ok) continue;
+        const mime = (imageResponse.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+        const extensions: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
+        const ext = extensions[mime];
+        if (!ext || Number(imageResponse.headers.get("content-length") || 0) > 8 * 1024 * 1024) continue;
+        const bytes = new Uint8Array(await imageResponse.arrayBuffer());
+        if (!bytes.length || bytes.length > 8 * 1024 * 1024) continue;
+        const safeKey = assetKey.replace(/[^a-z0-9_-]/gi, "_").slice(0, 48);
+        const path = "one-shot/" + requestId + "/" + safeKey + "." + ext;
+        const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+        const upload = await fetch(base + "/storage/v1/object/gallery/" + encodedPath, {
+          method: "POST",
+          headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey, "Content-Type": mime, "x-upsert": "true" },
+          body: bytes
+        });
+        if (!upload.ok) continue;
+        return {
+          key: assetKey, query, public_url: base + "/storage/v1/object/public/gallery/" + encodedPath,
+          source_url: sourceUrl, original_image_url: imageUrl, provider: "Openverse",
+          title: String(item.title || ""), creator: String(item.creator || ""), creator_url: String(item.creator_url || ""),
+          attribution: String(item.attribution || ""), license, license_version: String(item.license_version || ""),
+          license_url: String(item.license_url || ("https://creativecommons.org/licenses/" + license + "/" + String(item.license_version || "4.0") + "/")),
+          stored_at: new Date().toISOString(), mime_type: mime, bytes: bytes.length
+        };
+      } catch (_error) { continue; }
+    }
+  } catch (error) { console.warn("Openverse asset fallback failed", String(error).slice(0, 200)); }
+  return null;
+}
+async function acquireBookAssets(requestId: string, progress: Record<string, any>) {
+  const outline = progress.outline || {};
+  const assets: any[] = [];
+  const coverQuery = openverseQueryFromPrompt(outline.cover_prompt || outline.title);
+  const cover = await findAndStoreOpenverseImage(coverQuery, requestId, "cover");
+  if (cover) assets.push({ ...cover, role: "cover" });
+  const prompts = Array.isArray(outline.illustration_prompts) ? outline.illustration_prompts.slice(0, 4) : [];
+  for (let i = 0; i < prompts.length; i++) {
+    const query = openverseQueryFromPrompt(prompts[i]);
+    const found = await findAndStoreOpenverseImage(query, requestId, "chapter-" + (i + 1));
+    if (found) assets.push({ ...found, role: "chapter_illustration", chapter_number: i + 1 });
+  }
+  return assets;
+}
+
+function validateAndAssembleOneShotDraft(topic: string, progress: Record<string, any>, assets: any[] = []) {
   const outline = progress.outline || {};
   const chapters = Array.isArray(progress.chapters) ? progress.chapters : [];
   const issues: string[] = [];
@@ -97,14 +166,14 @@ function validateAndAssembleOneShotDraft(topic: string, progress: Record<string,
     "",
     String(outline.synopsis || "").trim(),
     "",
-    ...chapters.map((chapter: any, index: number) => "## Глава " + (index + 1) + ". " + String(chapter.title || "").trim() + "\n\n" + String(chapter.content || "").trim())
+    ...chapters.map((chapter: any, index: number) => { const illustration = assets.find((asset: any) => asset.role === "chapter_illustration" && Number(asset.chapter_number) === index + 1); return "## Глава " + (index + 1) + ". " + String(chapter.title || "").trim() + "\n\n" + (illustration ? "![" + String(chapter.title || "Иллюстрация") + "](" + illustration.public_url + ")\n\n" : "") + String(chapter.content || "").trim(); })
   ].join("\n\n").trim();
 
   const book = {
     title,
     category: String(outline.genre || "Художественная литература"),
     description: String(outline.synopsis || ""),
-    cover_url: "",
+    cover_url: String(assets.find((asset: any) => asset.role === "cover")?.public_url || ""),
     buy_url: "",
     views: 0,
     author: "BookCheef — оригинальная история",
@@ -122,7 +191,7 @@ function validateAndAssembleOneShotDraft(topic: string, progress: Record<string,
     reader_questions: []
   };
 
-  const importBlockers = issues.concat(["cover_missing", "illustrations_not_generated"]);
+  const missingAssets = [assets.some((asset: any) => asset.role === "cover") ? null : "cover", assets.some((asset: any) => asset.role === "chapter_illustration") ? null : "chapter_illustrations"].filter(Boolean);
   const report = {
     checked_at: new Date().toISOString(),
     expected_chapters: expected,
@@ -132,7 +201,8 @@ function validateAndAssembleOneShotDraft(topic: string, progress: Record<string,
     chapter_reports: chapterReports,
     issues,
     warnings,
-    missing_assets: ["cover", "chapter_illustrations"],
+    missing_assets: missingAssets,
+    assets: assets.map((asset: any) => ({ role: asset.role, chapter_number: asset.chapter_number ?? null, provider: asset.provider, source_url: asset.source_url, creator: asset.creator, creator_url: asset.creator_url, attribution: asset.attribution, license: asset.license, license_version: asset.license_version, license_url: asset.license_url, public_url: asset.public_url })),
     can_import: false,
     can_publish: false,
     verdict: issues.length ? "draft_has_structural_errors" : (totalWords < 18000 ? "draft_below_two_hour_target" : "draft_structurally_valid_but_assets_missing")
@@ -145,10 +215,11 @@ function validateAndAssembleOneShotDraft(topic: string, progress: Record<string,
       book,
       assets_brief: {
         cover_prompt: String(outline.cover_prompt || ""),
-        illustration_prompts: Array.isArray(outline.illustration_prompts) ? outline.illustration_prompts : []
+        illustration_prompts: Array.isArray(outline.illustration_prompts) ? outline.illustration_prompts : [],
+        acquired_assets: assets
       },
       validation: report,
-      publication: { status: "not_published", reason: "Cover and chapter illustrations are not attached; manual review required." }
+      publication: { status: "not_published", reason: "Manual editorial and rights review required before import or publication." }
     },
     report
   };
@@ -550,13 +621,18 @@ async function runOneShotBookWorker(requestId: string, userId: string) {
     const result = await generateOneFreeBookStep(request.topic, progress);
     const nextProgress = { ...result.progress, worker_step_count: steps + 1, worker_updated_at: new Date().toISOString() };
     if (result.complete) {
-      const assembled = validateAndAssembleOneShotDraft(request.topic, nextProgress);
+      const assets = await acquireBookAssets(request.id, nextProgress);
+      nextProgress.bookcheef_assets = assets;
+      const assembled = validateAndAssembleOneShotDraft(request.topic, nextProgress, assets);
       const chapters = Array.isArray(nextProgress.chapters) ? nextProgress.chapters : [];
       const report = {
         ...assembled.report,
         completed_at: new Date().toISOString(),
         publication: "not_published",
-        illustrations: "not_generated"
+        illustrations: assets.length ? "openverse_fallback_assets_attached" : "not_found_or_download_failed",
+        asset_count: assets.length,
+        cover_attached: assets.some((asset: any) => asset.role === "cover"),
+        chapter_illustrations_attached: assets.filter((asset: any) => asset.role === "chapter_illustration").length
       };
       nextProgress.bookcheef_import_draft = assembled.bookcheef_import_draft;
       await saveOneShotPostflight(request.id, "editing", nextProgress, report);
@@ -564,7 +640,7 @@ async function runOneShotBookWorker(requestId: string, userId: string) {
         "📘 Черновик книги собран.\nГлав: " + chapters.length + "/" + report.expected_chapters +
         "\nСлов: " + report.total_words + "\nПроверка: " + report.verdict +
         "\nОшибок структуры: " + report.issues.length + "; предупреждений: " + report.warnings.length +
-        "\nОбложка и иллюстрации ещё не созданы. Публикации не было. Для выгрузки: /bookexport " + request.id);
+        "\nИзображений сохранено: " + assets.length + " (резервный поиск Openverse). Публикации не было. Для выгрузки: /bookexport " + request.id);
       return;
     }
     const saved = await saveOneShotProgress(request.id, "generating", nextProgress);
