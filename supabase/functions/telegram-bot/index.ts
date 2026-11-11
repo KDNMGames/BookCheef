@@ -187,11 +187,68 @@ async function getLatestOneShotBookRequest(userId: string) {
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] ?? null : null;
 }
-function buildBookPreflightReport() {
+async function checkOpenRouterFreeAccess() {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") || "";
+  if (!apiKey) return {
+    provider: "OpenRouter", credential_configured: false, quota: "unknown",
+    free_tier_verified: false, preflight_ready: false, adapter_ready: false,
+    status: "key_not_configured", note: "API-ключ не настроен."
+  };
+  try {
+    // Read-only account metadata request: does not invoke a model or consume inference quota.
+    const keyResponse = await fetch("https://openrouter.ai/api/v1/key", {
+      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" }
+    });
+    if (!keyResponse.ok) {
+      return { provider: "OpenRouter", credential_configured: true, quota: "unknown",
+        free_tier_verified: false, preflight_ready: false, adapter_ready: false,
+        status: keyResponse.status === 401 ? "invalid_key" : "account_check_failed",
+        note: "Проверка ключа завершилась HTTP " + keyResponse.status + "." };
+    }
+    const keyPayload = await keyResponse.json();
+    const data = keyPayload?.data ?? keyPayload;
+    const daily = data?.free_model_daily_requests;
+    const isFreeTier = data?.is_free_tier === true;
+    const remaining = Number(daily?.remaining);
+    const limit = Number(daily?.limit);
+    const usage = Number(daily?.used);
+    // Only allow the no-purchase free tier. If tier is not explicitly confirmed,
+    // the provider remains blocked to avoid accidentally using a paid account.
+    const freeTierVerified = isFreeTier && Number.isFinite(remaining) && Number.isFinite(limit);
+    let freeModelCount = 0;
+    if (freeTierVerified && remaining > 0) {
+      const modelsResponse = await fetch("https://openrouter.ai/api/v1/models", {
+        headers: { Authorization: "Bearer " + apiKey }
+      });
+      if (modelsResponse.ok) {
+        const modelPayload = await modelsResponse.json();
+        freeModelCount = Array.isArray(modelPayload?.data)
+          ? modelPayload.data.filter((m: any) => typeof m.id === "string" && m.id.endsWith(":free")).length
+          : 0;
+      }
+    }
+    const ready = freeTierVerified && remaining > 0 && freeModelCount > 0;
+    return {
+      provider: "OpenRouter", credential_configured: true,
+      quota: freeTierVerified ? { used, limit, remaining } : "unknown",
+      free_tier_verified: freeTierVerified, preflight_ready: ready, adapter_ready: false,
+      status: ready ? "free_quota_available" : (freeTierVerified && remaining <= 0 ? "free_daily_quota_exhausted" : "free_tier_not_verified"),
+      free_model_count: freeModelCount,
+      note: ready
+        ? "Бесплатный тариф подтверждён; найден список моделей :free. Сам генератор ещё не подключён."
+        : "Безопасный бесплатный режим не подтверждён или дневной лимит исчерпан. Генерация заблокирована."
+    };
+  } catch (_error) {
+    return { provider: "OpenRouter", credential_configured: true, quota: "unknown",
+      free_tier_verified: false, preflight_ready: false, adapter_ready: false,
+      status: "account_check_failed", note: "Не удалось проверить аккаунт; провайдер заблокирован." };
+  }
+}
+
+async function buildBookPreflightReport() {
   const candidates = [
     { name: "Google Gemini", env: "GEMINI_API_KEY" },
     { name: "Google AI Studio", env: "GOOGLE_API_KEY" },
-    { name: "OpenRouter", env: "OPENROUTER_API_KEY" },
     { name: "Groq", env: "GROQ_API_KEY" },
     { name: "DeepSeek", env: "DEEPSEEK_API_KEY" },
     { name: "Mistral", env: "MISTRAL_API_KEY" },
@@ -199,20 +256,26 @@ function buildBookPreflightReport() {
     { name: "Together AI", env: "TOGETHER_API_KEY" },
     { name: "Cursor", env: "CURSOR_API_KEY" },
   ];
+  const providers = candidates.map((p) => ({
+    provider: p.name,
+    credential_configured: Boolean(Deno.env.get(p.env)),
+    quota: "unknown",
+    free_tier_verified: false,
+    preflight_ready: false,
+    adapter_ready: false,
+    status: Deno.env.get(p.env) ? "key_present_quota_not_verified" : "key_not_configured",
+    note: "Проверка квоты и подтверждение бесплатного тарифа ещё не реализованы."
+  }));
+  providers.push(await checkOpenRouterFreeAccess());
+  const safeReady = providers.some((p: any) => p.preflight_ready === true);
   return {
     checked_at: new Date().toISOString(),
     policy: "free_only_no_billing_no_paid_fallback",
-    providers: candidates.map((p) => ({
-      provider: p.name,
-      credential_configured: Boolean(Deno.env.get(p.env)),
-      quota: "unknown",
-      free_tier_verified: false,
-      adapter_ready: false,
-      status: Deno.env.get(p.env) ? "key_present_but_not_verified" : "key_not_configured",
-      note: "Автоматическая проверка квоты и безопасный бесплатный адаптер ещё не подключены."
-    })),
+    providers,
     generation_started: false,
-    blocking_reason: "Нет подключённых и проверенных бесплатных адаптеров. Запрос сохранён; платные маршруты не запускались."
+    blocking_reason: safeReady
+      ? "Бесплатная квота обнаружена, но генераторный адаптер ещё не подключён. Запрос не запускается."
+      : "Нет провайдеров с подтверждённой доступной бесплатной квотой. Запрос сохранён; платные маршруты не запускались."
   };
 }
 
@@ -383,11 +446,14 @@ Deno.serve(async (req: Request) => {
         return json({ ok: true, command: "book_too_long" });
       }
       try {
-        const report = buildBookPreflightReport();
+        const report = await buildBookPreflightReport();
         const saved = await createOneShotBookRequest(topic, senderId, String(chat.id), report);
         const lines = report.providers.map((p: any) => {
           const mark = p.credential_configured ? "🔑" : "—";
-          return mark + " " + p.provider + ": " + p.status + "; квота: неизвестна";
+          const quota = typeof p.quota === "object" && p.quota
+            ? String(p.quota.remaining) + "/" + String(p.quota.limit) + " запросов сегодня"
+            : "неизвестна";
+          return mark + " " + p.provider + ": " + p.status + "; квота: " + quota;
         });
         await sendText(token, chat.id,
           "📊 ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ BOOKCHEEF\\n\\n" +
