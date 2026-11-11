@@ -759,6 +759,21 @@ Deno.serve(async (req: Request) => {
       return json({ ok: delivered > 0, delivered, total: results.length, results }, delivered > 0 ? 200 : 502);
     }
 
+    if (update.action === "create_book_request") {
+      const topic = String(update.topic || "").trim();
+      const userId = String(update.user_id || "");
+      const chatId = String(update.chat_id || userId);
+      if (!adminIds.has(userId)) return json({ error: "admin_only" }, 403);
+      if (topic.length < 3 || topic.length > 2000 || !/^\\d{5,20}$/.test(userId)) return json({ error: "invalid_topic_or_user" }, 400);
+      const report = await buildBookPreflightReport();
+      const saved = await createOneShotBookRequest(topic, userId, chatId, report);
+      const ready = saved.status === "awaiting_free_provider";
+      await sendText(token, chatId, ready
+        ? "📚 Запрос книги принят. Бесплатный маршрут подтверждён; генерация запускается.\\nID: " + saved.id + "\\nТема: " + topic.slice(0, 500)
+        : "⏸ Запрос сохранён, но генерация пока заблокирована: бесплатная квота не подтверждена. Платные API не использовались.\\nID: " + saved.id);
+      if (ready) EdgeRuntime.waitUntil(scheduleOneShotBookWorker(saved.id, userId));
+      return json({ ok: true, request_id: saved.id, status: saved.status, generation_started: ready });
+    }
     if (update.action === "book_worker") {
       const requestId = String(update.request_id || "");
       const userId = String(update.user_id || "");
@@ -827,6 +842,20 @@ Deno.serve(async (req: Request) => {
 
   if (chat.type === "private" && text.startsWith("/")) {
     const command = text.split(/\s+/)[0].split("@")[0].toLowerCase();
+
+    if (command === "/start") {
+      const appUrl = "https://kdnmgames.github.io/BookCheef/tg-app/";
+      try {
+        await telegram("setChatMenuButton", token, { chat_id: chat.id, menu_button: { type: "web_app", text: "BookCheef", web_app: { url: appUrl } } });
+      } catch (error) { console.warn("Mini App menu button setup failed", String(error)); }
+      await telegram("sendMessage", token, {
+        chat_id: chat.id,
+        text: "📚 <b>BookCheef — панель управления</b>\\n\\nОткрой приложение, чтобы видеть состояние генератора, текущие этапы книг, лимиты и управлять созданием.\\n\\nВ каждом этапе показываем, что именно выполняется и что будет дальше.",
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [[{ text: "📊 Открыть BookCheef App", web_app: { url: appUrl } }]] }
+      });
+      return json({ ok: true, command: "start", mini_app: true });
+    }
 
     if (command === "/book") {
       if (!adminIds.has(senderId)) {
