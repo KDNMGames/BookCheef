@@ -764,7 +764,7 @@ Deno.serve(async (req: Request) => {
       const userId = String(update.user_id || "");
       const chatId = String(update.chat_id || userId);
       if (!adminIds.has(userId)) return json({ error: "admin_only" }, 403);
-      if (topic.length < 3 || topic.length > 2000 || !/^\\d{5,20}$/.test(userId)) return json({ error: "invalid_topic_or_user" }, 400);
+      if (topic.length < 3 || topic.length > 2000 || !/^\d{5,20}$/.test(userId)) return json({ error: "invalid_topic_or_user" }, 400);
       const report = await buildBookPreflightReport();
       const saved = await createOneShotBookRequest(topic, userId, chatId, report);
       const ready = saved.status === "awaiting_free_provider";
