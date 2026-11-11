@@ -102,7 +102,7 @@ async function findAndStoreOpenverseImage(query: string, requestId: string, asse
           source_url: sourceUrl, original_image_url: imageUrl, provider: "Openverse",
           title: String(item.title || ""), creator: String(item.creator || ""), creator_url: String(item.creator_url || ""),
           attribution: String(item.attribution || ""), license, license_version: String(item.license_version || ""),
-          license_url: String(item.license_url || ("https://creativecommons.org/licenses/" + license + "/" + String(item.license_version || "4.0") + "/")),
+          license_url: String(item.license_url || (license === "cc0" ? "https://creativecommons.org/publicdomain/zero/1.0/" : license === "pdm" ? "https://creativecommons.org/publicdomain/mark/1.0/" : "https://creativecommons.org/licenses/" + license + "/" + String(item.license_version || "4.0") + "/")),
           stored_at: new Date().toISOString(), mime_type: mime, bytes: bytes.length
         };
       } catch (_error) { continue; }
