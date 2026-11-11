@@ -493,6 +493,39 @@ async function saveOneShotProgress(id: string, status: string, progress: Record<
   return rows[0];
 }
 
+function parseModelJsonObject(content: string): any {
+  const text = content.trim()
+    .replace(/^\x60\x60\x60(?:json)?\s*/i, "")
+    .replace(/\s*\x60\x60\x60\s*$/i, "")
+    .trim();
+  try { return JSON.parse(text); } catch { /* Try extracting a JSON object below. */ }
+
+  let start = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === "}" && depth > 0) {
+      depth--;
+      if (depth === 0 && start >= 0) {
+        try { return JSON.parse(text.slice(start, i + 1)); } catch { start = -1; }
+      }
+    }
+  }
+  throw new Error("MODEL_OUTPUT_INVALID_JSON: response was not a complete JSON object");
+}
+
 async function generateOneFreeBookStep(topic: string, progress: Record<string, any>) {
   const apiKey = Deno.env.get("OPENROUTER_API_KEY") || "";
   if (!apiKey) throw new Error("FREE_QUOTA_BLOCKED: API key missing");
@@ -551,9 +584,13 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
   const content = completion.choices && completion.choices[0] && completion.choices[0].message
     ? completion.choices[0].message.content : "";
   if (typeof content !== "string" || !content.trim()) throw new Error("MODEL_OUTPUT_EMPTY");
-  const cleaned = content.trim().replace(/^\x60\x60\x60(?:json)?\s*/i, "").replace(/\s*\x60\x60\x60$/, "");
   let parsed: any;
-  try { parsed = JSON.parse(cleaned); } catch { throw new Error("MODEL_OUTPUT_INVALID_JSON"); }
+  try {
+    parsed = parseModelJsonObject(content);
+  } catch (error) {
+    const finishReason = String(completion.choices?.[0]?.finish_reason || "unknown");
+    throw new Error("MODEL_OUTPUT_INVALID_JSON: " + String(error).slice(0, 140) + "; finish_reason=" + finishReason);
+  }
 
   if (outlineMode) {
     if (!String(parsed.title || "").trim() || !Array.isArray(parsed.chapters) || !Number.isInteger(Number(parsed.chapter_count)) || Number(parsed.chapter_count) < 8 || Number(parsed.chapter_count) > 12 || parsed.chapters.length !== Number(parsed.chapter_count) || !parsed.synopsis || !parsed.cover_prompt || !Array.isArray(parsed.illustration_prompts)) {
@@ -974,16 +1011,23 @@ if (command === "/bookresume") {
       if (!/^[0-9a-f-]{36}$/i.test(requestId)) { await sendText(token, chat.id, "Формат: /bookresume UUID"); return json({ ok: true }); }
       try {
         const request = await getOneShotRequestById(requestId, senderId);
-        if (!request || !["preflight_blocked", "awaiting_free_provider"].includes(request.status)) { await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true }); }
+        const recoverMalformedJson = Boolean(request && request.status === "failed" &&
+          String(request.progress?.worker_error || "").includes("MODEL_OUTPUT_INVALID_JSON"));
+        if (!request || (!["preflight_blocked", "awaiting_free_provider"].includes(request.status) && !recoverMalformedJson)) {
+          await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true });
+        }
         const report = await buildBookPreflightReport();
         const provider = report.providers.find((p: any) => p.provider === "OpenRouter");
         if (!provider || provider.preflight_ready !== true || provider.adapter_ready !== true) {
           const detail = provider?.note || "Бесплатная квота не подтверждена.";
           await sendText(token, chat.id, "⏸ OpenRouter пока не прошёл проверку: " + detail + "\nПрогресс сохранён. Платные API не использовались."); return json({ ok: true });
         }
-        await saveOneShotProgress(request.id, "generating", request.progress || {});
+        const resumeProgress = { ...(request.progress || {}), worker_error: null };
+        await saveOneShotProgress(request.id, "generating", resumeProgress);
         EdgeRuntime.waitUntil(scheduleOneShotBookWorker(request.id, senderId));
-        await sendText(token, chat.id, "▶️ Продолжаю книгу с сохранённой контрольной точки.");
+        await sendText(token, chat.id, recoverMalformedJson
+          ? "🔧 Формат ответа модели исправлен. Повторяю неудачный этап с сохранённой контрольной точки; уже готовые главы не затрагиваются."
+          : "▶️ Продолжаю книгу с сохранённой контрольной точки.");
         return json({ ok: true, command: "bookresume_started" });
       } catch (error) {
         await sendText(token, chat.id, "Ошибка возобновления: " + String(error).slice(0, 250));
