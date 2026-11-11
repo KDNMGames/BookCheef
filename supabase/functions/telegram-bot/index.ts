@@ -595,7 +595,7 @@ Deno.serve(async (req: Request) => {
         await sendText(token, chat.id, "Запуск шага книги доступен только администратору.");
         return json({ ok: true, command: "bookstep_denied" });
       }
-      const requestId = text.split(/\\s+/)[1] || "";
+      const requestId = text.split(/\s+/)[1] || "";
       if (!/^[0-9a-f-]{36}$/i.test(requestId)) {
         await sendText(token, chat.id, "Формат: /bookstep UUID_ЗАПРОСА. Сначала создай запрос командой /book.");
         return json({ ok: true, command: "bookstep_usage" });
