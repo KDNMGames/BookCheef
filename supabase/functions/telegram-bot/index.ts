@@ -527,39 +527,29 @@ function parsePlainTextOutline(source: string): any {
 }
 
 function parsePlainTextChapter(source: string, chapterNumber: number, fallbackTitle = ""): any {
-  const normalized = String(source || "").replace(/\\r/g, "").trim();
-  let title = readTaggedBlock(normalized, "CHAPTER_TITLE", ["CHAPTER_TEXT", "CONTENT"]);
-  let content = readTaggedBlock(normalized, "CHAPTER_TEXT", []) || readTaggedBlock(normalized, "CONTENT", "");
-
-  // Accept natural prose when the model ignores one or both formatting labels.
-  if (!title) {
-    const firstLine = normalized.split("\\n").map(line => line.trim()).find(Boolean) || "";
-    const heading = firstLine.replace(/^#{1,6}\\s*/, "").replace(/^\\*\\*(.*?)\\*\\*$/, "$1").trim();
-    if (heading && heading.length <= 180 && !/^CHAPTER_TEXT\\s*:/i.test(heading)) title = heading;
-  }
-  if (!content) {
+  const normalized = String(source || "").replace(/\r/g, "").trim();
+  const titleMatch = normalized.match(/^CHAPTER_TITLE\s*:\s*([^\n]*)/im);
+  let title = (titleMatch?.[1] || fallbackTitle || ("Глава " + chapterNumber)).trim();
+  const textMatch = normalized.match(/^CHAPTER_TEXT\s*:\s*/im) || normalized.match(/^CONTENT\s*:\s*/im);
+  let content = "";
+  if (textMatch && typeof textMatch.index === "number") {
+    content = normalized.slice(textMatch.index + textMatch[0].length).trim();
+  } else {
     content = normalized
-      .replace(/^CHAPTER_TITLE\\s*:\\s*[^\\n]*(?:\\n|$)/im, "")
-      .replace(/^CHAPTER_TEXT\\s*:\\s*/im, "")
-      .replace(/^CONTENT\\s*:\\s*/im, "")
+      .replace(/^CHAPTER_TITLE\s*:\s*[^\n]*(?:\n|$)/im, "")
+      .replace(/^CHAPTER_[A-Z_]*\s*:?\s*/im, "")
+      .replace(/^CONTENT\s*:\s*/im, "")
       .trim();
-    const firstLine = content.split("\\n").map(line => line.trim()).find(Boolean) || "";
-    if (!title && firstLine && firstLine.length <= 180) {
-      title = firstLine.replace(/^#{1,6}\\s*/, "").replace(/^\\*\\*(.*?)\\*\\*$/, "$1").trim();
-      content = content.slice(content.indexOf(firstLine) + firstLine.length).trim();
-    } else if (title && firstLine.replace(/^#{1,6}\\s*/, "").trim() === title) {
-      content = content.slice(content.indexOf(firstLine) + firstLine.length).trim();
-    }
   }
-  title = (title || fallbackTitle || ("Глава " + chapterNumber)).replace(/^#{1,6}\\s*/, "").replace(/^\\*\\*(.*?)\\*\\*$/, "$1").trim();
-  content = content.replace(/^\\s*[-—:]\\s*/, "").trim();
-  const word_count = content.split(/\\s+/).filter(Boolean).length;
+  content = content.replace(/^\s*[-—:]\s*/, "").trim();
+  const word_count = content.split(/\s+/).filter(Boolean).length;
   if (word_count < 100) {
-    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE: words=" + word_count + "; chars=" + content.length + "; title=" + (title ? "yes" : "no") + "; response_chars=" + normalized.length + "; preview=" + normalized.slice(0, 120).replace(/\\s+/g, " "));
+    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE: words=" + word_count + "; chars=" + content.length +
+      "; title=" + (title ? "yes" : "no") + "; response_chars=" + normalized.length +
+      "; finish_hint=" + normalized.slice(-100).replace(/\s+/g, " "));
   }
   return { chapter_number: chapterNumber, title, content, word_count };
 }
-
 function parseModelJsonObject(content: string): any {
   const text = content.trim()
     .replace(/^\x60\x60\x60(?:json)?\s*/i, "")
