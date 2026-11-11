@@ -111,3 +111,15 @@
 - Admin command /bookexport <request_id> sends the JSON draft as a Telegram document.
 - Export is explicitly a draft: cover_url is empty, illustration prompts are metadata only, and can_import / can_publish remain false until assets and editorial review are completed.
 - No live generation was run during implementation; no inference quota was consumed. The export command and validator are deployed but still require a real completed book for end-to-end verification.
+
+
+## Этап 4 — резервное получение иллюстраций по коммерческим лицензиям
+
+- После завершения текста функция пытается получить обложку и до четырёх иллюстраций глав через Openverse API.
+- Поиск ограничен коммерчески допустимыми лицензиями и дополнительно фильтрует типы лицензий до CC0, Public Domain Mark, CC BY и CC BY-SA. Некоммерческие лицензии не допускаются.
+- Каждый найденный файл скачивается только по HTTPS, проверяется по MIME-типу и ограничивается 8 MiB, затем сохраняется в публичный Supabase Storage bucket `gallery`.
+- В JSON сохраняются публичный URL, исходная страница, URL оригинала, автор/ссылка на автора, лицензия, версия и URL лицензии. Для CC BY/CC BY-SA сохраняются сведения об атрибуции; они не удаляются.
+- Обложка записывается в `book.cover_url`, а найденные иллюстрации вставляются в текст соответствующих глав. Если изображения не найдены или загрузка не удалась, это отражается в `validation.missing_assets`; книга остаётся черновиком.
+- Важно: Openverse — резервный источник, а не генератор изображений. На текущем этапе отдельный бесплатный API-генератор изображений не подключён, поэтому резервный поиск используется напрямую. Платные источники и платные тарифы не вызываются.
+- Ограничение: наличие лицензии на изображение не гарантирует наличие релизов на изображённых людях, товарных знаках и объектах третьих лиц. Такие изображения требуют отдельной проверки; автоматическая публикация запрещена.
+- Реальные запросы на генерацию книг не запускались в ходе этого этапа. Поэтому успешная выдача и сохранение изображения через Telegram ещё не подтверждены end-to-end.
