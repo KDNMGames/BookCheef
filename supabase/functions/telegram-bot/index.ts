@@ -43,6 +43,116 @@ function isObviousSpam(text: string) {
   return shortener || scam || repeatedPromo;
 }
 
+
+async function sendBookDraftDocument(token: string, chatId: number | string, filename: string, jsonText: string) {
+  const form = new FormData();
+  form.append("chat_id", String(chatId));
+  form.append("caption", "Черновик BookCheef. Это НЕ опубликованная книга; обложка и иллюстрации пока не приложены.");
+  form.append("document", new Blob([jsonText], { type: "application/json" }), filename);
+  const response = await fetch("https://api.telegram.org/bot" + token + "/sendDocument", { method: "POST", body: form });
+  if (!response.ok) throw new Error("Telegram document upload failed: HTTP " + response.status);
+  const payload = await response.json();
+  if (payload.ok !== true) throw new Error("Telegram document upload was not confirmed");
+  return payload;
+}
+
+function validateAndAssembleOneShotDraft(topic: string, progress: Record<string, any>) {
+  const outline = progress.outline || {};
+  const chapters = Array.isArray(progress.chapters) ? progress.chapters : [];
+  const issues: string[] = [];
+  const warnings: string[] = [];
+  const expected = Number(outline.chapter_count || 0);
+  if (!String(outline.title || "").trim()) issues.push("missing_title");
+  if (!String(outline.synopsis || "").trim()) issues.push("missing_synopsis");
+  if (!String(outline.genre || "").trim()) issues.push("missing_genre");
+  if (!String(outline.audience || "").trim()) issues.push("missing_audience");
+  if (!Array.isArray(outline.characters) || outline.characters.length < 1) warnings.push("characters_not_defined");
+  if (expected < 8 || expected > 12) issues.push("chapter_count_out_of_range");
+  if (chapters.length !== expected) issues.push("chapter_count_mismatch");
+
+  const seen = new Set<string>();
+  const chapterReports = chapters.map((chapter: any, index: number) => {
+    const content = typeof chapter.content === "string" ? chapter.content.trim() : "";
+    const words = content ? content.split(/\s+/).filter(Boolean).length : 0;
+    const normalized = content.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    const duplicate = normalized.length > 100 && seen.has(normalized);
+    if (normalized.length > 100) seen.add(normalized);
+    if (Number(chapter.chapter_number) !== index + 1) issues.push("chapter_number_invalid_" + (index + 1));
+    if (!String(chapter.title || "").trim()) issues.push("chapter_title_missing_" + (index + 1));
+    if (words < 1200) warnings.push("chapter_short_" + (index + 1) + "_" + words + "_words");
+    if (duplicate) issues.push("duplicate_chapter_" + (index + 1));
+    if (/\[(?:здесь|вставить|иллюстрация|текст)[^\]]*\]|\b(?:TODO|TBD|PLACEHOLDER)\b/i.test(content)) {
+      issues.push("placeholder_text_" + (index + 1));
+    }
+    return { number: index + 1, title: String(chapter.title || ""), words, characters: content.length };
+  });
+
+  const totalWords = chapterReports.reduce((sum, item) => sum + item.words, 0);
+  if (totalWords < 18000) warnings.push("below_two_hour_target_" + totalWords + "_words");
+  if (totalWords > 30000) warnings.push("above_expected_length_" + totalWords + "_words");
+
+  const title = String(outline.title || "").trim();
+  const bookContent = [
+    "# " + title,
+    "",
+    String(outline.synopsis || "").trim(),
+    "",
+    ...chapters.map((chapter: any, index: number) => "## Глава " + (index + 1) + ". " + String(chapter.title || "").trim() + "\n\n" + String(chapter.content || "").trim())
+  ].join("\n\n").trim();
+
+  const book = {
+    title,
+    category: String(outline.genre || "Художественная литература"),
+    description: String(outline.synopsis || ""),
+    cover_url: "",
+    buy_url: "",
+    views: 0,
+    author: "BookCheef — оригинальная история",
+    age: String(outline.audience || "12+"),
+    genre: String(outline.genre || ""),
+    series: "",
+    is_free: true,
+    price: null,
+    book_content: bookContent,
+    book_file_url: null,
+    book_file_name: null,
+    book_file_type: "text/markdown",
+    interactive_content: null,
+    is_interactive: false,
+    reader_questions: []
+  };
+
+  const importBlockers = issues.concat(["cover_missing", "illustrations_not_generated"]);
+  const report = {
+    checked_at: new Date().toISOString(),
+    expected_chapters: expected,
+    actual_chapters: chapters.length,
+    total_words: totalWords,
+    total_characters: bookContent.length,
+    chapter_reports: chapterReports,
+    issues,
+    warnings,
+    missing_assets: ["cover", "chapter_illustrations"],
+    can_import: false,
+    can_publish: false,
+    verdict: issues.length ? "draft_has_structural_errors" : (totalWords < 18000 ? "draft_below_two_hour_target" : "draft_structurally_valid_but_assets_missing")
+  };
+
+  return {
+    bookcheef_import_draft: {
+      format: "bookcheef-book-v1",
+      generated_from_request: topic,
+      book,
+      assets_brief: {
+        cover_prompt: String(outline.cover_prompt || ""),
+        illustration_prompts: Array.isArray(outline.illustration_prompts) ? outline.illustration_prompts : []
+      },
+      validation: report,
+      publication: { status: "not_published", reason: "Cover and chapter illustrations are not attached; manual review required." }
+    },
+    report
+  };
+}
 async function sendText(token: string, chatId: number | string, text: string) {
   return await telegram("sendMessage", token, {
     chat_id: chatId,
@@ -274,7 +384,7 @@ async function buildBookPreflightReport() {
     providers,
     generation_started: false,
     blocking_reason: safeReady
-      ? "Бесплатная квота обнаружена, но генераторный адаптер ещё не подключён. Запрос не запускается."
+      ? "Подтверждён бесплатный маршрут OpenRouter Free Router; генерация может быть запущена."
       : "Нет провайдеров с подтверждённой доступной бесплатной квотой. Запрос сохранён; платные маршруты не запускались."
   };
 }
@@ -333,7 +443,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
   let userPrompt = "";
   if (outlineMode) {
     userPrompt = "Создай подробный план книги по теме: " + topic +
-      ". Целевая длительность чтения около 2 часов. Определи аудиторию, жанр, аннотацию, героев и структуру из 8–12 глав. Верни JSON: audience, genre, synopsis, characters (массив), chapter_count (число 8–12), chapters (массив объектов number/title/summary), cover_prompt, illustration_prompts (3–6 описаний).";
+      ". Целевая длительность чтения около 2 часов. Определи аудиторию, жанр, аннотацию, героев и структуру из 8–12 глав. Верни JSON: title (название книги), audience, genre, synopsis, characters (массив), chapter_count (число 8–12), chapters (массив объектов number/title/summary), cover_prompt, illustration_prompts (3–6 описаний).";
   } else {
     userPrompt = "Напиши главу " + chapterNumber + " из " + chapterCount + " книги на тему: " + topic +
       ". План: " + JSON.stringify(progress.outline) +
@@ -370,7 +480,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
   try { parsed = JSON.parse(cleaned); } catch { throw new Error("MODEL_OUTPUT_INVALID_JSON"); }
 
   if (outlineMode) {
-    if (!Array.isArray(parsed.chapters) || parsed.chapters.length < 8 || !parsed.synopsis || !parsed.cover_prompt) {
+    if (!String(parsed.title || "").trim() || !Array.isArray(parsed.chapters) || !Number.isInteger(Number(parsed.chapter_count)) || Number(parsed.chapter_count) < 8 || Number(parsed.chapter_count) > 12 || parsed.chapters.length !== Number(parsed.chapter_count) || !parsed.synopsis || !parsed.cover_prompt || !Array.isArray(parsed.illustration_prompts)) {
       throw new Error("MODEL_OUTPUT_INVALID_OUTLINE");
     }
     return {
@@ -440,32 +550,21 @@ async function runOneShotBookWorker(requestId: string, userId: string) {
     const result = await generateOneFreeBookStep(request.topic, progress);
     const nextProgress = { ...result.progress, worker_step_count: steps + 1, worker_updated_at: new Date().toISOString() };
     if (result.complete) {
+      const assembled = validateAndAssembleOneShotDraft(request.topic, nextProgress);
       const chapters = Array.isArray(nextProgress.chapters) ? nextProgress.chapters : [];
-      const fullText = chapters.map((c: any) => String(c.content || "")).join("\n\n");
-      const words = fullText.trim() ? fullText.trim().split(/\s+/).length : 0;
-      const expected = Number(nextProgress.outline?.chapter_count || 0);
       const report = {
+        ...assembled.report,
         completed_at: new Date().toISOString(),
-        expected_chapters: expected,
-        actual_chapters: chapters.length,
-        total_words: words,
-        total_characters: fullText.length,
-        chapters: chapters.map((c: any) => ({
-          number: c.chapter_number, title: String(c.title || "").slice(0, 180),
-          words: String(c.content || "").trim().split(/\s+/).filter(Boolean).length,
-          characters: String(c.content || "").length
-        })),
         publication: "not_published",
-        illustrations: "not_generated",
-        verdict: chapters.length === expected && words >= 18000
-          ? "draft_complete_approximately_two_hours_requires_editorial_review"
-          : "draft_complete_below_two_hour_target_requires_expansion"
+        illustrations: "not_generated"
       };
+      nextProgress.bookcheef_import_draft = assembled.bookcheef_import_draft;
       await saveOneShotPostflight(request.id, "editing", nextProgress, report);
       await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id,
-        "📘 Черновик книги завершён.\nГлав: " + chapters.length + "/" + expected +
-        "\nСлов: " + words + "\nПроверка: " + report.verdict +
-        "\nИллюстрации ещё не созданы. Автопубликации не было. Отчёт сохранён.");
+        "📘 Черновик книги собран.\nГлав: " + chapters.length + "/" + report.expected_chapters +
+        "\nСлов: " + report.total_words + "\nПроверка: " + report.verdict +
+        "\nОшибок структуры: " + report.issues.length + "; предупреждений: " + report.warnings.length +
+        "\nОбложка и иллюстрации ещё не созданы. Публикации не было. Для выгрузки: /bookexport " + request.id);
       return;
     }
     const saved = await saveOneShotProgress(request.id, "generating", nextProgress);
@@ -695,7 +794,33 @@ Deno.serve(async (req: Request) => {
     }
 
 
-    if (command === "/bookresume") {
+    
+    if (command === "/bookexport") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Экспортировать черновики может только администратор.");
+        return json({ ok: true, command: "bookexport_denied" });
+      }
+      const requestId = text.split(/\s+/)[1] || "";
+      if (!/^[0-9a-f-]{36}$/i.test(requestId)) {
+        await sendText(token, chat.id, "Формат: /bookexport UUID_ЗАПРОСА");
+        return json({ ok: true, command: "bookexport_usage" });
+      }
+      try {
+        const request = await getOneShotRequestById(requestId, senderId);
+        const draft = request && request.progress && request.progress.bookcheef_import_draft;
+        if (!draft) {
+          await sendText(token, chat.id, "У этого запроса пока нет собранного черновика для экспорта.");
+          return json({ ok: true, command: "bookexport_not_ready" });
+        }
+        const filename = "bookcheef-draft-" + requestId + ".json";
+        await sendBookDraftDocument(token, chat.id, filename, JSON.stringify(draft, null, 2));
+        return json({ ok: true, command: "bookexport", request_id: requestId });
+      } catch (error) {
+        await sendText(token, chat.id, "Не удалось экспортировать черновик: " + String(error).slice(0, 300));
+        return json({ ok: false, command: "bookexport" }, 502);
+      }
+    }
+if (command === "/bookresume") {
       if (!adminIds.has(senderId)) { await sendText(token, chat.id, "Продолжать книги может только администратор."); return json({ ok: true }); }
       const requestId = text.split(/\s+/)[1] || "";
       if (!/^[0-9a-f-]{36}$/i.test(requestId)) { await sendText(token, chat.id, "Формат: /bookresume UUID"); return json({ ok: true }); }
@@ -978,6 +1103,7 @@ Deno.serve(async (req: Request) => {
             { command: "bookstatus", description: "Статус последней книги" },
             { command: "bookstep", description: "Создать следующий шаг книги" },
             { command: "bookresume", description: "Продолжить книгу после квоты" },
+            { command: "bookexport", description: "Выгрузить JSON черновика" },
             { command: "genstatus", description: "Состояние генератора книг" },
             { command: "genstart", description: "Запустить генерацию книг" },
             { command: "genstop", description: "Остановить генерацию книг" },
