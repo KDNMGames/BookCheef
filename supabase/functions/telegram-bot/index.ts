@@ -1102,9 +1102,13 @@ if (command === "/bookresume") {
       if (!/^[0-9a-f-]{36}$/i.test(requestId)) { await sendText(token, chat.id, "Формат: /bookresume UUID"); return json({ ok: true }); }
       try {
         const request = await getOneShotRequestById(requestId, senderId);
-        const recoverMalformedJson = Boolean(request && request.status === "failed" &&
-          /(MODEL_OUTPUT_INVALID_JSON|MODEL_OUTPUT_EMPTY|MODEL_OUTPUT_PARSE_FAILED)/.test(String(request.progress?.worker_error || "")));
-        if (!request || (!["preflight_blocked", "awaiting_free_provider"].includes(request.status) && !recoverMalformedJson)) {
+        const savedWorkerError = String(request?.progress?.worker_error || "");
+        const hasSavedOutline = Boolean(request?.progress?.outline && Array.isArray(request?.progress?.chapters));
+        const recoverMalformedJson = Boolean(request && request.status === "failed" && hasSavedOutline &&
+          /(MODEL_OUTPUT_INVALID_JSON|MODEL_OUTPUT_EMPTY|MODEL_OUTPUT_PARSE_FAILED)/.test(savedWorkerError));
+        const recoverObsoleteGeminiModel = Boolean(request && request.status === "failed" && hasSavedOutline &&
+          /Gemini error:\\s*HTTP 404/i.test(savedWorkerError));
+        if (!request || (!["preflight_blocked", "awaiting_free_provider"].includes(request.status) && !recoverMalformedJson && !recoverObsoleteGeminiModel)) {
           await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true });
         }
         const report = await buildBookPreflightReport();
@@ -1115,9 +1119,11 @@ if (command === "/bookresume") {
         const resumeProgress = { ...(request.progress || {}), worker_error: null };
         await saveOneShotProgress(request.id, "generating", resumeProgress);
         EdgeRuntime.waitUntil(scheduleOneShotBookWorker(request.id, senderId));
-        await sendText(token, chat.id, recoverMalformedJson
-          ? "🔧 Формат ответа модели исправлен. Повторяю неудачный этап с сохранённой контрольной точки; уже готовые главы не затрагиваются."
-          : "▶️ Продолжаю книгу с сохранённой контрольной точки.");
+        await sendText(token, chat.id, recoverObsoleteGeminiModel
+          ? "🔧 Устаревшая модель Gemini заменена. Возобновляю неудачный этап с сохранённой контрольной точки; уже готовые главы не затрагиваются."
+          : recoverMalformedJson
+            ? "🔧 Формат ответа модели исправлен. Повторяю неудачный этап с сохранённой контрольной точки; уже готовые главы не затрагиваются."
+            : "▶️ Продолжаю книгу с сохранённой контрольной точки.");
         return json({ ok: true, command: "bookresume_started" });
       } catch (error) {
         await sendText(token, chat.id, "Ошибка возобновления: " + String(error).slice(0, 250));
