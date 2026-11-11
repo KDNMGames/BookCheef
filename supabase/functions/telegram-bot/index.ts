@@ -170,7 +170,7 @@ async function createOneShotBookRequest(topic: string, userId: string, chatId: s
   const response = await fetch(base + "/rest/v1/bookcheef_one_shot_requests", {
     method: "POST",
     headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
-    body: JSON.stringify({ telegram_user_id: userId, telegram_chat_id: chatId, topic, status: "preflight_blocked", preflight_report: report })
+    body: JSON.stringify({ telegram_user_id: userId, telegram_chat_id: chatId, topic, status: report.providers.some((p: any) => p.provider === "OpenRouter" && p.preflight_ready && p.adapter_ready) ? "awaiting_free_provider" : "preflight_blocked", preflight_report: report })
   });
   if (!response.ok) throw new Error("Could not save book request: HTTP " + response.status + " " + (await response.text()).slice(0, 250));
   const rows = await response.json();
@@ -231,12 +231,12 @@ async function checkOpenRouterFreeAccess() {
     return {
       provider: "OpenRouter", credential_configured: true,
       quota: freeTierVerified ? { used, limit, remaining } : "unknown",
-      free_tier_verified: freeTierVerified, preflight_ready: ready, adapter_ready: false,
+      free_tier_verified: freeTierVerified, preflight_ready: ready, adapter_ready: true,
       status: ready ? "free_quota_available" : (freeTierVerified && remaining <= 0 ? "free_daily_quota_exhausted" : "free_tier_not_verified"),
       free_model_count: freeModelCount,
       note: ready
-        ? "Бесплатный тариф подтверждён; найден список моделей :free. Сам генератор ещё не подключён."
-        : "Безопасный бесплатный режим не подтверждён или дневной лимит исчерпан. Генерация заблокирована."
+        ? "Бесплатный тариф подтверждён; генераторный адаптер Free Router готов к пошаговой работе."
+        : "Бесплатный тариф не подтверждён или дневной лимит исчерпан. Генерация заблокирована."
     };
   } catch (_error) {
     return { provider: "OpenRouter", credential_configured: true, quota: "unknown",
@@ -278,6 +278,125 @@ async function buildBookPreflightReport() {
       : "Нет провайдеров с подтверждённой доступной бесплатной квотой. Запрос сохранён; платные маршруты не запускались."
   };
 }
+async function getOneShotRequestById(id: string, userId: string) {
+  const baseValue = Deno.env.get("SUPABASE_URL") || "";
+  const base = baseValue.endsWith("/") ? baseValue.slice(0, -1) : baseValue;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const url = base + "/rest/v1/bookcheef_one_shot_requests?id=eq." + encodeURIComponent(id) +
+    "&telegram_user_id=eq." + encodeURIComponent(userId) + "&select=id,topic,status,progress";
+  const response = await fetch(url, { headers: { apikey: key, Authorization: "Bearer " + key } });
+  if (!response.ok) throw new Error("Could not load request: HTTP " + response.status);
+  const rows = await response.json();
+  return Array.isArray(rows) ? rows[0] || null : null;
+}
+
+async function saveOneShotProgress(id: string, status: string, progress: Record<string, unknown>) {
+  const baseValue = Deno.env.get("SUPABASE_URL") || "";
+  const base = baseValue.endsWith("/") ? baseValue.slice(0, -1) : baseValue;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/bookcheef_one_shot_requests?id=eq." + encodeURIComponent(id), {
+    method: "PATCH",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ status: status, progress: progress, updated_at: new Date().toISOString() })
+  });
+  if (!response.ok) throw new Error("Could not save checkpoint: HTTP " + response.status);
+  const rows = await response.json();
+  if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Checkpoint save was not confirmed");
+  return rows[0];
+}
+
+async function generateOneFreeBookStep(topic: string, progress: Record<string, any>) {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") || "";
+  if (!apiKey) throw new Error("FREE_QUOTA_BLOCKED: API key missing");
+  const keyResponse = await fetch("https://openrouter.ai/api/v1/key", {
+    headers: { Authorization: "Bearer " + apiKey }
+  });
+  if (!keyResponse.ok) throw new Error("FREE_QUOTA_BLOCKED: account check failed");
+  const keyPayload = await keyResponse.json();
+  const account = keyPayload.data || keyPayload;
+  const daily = account.free_model_daily_requests || {};
+  const remaining = Number(daily.remaining);
+  if (account.is_free_tier !== true || !Number.isFinite(remaining) || remaining < 1) {
+    throw new Error("FREE_QUOTA_BLOCKED: free tier or remaining quota not confirmed");
+  }
+
+  const outlineMode = !progress.outline;
+  const chapters = Array.isArray(progress.chapters) ? progress.chapters : [];
+  const chapterNumber = chapters.length + 1;
+  const chapterCount = Number(progress.outline && progress.outline.chapter_count || 10);
+  if (!outlineMode && chapterNumber > chapterCount) {
+    return { complete: true, progress: progress };
+  }
+  const systemPrompt = "Ты профессиональный автор BookCheef. Пиши оригинальный полноценный литературный текст на русском языке. Не используй заглушки, пересказы вместо прозы и комментарии о процессе. Возвращай только JSON без Markdown.";
+  let userPrompt = "";
+  if (outlineMode) {
+    userPrompt = "Создай подробный план книги по теме: " + topic +
+      ". Целевая длительность чтения около 2 часов. Определи аудиторию, жанр, аннотацию, героев и структуру из 8–12 глав. Верни JSON: audience, genre, synopsis, characters (массив), chapter_count (число 8–12), chapters (массив объектов number/title/summary), cover_prompt, illustration_prompts (3–6 описаний).";
+  } else {
+    userPrompt = "Напиши главу " + chapterNumber + " из " + chapterCount + " книги на тему: " + topic +
+      ". План: " + JSON.stringify(progress.outline) +
+      ". Цель 1600–2200 слов, полноценная художественная проза, не пересказ. Верни JSON с полями chapter_number, title, content, word_count.";
+  }
+  const completionResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + apiKey,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://kdnmgames.github.io/BookCheef/",
+      "X-OpenRouter-Title": "BookCheef Free Book Generator"
+    },
+    body: JSON.stringify({
+      model: "openrouter/free",
+      messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
+      max_tokens: 7000,
+      temperature: 0.75,
+      stream: false
+    })
+  });
+  if (!completionResponse.ok) {
+    if (completionResponse.status === 402 || completionResponse.status === 429) {
+      throw new Error("FREE_QUOTA_BLOCKED: HTTP " + completionResponse.status);
+    }
+    throw new Error("OpenRouter error: HTTP " + completionResponse.status);
+  }
+  const completion = await completionResponse.json();
+  const content = completion.choices && completion.choices[0] && completion.choices[0].message
+    ? completion.choices[0].message.content : "";
+  if (typeof content !== "string" || !content.trim()) throw new Error("MODEL_OUTPUT_EMPTY");
+  const cleaned = content.trim().replace(/^\x60\x60\x60(?:json)?\s*/i, "").replace(/\s*\x60\x60\x60$/, "");
+  let parsed: any;
+  try { parsed = JSON.parse(cleaned); } catch { throw new Error("MODEL_OUTPUT_INVALID_JSON"); }
+
+  if (outlineMode) {
+    if (!Array.isArray(parsed.chapters) || parsed.chapters.length < 8 || !parsed.synopsis || !parsed.cover_prompt) {
+      throw new Error("MODEL_OUTPUT_INVALID_OUTLINE");
+    }
+    return {
+      complete: false,
+      generated: "outline",
+      progress: { outline: parsed, chapters: [], step: "chapter", updated_at: new Date().toISOString() }
+    };
+  }
+  if (Number(parsed.chapter_number) !== chapterNumber || !parsed.title ||
+      typeof parsed.content !== "string" || parsed.content.trim().length < 3000) {
+    throw new Error("MODEL_OUTPUT_INVALID_CHAPTER");
+  }
+  const updatedChapters = chapters.concat([parsed]);
+  return {
+    complete: false,
+    generated: "chapter",
+    chapter_number: chapterNumber,
+    progress: {
+      outline: progress.outline,
+      chapters: updatedChapters,
+      step: updatedChapters.length >= chapterCount ? "editorial_review" : "chapter",
+      updated_at: new Date().toISOString()
+    }
+  };
+}
+
 
 Deno.serve(async (req: Request) => {
   if (req.method === "GET") return json({ ok: true, service: "BookCheef Telegram bot" });
@@ -459,15 +578,62 @@ Deno.serve(async (req: Request) => {
           "📊 ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ BOOKCHEEF\\n\\n" +
           lines.join("\\n") +
           "\\n\\n🛡 Режим: только бесплатные тарифы; платные запросы запрещены." +
-          "\\n⏸ Генерация пока НЕ запущена: ни один бесплатный адаптер не прошёл проверку." +
+          (saved.status === "awaiting_free_provider" ? "\\n✅ OpenRouter Free Router прошёл проверку. Для запуска следующего шага используй /bookstep " + saved.id : "\\n⏸ Генерация заблокирована: бесплатная квота не подтверждена.") +
           "\\n\\nЗапрос сохранён: " + saved.id +
           "\\nТема: " + topic.slice(0, 500) +
-          "\\nСтатус: ожидание подключения бесплатных адаптеров."
+          "\\nСтатус: " + saved.status
         );
         return json({ ok: true, command: "book", request_id: saved.id, status: saved.status, generation_started: false });
       } catch (error) {
         await sendText(token, chat.id, "❌ Не удалось сохранить запрос книги: " + String(error).slice(0, 350));
         return json({ ok: false, command: "book", error: String(error).slice(0, 350) }, 502);
+      }
+    }
+
+    if (command === "/bookstep") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Запуск шага книги доступен только администратору.");
+        return json({ ok: true, command: "bookstep_denied" });
+      }
+      const requestId = text.split(/\\s+/)[1] || "";
+      if (!/^[0-9a-f-]{36}$/i.test(requestId)) {
+        await sendText(token, chat.id, "Формат: /bookstep UUID_ЗАПРОСА. Сначала создай запрос командой /book.");
+        return json({ ok: true, command: "bookstep_usage" });
+      }
+      try {
+        const request = await getOneShotRequestById(requestId, senderId);
+        if (!request) {
+          await sendText(token, chat.id, "Запрос не найден или принадлежит другому администратору.");
+          return json({ ok: true, command: "bookstep_not_found" });
+        }
+        if (request.status !== "awaiting_free_provider" && request.status !== "generating") {
+          await sendText(token, chat.id, "Запрос заблокирован. Статус: " + request.status + ". Повтори предварительную проверку позже.");
+          return json({ ok: true, command: "bookstep_blocked" });
+        }
+        await sendText(token, chat.id, "⏳ Запускаю один шаг через OpenRouter Free Router. Будет использована только бесплатная модель; платные маршруты не включены.");
+        const progress = request.progress && typeof request.progress === "object" ? request.progress : {};
+        const result = await generateOneFreeBookStep(request.topic, progress);
+        if (result.complete) {
+          await saveOneShotProgress(request.id, "editing", result.progress);
+          await sendText(token, chat.id, "📘 Главы книги подготовлены. Следующий этап — редактура и проверка. Публикации не было.");
+          return json({ ok: true, command: "bookstep", complete: true });
+        }
+        const saved = await saveOneShotProgress(request.id, "generating", result.progress);
+        const detail = result.generated === "outline"
+          ? "План книги готов (" + result.progress.outline.chapter_count + " глав)."
+          : "Сохранена глава " + result.chapter_number + " из " + result.progress.outline.chapter_count + ".";
+        await sendText(token, chat.id, "✅ " + detail + "\\nКонтрольная точка сохранена. Следующий шаг: /bookstep " + saved.id);
+        return json({ ok: true, command: "bookstep", generated: result.generated, status: saved.status });
+      } catch (error) {
+        const message = String(error);
+        if (message.indexOf("FREE_QUOTA_BLOCKED") >= 0) {
+          const latest = await getOneShotRequestById(requestId, senderId);
+          if (latest) await saveOneShotProgress(latest.id, "awaiting_free_provider", latest.progress || {});
+          await sendText(token, chat.id, "⏸ Бесплатная квота недоступна. Прогресс сохранён; платные API не запускались.");
+          return json({ ok: true, command: "bookstep_quota_blocked" });
+        }
+        await sendText(token, chat.id, "❌ Шаг не завершён: " + message.slice(0, 300) + "\\nКонтрольная точка сохранена без изменений.");
+        return json({ ok: false, command: "bookstep", error: message.slice(0, 300) }, 502);
       }
     }
     if (command === "/bookstatus") {
