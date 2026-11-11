@@ -668,16 +668,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
     model = String(completion.model || "unknown");
   }
   if (!content.trim()) {
-    const finishReason = String(firstChoice?.finish_reason || "unknown");
-    const model = String(completion.model || "unknown");
-    const messageKeys = Object.keys(message).slice(0, 12).join(",");
-    const refusal = typeof message.refusal === "string" ? message.refusal.slice(0, 100) : "";
-    const providerError = completion.error?.message ? String(completion.error.message).slice(0, 120) : "";
-    throw new Error("MODEL_OUTPUT_EMPTY: finish_reason=" + finishReason + "; model=" + model +
-      "; choices=" + (Array.isArray(completion.choices) ? completion.choices.length : 0) +
-      "; message_keys=" + (messageKeys || "none") +
-      (refusal ? "; refusal=" + refusal : "") +
-      (providerError ? "; provider_error=" + providerError : ""));
+    throw new Error("MODEL_OUTPUT_EMPTY: finish_reason=" + finishReason + "; model=" + model + "; provider=" + usedProvider);
   }
   let parsed: any;
   try {
@@ -1117,10 +1108,9 @@ if (command === "/bookresume") {
           await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true });
         }
         const report = await buildBookPreflightReport();
-        const provider = report.providers.find((p: any) => p.provider === "OpenRouter");
-        if (!provider || provider.preflight_ready !== true || provider.adapter_ready !== true) {
-          const detail = provider?.note || "Бесплатная квота не подтверждена.";
-          await sendText(token, chat.id, "⏸ OpenRouter пока не прошёл проверку: " + detail + "\nПрогресс сохранён. Платные API не использовались."); return json({ ok: true });
+        const provider = report.providers.find((p:any)=>p.preflight_ready === true && p.adapter_ready === true);
+        if (!provider) {
+          await sendText(token, chat.id, "⏸ Gemini и OpenRouter пока не прошли проверку бесплатного доступа. Прогресс сохранён. Платные API не использовались."); return json({ ok:true });
         }
         const resumeProgress = { ...(request.progress || {}), worker_error: null };
         await saveOneShotProgress(request.id, "generating", resumeProgress);
