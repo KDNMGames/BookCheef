@@ -1076,7 +1076,7 @@ if (command === "/bookresume") {
       try {
         const request = await getOneShotRequestById(requestId, senderId);
         const recoverMalformedJson = Boolean(request && request.status === "failed" &&
-          /(MODEL_OUTPUT_INVALID_JSON|MODEL_OUTPUT_EMPTY)/.test(String(request.progress?.worker_error || "")));
+          /(MODEL_OUTPUT_INVALID_JSON|MODEL_OUTPUT_EMPTY|MODEL_OUTPUT_PARSE_FAILED)/.test(String(request.progress?.worker_error || "")));
         if (!request || (!["preflight_blocked", "awaiting_free_provider"].includes(request.status) && !recoverMalformedJson)) {
           await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true });
         }
