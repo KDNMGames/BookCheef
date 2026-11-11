@@ -641,11 +641,49 @@ async function runOneShotBookWorker(requestId: string, userId: string) {
       };
       nextProgress.bookcheef_import_draft = assembled.bookcheef_import_draft;
       await saveOneShotPostflight(request.id, "editing", nextProgress, report);
-      await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id,
-        "📘 Черновик книги собран.\nГлав: " + chapters.length + "/" + report.expected_chapters +
-        "\nСлов: " + report.total_words + "\nПроверка: " + report.verdict +
-        "\nОшибок структуры: " + report.issues.length + "; предупреждений: " + report.warnings.length +
-        "\nИзображений сохранено: " + assets.length + " (резервный поиск Openverse). Публикации не было. Для выгрузки: /bookexport " + request.id);
+      const chapterLines = (report.chapter_reports || []).map((chapter: any) =>
+        "  " + chapter.number + ". " + String(chapter.title || "Без названия").slice(0, 90) + " — " + chapter.words + " слов"
+      );
+      const assetLines = [
+        "Обложка: " + (report.cover_attached ? "✅ сохранена" : "❌ не найдена"),
+        "Иллюстрации глав: " + report.chapter_illustrations_attached + "/" + Math.min(4, Array.isArray(nextProgress.outline?.illustration_prompts) ? nextProgress.outline.illustration_prompts.length : 0) + " сохранено"
+      ];
+      const warningLines = (report.warnings || []).slice(0, 8).map((item: string) => "⚠️ " + item);
+      const issueLines = (report.issues || []).slice(0, 8).map((item: string) => "❌ " + item);
+      const finalReport = [
+        "📚 ИТОГОВЫЙ ОТЧЁТ BOOKCHEEF",
+        "",
+        "Книга: «" + String(nextProgress.outline?.title || "Без названия") + "»",
+        "Жанр: " + String(nextProgress.outline?.genre || "не указан"),
+        "Возраст: " + String(nextProgress.outline?.audience || "не указан"),
+        "Описание: " + String(nextProgress.outline?.synopsis || "не создано").slice(0, 450),
+        "",
+        "📖 ТЕКСТ",
+        "Главы: " + chapters.length + "/" + report.expected_chapters,
+        ...chapterLines,
+        "Всего слов: " + report.total_words,
+        "Объём текста: " + report.total_characters + " символов",
+        "",
+        "🖼 ИЗОБРАЖЕНИЯ",
+        ...assetLines,
+        "Всего файлов изображений: " + assets.length,
+        "Источник: Openverse (лицензии для коммерческого использования CC0/PDM/CC BY/CC BY-SA)",
+        "",
+        "🔎 ПРОВЕРКА",
+        "Результат: " + report.verdict,
+        "Ошибок структуры: " + report.issues.length,
+        "Предупреждений: " + report.warnings.length,
+        ...issueLines,
+        ...warningLines,
+        "",
+        "💾 Сохранение: черновик и отчёт сохранены в Supabase.",
+        "🌐 Публикация: НЕ выполнялась.",
+        "Статус: " + "editing",
+        "Экспорт JSON: /bookexport " + request.id,
+        "ID запроса: " + request.id,
+        "Платные API: не использовались."
+      ].join("\n").slice(0, 3900);
+      await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id, finalReport);
       return;
     }
     const saved = await saveOneShotProgress(request.id, "generating", nextProgress);
