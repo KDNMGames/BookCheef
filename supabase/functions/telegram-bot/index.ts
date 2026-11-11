@@ -526,13 +526,38 @@ function parsePlainTextOutline(source: string): any {
   return { title, audience, genre, synopsis, characters, chapter_count, chapters, cover_prompt, illustration_prompts };
 }
 
-function parsePlainTextChapter(source: string, chapterNumber: number): any {
-  const title = readTaggedBlock(source, "CHAPTER_TITLE", ["CHAPTER_TEXT", "CONTENT"]);
-  const content = readTaggedBlock(source, "CHAPTER_TEXT", []) || readTaggedBlock(source, "CONTENT", []);
-  if (!title || content.trim().split(/\\s+/).filter(Boolean).length < 100) {
-    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE");
+function parsePlainTextChapter(source: string, chapterNumber: number, fallbackTitle = ""): any {
+  const normalized = String(source || "").replace(/\\r/g, "").trim();
+  let title = readTaggedBlock(normalized, "CHAPTER_TITLE", ["CHAPTER_TEXT", "CONTENT"]);
+  let content = readTaggedBlock(normalized, "CHAPTER_TEXT", []) || readTaggedBlock(normalized, "CONTENT", "");
+
+  // Accept natural prose when the model ignores one or both formatting labels.
+  if (!title) {
+    const firstLine = normalized.split("\\n").map(line => line.trim()).find(Boolean) || "";
+    const heading = firstLine.replace(/^#{1,6}\\s*/, "").replace(/^\\*\\*(.*?)\\*\\*$/, "$1").trim();
+    if (heading && heading.length <= 180 && !/^CHAPTER_TEXT\\s*:/i.test(heading)) title = heading;
   }
-  return { chapter_number: chapterNumber, title, content: content.trim(), word_count: content.trim().split(/\\s+/).filter(Boolean).length };
+  if (!content) {
+    content = normalized
+      .replace(/^CHAPTER_TITLE\\s*:\\s*[^\\n]*(?:\\n|$)/im, "")
+      .replace(/^CHAPTER_TEXT\\s*:\\s*/im, "")
+      .replace(/^CONTENT\\s*:\\s*/im, "")
+      .trim();
+    const firstLine = content.split("\\n").map(line => line.trim()).find(Boolean) || "";
+    if (!title && firstLine && firstLine.length <= 180) {
+      title = firstLine.replace(/^#{1,6}\\s*/, "").replace(/^\\*\\*(.*?)\\*\\*$/, "$1").trim();
+      content = content.slice(content.indexOf(firstLine) + firstLine.length).trim();
+    } else if (title && firstLine.replace(/^#{1,6}\\s*/, "").trim() === title) {
+      content = content.slice(content.indexOf(firstLine) + firstLine.length).trim();
+    }
+  }
+  title = (title || fallbackTitle || ("Глава " + chapterNumber)).replace(/^#{1,6}\\s*/, "").replace(/^\\*\\*(.*?)\\*\\*$/, "$1").trim();
+  content = content.replace(/^\\s*[-—:]\\s*/, "").trim();
+  const word_count = content.split(/\\s+/).filter(Boolean).length;
+  if (word_count < 100) {
+    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE: words=" + word_count + "; title=" + (title ? "yes" : "no"));
+  }
+  return { chapter_number: chapterNumber, title, content, word_count };
 }
 
 function parseModelJsonObject(content: string): any {
@@ -649,7 +674,7 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
     if (trimmed.startsWith("{") || trimmed.startsWith("```")) {
       parsed = parseModelJsonObject(content);
     } else {
-      parsed = outlineMode ? parsePlainTextOutline(content) : parsePlainTextChapter(content, chapterNumber);
+      parsed = outlineMode ? parsePlainTextOutline(content) : parsePlainTextChapter(content, chapterNumber, String(progress.outline?.chapters?.[chapterNumber - 1]?.title || ""));
     }
   } catch (error) {
     const finishReason = String(completion.choices?.[0]?.finish_reason || "unknown");
