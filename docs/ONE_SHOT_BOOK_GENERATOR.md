@@ -101,3 +101,13 @@
 - Неизвестная квота обозначается как неизвестная.
 - При исчерпании всех бесплатных лимитов — сохранить прогресс и перейти в `awaiting_assistant`, а не молча завершать короткую книгу.
 - Существующие опубликованные книги, сайт и их изображения не изменять в рамках генерации.
+
+
+## Implementation update — 2026-11-11
+
+- Telegram bot has a checkpointed one-book worker and resumes after verified free quota returns.
+- Completion assembles a non-published bookcheef-book-v1 draft with the current books table field shape.
+- Deterministic checks report missing title/synopsis/genre/audience, chapter count/order, missing chapter titles, short chapters, duplicate chapters, placeholders, and total word count.
+- Admin command /bookexport <request_id> sends the JSON draft as a Telegram document.
+- Export is explicitly a draft: cover_url is empty, illustration prompts are metadata only, and can_import / can_publish remain false until assets and editorial review are completed.
+- No live generation was run during implementation; no inference quota was consumed. The export command and validator are deployed but still require a real completed book for end-to-end verification.
