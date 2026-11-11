@@ -493,6 +493,48 @@ async function saveOneShotProgress(id: string, status: string, progress: Record<
   return rows[0];
 }
 
+function readTaggedBlock(source: string, tag: string, nextTags: string[]): string {
+  const startPattern = new RegExp("^" + tag + "\\s*:\\s*", "im");
+  const match = startPattern.exec(source);
+  if (!match) return "";
+  const start = match.index + match[0].length;
+  const rest = source.slice(start);
+  let end = rest.length;
+  for (const next of nextTags) {
+    const re = new RegExp("^" + next + "\\s*:", "im");
+    const found = re.exec(rest);
+    if (found && found.index < end) end = found.index;
+  }
+  return rest.slice(0, end).trim();
+}
+
+function parsePlainTextOutline(source: string): any {
+  const title = readTaggedBlock(source, "TITLE", ["AUDIENCE", "GENRE", "SYNOPSIS", "CHARACTER", "CHAPTER_COUNT", "CHAPTER", "COVER_PROMPT", "ILLUSTRATION"]);
+  const audience = readTaggedBlock(source, "AUDIENCE", ["GENRE", "SYNOPSIS", "CHARACTER", "CHAPTER_COUNT", "CHAPTER", "COVER_PROMPT", "ILLUSTRATION"]);
+  const genre = readTaggedBlock(source, "GENRE", ["SYNOPSIS", "CHARACTER", "CHAPTER_COUNT", "CHAPTER", "COVER_PROMPT", "ILLUSTRATION"]);
+  const synopsis = readTaggedBlock(source, "SYNOPSIS", ["CHARACTER", "CHAPTER_COUNT", "CHAPTER", "COVER_PROMPT", "ILLUSTRATION"]);
+  const cover_prompt = readTaggedBlock(source, "COVER_PROMPT", ["ILLUSTRATION"]);
+  const chapterCountText = readTaggedBlock(source, "CHAPTER_COUNT", ["CHAPTER", "COVER_PROMPT", "ILLUSTRATION"]);
+  const chapter_count = Number((chapterCountText.match(/\\d+/) || [])[0] || 0);
+  const characters = [...source.matchAll(/^CHARACTER\\s*:\\s*(.+)$/gim)].map(m => m[1].trim()).filter(Boolean);
+  const chapters = [...source.matchAll(/^CHAPTER\\s*:\\s*(\\d+)\\s*\\|\\s*([^|]+)\\s*\\|\\s*(.+)$/gim)]
+    .map(m => ({ number:Number(m[1]), title:m[2].trim(), summary:m[3].trim() }));
+  const illustration_prompts = [...source.matchAll(/^ILLUSTRATION\\s*:\\s*(.+)$/gim)].map(m=>m[1].trim()).filter(Boolean);
+  if (!title || !audience || !genre || !synopsis || !chapter_count || chapters.length !== chapter_count || !cover_prompt || illustration_prompts.length < 1) {
+    throw new Error("PLAIN_TEXT_OUTLINE_INCOMPLETE");
+  }
+  return { title, audience, genre, synopsis, characters, chapter_count, chapters, cover_prompt, illustration_prompts };
+}
+
+function parsePlainTextChapter(source: string, chapterNumber: number): any {
+  const title = readTaggedBlock(source, "CHAPTER_TITLE", ["CHAPTER_TEXT", "CONTENT"]);
+  const content = readTaggedBlock(source, "CHAPTER_TEXT", []) || readTaggedBlock(source, "CONTENT", []);
+  if (!title || content.trim().split(/\\s+/).filter(Boolean).length < 100) {
+    throw new Error("PLAIN_TEXT_CHAPTER_INCOMPLETE");
+  }
+  return { chapter_number: chapterNumber, title, content: content.trim(), word_count: content.trim().split(/\\s+/).filter(Boolean).length };
+}
+
 function parseModelJsonObject(content: string): any {
   const text = content.trim()
     .replace(/^\x60\x60\x60(?:json)?\s*/i, "")
@@ -548,15 +590,15 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
   if (!outlineMode && chapterNumber > chapterCount) {
     return { complete: true, progress: progress };
   }
-  const systemPrompt = "Ты профессиональный автор BookCheef. Пиши оригинальный полноценный литературный текст на русском языке. Не используй заглушки, пересказы вместо прозы и комментарии о процессе. Возвращай только JSON без Markdown.";
+  const systemPrompt = "Ты профессиональный автор BookCheef. Пиши оригинальный полноценный литературный текст на русском языке. Не создавай JSON, не используй Markdown-кодовые блоки и не добавляй пояснений вне запрошенных текстовых маркеров. Строго соблюдай текстовый формат с метками.";
   let userPrompt = "";
   if (outlineMode) {
     userPrompt = "Создай подробный план книги по теме: " + topic +
-      ". Целевая длительность чтения около 2 часов. Определи аудиторию, жанр, аннотацию, героев и структуру из 8–12 глав. Верни JSON: title (название книги), audience, genre, synopsis, characters (массив), chapter_count (число 8–12), chapters (массив объектов number/title/summary), cover_prompt, illustration_prompts (3–6 описаний).";
+      ". Целевая длительность чтения около 2 часов. Определи аудиторию, жанр, аннотацию, героев и структуру из 8–12 глав. Верни ОБЫЧНЫЙ ТЕКСТ строго в формате, по одной метке на строку:\\nTITLE: название\\nAUDIENCE: возрастная аудитория\\nGENRE: жанр\\nSYNOPSIS: аннотация (можно несколько абзацев)\\nCHARACTER: имя и описание персонажа (повтори для каждого героя)\\nCHAPTER_COUNT: число от 8 до 12\\nCHAPTER: номер | название | краткое содержание (отдельная строка для каждой главы)\\nCOVER_PROMPT: подробное описание обложки\\nILLUSTRATION: описание иллюстрации (3–6 отдельных строк). Не добавляй нумерованные списки вместо меток.";
   } else {
     userPrompt = "Напиши главу " + chapterNumber + " из " + chapterCount + " книги на тему: " + topic +
       ". План: " + JSON.stringify(progress.outline) +
-      ". Цель 1600–2200 слов, полноценная художественная проза, не пересказ. Верни JSON с полями chapter_number, title, content, word_count.";
+      ". Цель 1600–2200 слов, полноценная художественная проза, не пересказ. Верни ОБЫЧНЫЙ ТЕКСТ строго в формате:\\nCHAPTER_TITLE: название главы\\nCHAPTER_TEXT:\\nзатем полный текст главы несколькими абзацами. После начала CHAPTER_TEXT не добавляй технических комментариев или других меток.";
   }
   const completionResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -603,10 +645,15 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
   }
   let parsed: any;
   try {
-    parsed = parseModelJsonObject(content);
+    const trimmed = content.trim();
+    if (trimmed.startsWith("{") || trimmed.startsWith("```")) {
+      parsed = parseModelJsonObject(content);
+    } else {
+      parsed = outlineMode ? parsePlainTextOutline(content) : parsePlainTextChapter(content, chapterNumber);
+    }
   } catch (error) {
     const finishReason = String(completion.choices?.[0]?.finish_reason || "unknown");
-    throw new Error("MODEL_OUTPUT_INVALID_JSON: " + String(error).slice(0, 140) + "; finish_reason=" + finishReason);
+    throw new Error("MODEL_OUTPUT_PARSE_FAILED: " + String(error).slice(0, 160) + "; finish_reason=" + finishReason);
   }
 
   if (outlineMode) {
