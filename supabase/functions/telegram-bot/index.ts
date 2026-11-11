@@ -441,21 +441,21 @@ async function checkGeminiFreeAccess() {
     if (!response.ok) return { provider:"Google Gemini", credential_configured:true, quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:true, status:"model_check_failed", note:"Проверка доступности Gemini завершилась HTTP " + response.status + "." };
     const payload = await response.json();
     const models = Array.isArray(payload.models) ? payload.models : [];
-    const available = models.some((m:any) => String(m.name || "") === "models/gemini-2.5-flash" && (m.supportedGenerationMethods || []).includes("generateContent"));
-    return { provider:"Google Gemini", credential_configured:true, quota:"provider_free_tier_user_confirmed", free_tier_verified:available, preflight_ready:available, adapter_ready:true, model:"gemini-2.5-flash", status:available ? "free_tier_confirmed_model_available" : "model_unavailable", note:available ? "Пользователь подтвердил отсутствие платного биллинга; Gemini 2.5 Flash доступна." : "Gemini 2.5 Flash не обнаружена среди доступных моделей." };
+    const available = models.some((m:any) => String(m.name || "") === "models/gemini-3.8-flash" && (m.supportedGenerationMethods || []).includes("generateContent"));
+    return { provider:"Google Gemini", credential_configured:true, quota:"provider_free_tier_user_confirmed", free_tier_verified:available, preflight_ready:available, adapter_ready:true, model:"gemini-3.8-flash", status:available ? "free_tier_confirmed_model_available" : "model_unavailable", note:available ? "Пользователь подтвердил отсутствие платного биллинга; Gemini 3.8 Flash доступна." : "Gemini 3.8 Flash не обнаружена среди доступных моделей." };
   } catch (error) {
     return { provider:"Google Gemini", credential_configured:true, quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:true, status:"account_check_failed", note:"Не удалось проверить Gemini: " + String(error).slice(0,140) };
   }
 }
 
 async function generateGeminiText(apiKey: string, systemPrompt: string, userPrompt: string) {
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey), {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + encodeURIComponent(apiKey), {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       systemInstruction:{parts:[{text:systemPrompt}]},
       contents:[{role:"user",parts:[{text:userPrompt}]}],
-      generationConfig:{temperature:0.75,maxOutputTokens:8192}
+      generationConfig:{maxOutputTokens:8192}
     })
   });
   if (!response.ok) {
@@ -466,7 +466,7 @@ async function generateGeminiText(apiKey: string, systemPrompt: string, userProm
   const payload = await response.json();
   const content = (payload.candidates?.[0]?.content?.parts || []).map((p:any)=>typeof p.text === "string" ? p.text : "").filter(Boolean).join("\n");
   if (!content.trim()) throw new Error("GEMINI_MODEL_OUTPUT_EMPTY: finish_reason=" + String(payload.candidates?.[0]?.finishReason || "unknown"));
-  return {content,finishReason:String(payload.candidates?.[0]?.finishReason || "unknown"),model:"gemini-2.5-flash",provider:"Google Gemini"};
+  return {content,finishReason:String(payload.candidates?.[0]?.finishReason || "unknown"),model:"gemini-3.8-flash",provider:"Google Gemini"};
 }
 
 async function buildBookPreflightReport() {
