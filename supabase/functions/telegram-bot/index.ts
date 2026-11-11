@@ -411,7 +411,7 @@ async function checkOpenRouterFreeAccess() {
     const ready = freeTierVerified && remaining > 0 && freeModelCount > 0;
     return {
       provider: "OpenRouter", credential_configured: true,
-      quota: freeTierVerified ? { used, limit, remaining } : "unknown",
+      quota: freeTierVerified ? { used: usage, limit, remaining } : "unknown",
       free_tier_verified: freeTierVerified, preflight_ready: ready, adapter_ready: true,
       status: ready ? "free_quota_available" : (freeTierVerified && remaining <= 0 ? "free_daily_quota_exhausted" : "free_tier_not_verified"),
       free_model_count: freeModelCount,
