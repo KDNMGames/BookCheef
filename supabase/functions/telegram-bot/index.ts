@@ -581,9 +581,26 @@ async function generateOneFreeBookStep(topic: string, progress: Record<string, a
     throw new Error("OpenRouter error: HTTP " + completionResponse.status);
   }
   const completion = await completionResponse.json();
-  const content = completion.choices && completion.choices[0] && completion.choices[0].message
-    ? completion.choices[0].message.content : "";
-  if (typeof content !== "string" || !content.trim()) throw new Error("MODEL_OUTPUT_EMPTY");
+  const firstChoice = Array.isArray(completion.choices) ? completion.choices[0] : null;
+  const message = firstChoice && firstChoice.message && typeof firstChoice.message === "object" ? firstChoice.message : {};
+  const rawContent = message.content;
+  const content = typeof rawContent === "string"
+    ? rawContent
+    : Array.isArray(rawContent)
+      ? rawContent.map((part: any) => typeof part === "string" ? part : (typeof part?.text === "string" ? part.text : "")).filter(Boolean).join("\\n")
+      : "";
+  if (!content.trim()) {
+    const finishReason = String(firstChoice?.finish_reason || "unknown");
+    const model = String(completion.model || "unknown");
+    const messageKeys = Object.keys(message).slice(0, 12).join(",");
+    const refusal = typeof message.refusal === "string" ? message.refusal.slice(0, 100) : "";
+    const providerError = completion.error?.message ? String(completion.error.message).slice(0, 120) : "";
+    throw new Error("MODEL_OUTPUT_EMPTY: finish_reason=" + finishReason + "; model=" + model +
+      "; choices=" + (Array.isArray(completion.choices) ? completion.choices.length : 0) +
+      "; message_keys=" + (messageKeys || "none") +
+      (refusal ? "; refusal=" + refusal : "") +
+      (providerError ? "; provider_error=" + providerError : ""));
+  }
   let parsed: any;
   try {
     parsed = parseModelJsonObject(content);
@@ -1012,7 +1029,7 @@ if (command === "/bookresume") {
       try {
         const request = await getOneShotRequestById(requestId, senderId);
         const recoverMalformedJson = Boolean(request && request.status === "failed" &&
-          String(request.progress?.worker_error || "").includes("MODEL_OUTPUT_INVALID_JSON"));
+          /(MODEL_OUTPUT_INVALID_JSON|MODEL_OUTPUT_EMPTY)/.test(String(request.progress?.worker_error || "")));
         if (!request || (!["preflight_blocked", "awaiting_free_provider"].includes(request.status) && !recoverMalformedJson)) {
           await sendText(token, chat.id, "Этот запрос нельзя возобновить из текущего статуса."); return json({ ok: true });
         }
