@@ -457,9 +457,9 @@ async function runOneShotBookWorker(requestId: string, userId: string) {
         })),
         publication: "not_published",
         illustrations: "not_generated",
-        verdict: chapters.length === expected && words >= 9000
-          ? "draft_complete_requires_editorial_review"
-          : "draft_complete_but_below_target_requires_expansion"
+        verdict: chapters.length === expected && words >= 18000
+          ? "draft_complete_approximately_two_hours_requires_editorial_review"
+          : "draft_complete_below_two_hour_target_requires_expansion"
       };
       await saveOneShotPostflight(request.id, "editing", nextProgress, report);
       await sendText(Deno.env.get("TELEGRAM_BOT_TOKEN") || "", request.telegram_chat_id,
