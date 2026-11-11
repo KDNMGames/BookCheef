@@ -351,7 +351,7 @@ async function createOneShotBookRequest(topic: string, userId: string, chatId: s
   const response = await fetch(base + "/rest/v1/bookcheef_one_shot_requests", {
     method: "POST",
     headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
-    body: JSON.stringify({ telegram_user_id: userId, telegram_chat_id: chatId, topic, status: report.providers.some((p: any) => p.provider === "OpenRouter" && p.preflight_ready && p.adapter_ready) ? "awaiting_free_provider" : "preflight_blocked", preflight_report: report })
+    body: JSON.stringify({ telegram_user_id: userId, telegram_chat_id: chatId, topic, status: report.providers.some((p: any) => p.preflight_ready === true && p.adapter_ready === true) ? "awaiting_free_provider" : "preflight_blocked", preflight_report: report })
   });
   if (!response.ok) throw new Error("Could not save book request: HTTP " + response.status + " " + (await response.text()).slice(0, 250));
   const rows = await response.json();
@@ -431,36 +431,61 @@ async function checkOpenRouterFreeAccess() {
   }
 }
 
+async function checkGeminiFreeAccess() {
+  const apiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || "";
+  const freeTierConfirmed = (Deno.env.get("GEMINI_FREE_TIER_CONFIRMED") || "").toLowerCase() === "true";
+  if (!apiKey) return { provider:"Google Gemini", credential_configured:false, quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:false, status:"key_not_configured", note:"Gemini API-ключ не настроен." };
+  if (!freeTierConfirmed) return { provider:"Google Gemini", credential_configured:true, quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:true, status:"free_tier_confirmation_required", note:"Нужно подтвердить, что проект Gemini использует только бесплатный тариф и к нему не подключён платный биллинг. До подтверждения запросы не отправляются." };
+  try {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(apiKey));
+    if (!response.ok) return { provider:"Google Gemini", credential_configured:true, quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:true, status:"model_check_failed", note:"Проверка доступности Gemini завершилась HTTP " + response.status + "." };
+    const payload = await response.json();
+    const models = Array.isArray(payload.models) ? payload.models : [];
+    const available = models.some((m:any) => String(m.name || "") === "models/gemini-2.5-flash" && (m.supportedGenerationMethods || []).includes("generateContent"));
+    return { provider:"Google Gemini", credential_configured:true, quota:"provider_free_tier_user_confirmed", free_tier_verified:available, preflight_ready:available, adapter_ready:true, model:"gemini-2.5-flash", status:available ? "free_tier_confirmed_model_available" : "model_unavailable", note:available ? "Пользователь подтвердил отсутствие платного биллинга; Gemini 2.5 Flash доступна." : "Gemini 2.5 Flash не обнаружена среди доступных моделей." };
+  } catch (error) {
+    return { provider:"Google Gemini", credential_configured:true, quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:true, status:"account_check_failed", note:"Не удалось проверить Gemini: " + String(error).slice(0,140) };
+  }
+}
+
+async function generateGeminiText(apiKey: string, systemPrompt: string, userPrompt: string) {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey), {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      systemInstruction:{parts:[{text:systemPrompt}]},
+      contents:[{role:"user",parts:[{text:userPrompt}]}],
+      generationConfig:{temperature:0.75,maxOutputTokens:8192}
+    })
+  });
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0,220);
+    if (response.status === 429 || response.status === 403 || response.status === 402) throw new Error("GEMINI_FREE_QUOTA_BLOCKED: HTTP " + response.status + "; " + detail);
+    throw new Error("Gemini error: HTTP " + response.status + "; " + detail);
+  }
+  const payload = await response.json();
+  const content = (payload.candidates?.[0]?.content?.parts || []).map((p:any)=>typeof p.text === "string" ? p.text : "").filter(Boolean).join("\n");
+  if (!content.trim()) throw new Error("GEMINI_MODEL_OUTPUT_EMPTY: finish_reason=" + String(payload.candidates?.[0]?.finishReason || "unknown"));
+  return {content,finishReason:String(payload.candidates?.[0]?.finishReason || "unknown"),model:"gemini-2.5-flash",provider:"Google Gemini"};
+}
+
 async function buildBookPreflightReport() {
-  const candidates = [
-    { name: "Google Gemini", env: "GEMINI_API_KEY" },
-    { name: "Google AI Studio", env: "GOOGLE_API_KEY" },
-    { name: "Groq", env: "GROQ_API_KEY" },
-    { name: "DeepSeek", env: "DEEPSEEK_API_KEY" },
-    { name: "Mistral", env: "MISTRAL_API_KEY" },
-    { name: "Cerebras", env: "CEREBRAS_API_KEY" },
-    { name: "Together AI", env: "TOGETHER_API_KEY" },
-    { name: "Cursor", env: "CURSOR_API_KEY" },
-  ];
-  const providers = candidates.map((p) => ({
-    provider: p.name,
-    credential_configured: Boolean(Deno.env.get(p.env)),
-    quota: "unknown",
-    free_tier_verified: false,
-    preflight_ready: false,
-    adapter_ready: false,
-    status: Deno.env.get(p.env) ? "key_present_quota_not_verified" : "key_not_configured",
-    note: "Проверка квоты и подтверждение бесплатного тарифа ещё не реализованы."
-  }));
+  const providers = [await checkGeminiFreeAccess()];
+  providers.push({
+    provider:"Cursor", credential_configured:Boolean(Deno.env.get("CURSOR_API_KEY")),
+    quota:"unknown", free_tier_verified:false, preflight_ready:false, adapter_ready:false,
+    status:"not_enabled", note:"Cursor не подключён; провайдер пропущен."
+  });
   providers.push(await checkOpenRouterFreeAccess());
-  const safeReady = providers.some((p: any) => p.preflight_ready === true);
+  const safeReady = providers.some((p:any)=>p.preflight_ready === true && p.adapter_ready === true);
   return {
-    checked_at: new Date().toISOString(),
-    policy: "free_only_no_billing_no_paid_fallback",
+    checked_at:new Date().toISOString(),
+    policy:"free_only_no_billing_no_paid_fallback",
+    provider_order:["Google Gemini","Cursor","OpenRouter"],
     providers,
-    generation_started: false,
-    blocking_reason: safeReady
-      ? "Подтверждён бесплатный маршрут OpenRouter Free Router; генерация может быть запущена."
+    generation_started:false,
+    blocking_reason:safeReady
+      ? "Доступен подтверждённый бесплатный провайдер по заданному порядку."
       : "Нет провайдеров с подтверждённой доступной бесплатной квотой. Запрос сохранён; платные маршруты не запускались."
   };
 }
