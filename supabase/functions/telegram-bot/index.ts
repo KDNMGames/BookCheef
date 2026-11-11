@@ -51,6 +51,171 @@ async function sendText(token: string, chatId: number | string, text: string) {
   });
 }
 
+async function getAllowedUserIds(adminIds: Set<string>) {
+  const ids = new Set(adminIds);
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/telegram_bot_allowed_users?select=telegram_user_id", {
+    headers: { apikey: key, Authorization: "Bearer " + key },
+  });
+  if (!response.ok) throw new Error("Could not load bot access list: " + response.status);
+  const rows = await response.json();
+  for (const row of rows) ids.add(String(row.telegram_user_id));
+  return ids;
+}
+
+async function changeAllowedUser(id: string, allow: boolean) {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const url = base + "/rest/v1/telegram_bot_allowed_users";
+  const headers = { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=minimal" };
+  const response = allow
+    ? await fetch(url, { method: "POST", headers: { ...headers, Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ telegram_user_id: id }) })
+    : await fetch(url + "?telegram_user_id=eq." + encodeURIComponent(id), { method: "DELETE", headers });
+  if (!response.ok) throw new Error("Could not update bot access list: " + response.status + " " + (await response.text()).slice(0, 250));
+}
+
+
+async function getGenerationControl() {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/bookcheef_generation_control?id=eq.true&select=enabled,updated_at,updated_by,clear_requested,clear_requested_at", { headers: { apikey: key, Authorization: "Bearer " + key } });
+  if (!response.ok) throw new Error("Could not read generation state: HTTP " + response.status);
+  const rows = await response.json();
+  if (!Array.isArray(rows) || !rows.length || typeof rows[0].enabled !== "boolean") throw new Error("Generation control record is missing or invalid");
+  return rows[0];
+}
+async function setGenerationControl(enabled: boolean, adminId: string) {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/bookcheef_generation_control?id=eq.true", {
+    method: "PATCH",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ enabled, updated_at: new Date().toISOString(), updated_by: adminId }),
+  });
+  if (!response.ok) throw new Error("Could not update generation state: HTTP " + response.status + " " + (await response.text()).slice(0, 200));
+  const rows = await response.json();
+  if (!Array.isArray(rows) || !rows.length || rows[0].enabled !== enabled) throw new Error("Generation state update was not confirmed");
+  return rows[0];
+}
+
+async function requestGenerationQueueClear(adminId: string) {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/bookcheef_generation_control?id=eq.true", {
+    method: "PATCH",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ enabled: false, clear_requested: true, clear_requested_at: new Date().toISOString(), clear_requested_by: adminId, updated_at: new Date().toISOString(), updated_by: adminId }),
+  });
+  if (!response.ok) throw new Error("Could not schedule queue cleanup: HTTP " + response.status + " " + (await response.text()).slice(0, 200));
+  const rows = await response.json();
+  if (!Array.isArray(rows) || rows.length !== 1 || rows[0].enabled !== false || rows[0].clear_requested !== true) throw new Error("Queue cleanup request was not confirmed");
+  return rows[0];
+}
+
+function decodeNewsXml(value = "") {
+  return value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/<(?:br\b|\/(?:p|div|li)\b)[^>]*>/gi, "\n\n")
+    .replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/[ \t]+/g, " ").trim();
+}
+
+function newsXmlTag(block: string, name: string) {
+  const re = new RegExp("<" + name + "(?:\\s[^>]*)?>([\\s\\S]*?)<\\/" + name + ">", "i");
+  return decodeNewsXml(block.match(re)?.[1] || "");
+}
+
+async function sendTestNews(token: string, channelId: string) {
+  const response = await fetch("https://readrate.com/rus/rss/news", { headers: { "user-agent": "BookCheefNewsBot/1.0" } });
+  if (!response.ok) throw new Error("RSS недоступен: HTTP " + response.status);
+  const xml = await response.text();
+  const blocks = [...xml.matchAll(/<(item|entry)\b[\s\S]*?<\/\1>/gi)].map(m => m[0]);
+  const cutoff = Date.now() - 5 * 24 * 60 * 60 * 1000;
+  const items = blocks.map(block => {
+    const title = newsXmlTag(block, "title");
+    const description = newsXmlTag(block, "description") || newsXmlTag(block, "summary") || newsXmlTag(block, "content");
+    const dateText = newsXmlTag(block, "pubDate") || newsXmlTag(block, "published") || newsXmlTag(block, "updated");
+    const link = newsXmlTag(block, "link") || block.match(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/i)?.[1] || "";
+    return { title, description, link, date: Date.parse(dateText) };
+  }).filter(x => x.title && /^https?:\/\//i.test(x.link) && Number.isFinite(x.date) && x.date >= cutoff)
+    .sort((a, b) => b.date - a.date);
+  if (!items.length) throw new Error("В RSS нет подходящих новостей за последние 5 дней.");
+  const item = items[0];
+  const escape = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const excerpt = item.description.length > 700 ? item.description.slice(0, 699).trimEnd() + "…" : item.description;
+  const post = [
+    "📰 <b>КНИЖНЫЕ НОВОСТИ — ТЕСТОВАЯ ОТПРАВКА</b>",
+    "📖 <b>" + escape(item.title) + "</b>",
+    excerpt ? escape(excerpt) : "",
+    "🔗 <a href=\"" + item.link + "\">Читать источник</a>",
+    "📚 BookCheef — https://kdnmgames.github.io/BookCheef/",
+  ].filter(Boolean).join("\n\n").slice(0, 3900);
+  const result = await telegram("sendMessage", token, { chat_id: channelId, text: post, parse_mode: "HTML", disable_web_page_preview: false }) as any;
+  return { message_id: result.message_id, title: item.title };
+}
+
+
+async function createOneShotBookRequest(topic: string, userId: string, chatId: string, report: Record<string, unknown>) {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const response = await fetch(base + "/rest/v1/bookcheef_one_shot_requests", {
+    method: "POST",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ telegram_user_id: userId, telegram_chat_id: chatId, topic, status: "preflight_blocked", preflight_report: report })
+  });
+  if (!response.ok) throw new Error("Could not save book request: HTTP " + response.status + " " + (await response.text()).slice(0, 250));
+  const rows = await response.json();
+  if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Book request was not confirmed");
+  return rows[0];
+}
+async function getLatestOneShotBookRequest(userId: string) {
+  const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  if (!base || !key) throw new Error("Supabase service credentials are unavailable");
+  const url = base + "/rest/v1/bookcheef_one_shot_requests?telegram_user_id=eq." + encodeURIComponent(userId) + "&select=id,topic,status,created_at,updated_at,preflight_report,postflight_report&order=created_at.desc&limit=1";
+  const response = await fetch(url, { headers: { apikey: key, Authorization: "Bearer " + key } });
+  if (!response.ok) throw new Error("Could not load book request: HTTP " + response.status);
+  const rows = await response.json();
+  return Array.isArray(rows) ? rows[0] ?? null : null;
+}
+function buildBookPreflightReport() {
+  const candidates = [
+    { name: "Google Gemini", env: "GEMINI_API_KEY" },
+    { name: "Google AI Studio", env: "GOOGLE_API_KEY" },
+    { name: "OpenRouter", env: "OPENROUTER_API_KEY" },
+    { name: "Groq", env: "GROQ_API_KEY" },
+    { name: "DeepSeek", env: "DEEPSEEK_API_KEY" },
+    { name: "Mistral", env: "MISTRAL_API_KEY" },
+    { name: "Cerebras", env: "CEREBRAS_API_KEY" },
+    { name: "Together AI", env: "TOGETHER_API_KEY" },
+    { name: "Cursor", env: "CURSOR_API_KEY" },
+  ];
+  return {
+    checked_at: new Date().toISOString(),
+    policy: "free_only_no_billing_no_paid_fallback",
+    providers: candidates.map((p) => ({
+      provider: p.name,
+      credential_configured: Boolean(Deno.env.get(p.env)),
+      quota: "unknown",
+      free_tier_verified: false,
+      adapter_ready: false,
+      status: Deno.env.get(p.env) ? "key_present_but_not_verified" : "key_not_configured",
+      note: "Автоматическая проверка квоты и безопасный бесплатный адаптер ещё не подключены."
+    })),
+    generation_started: false,
+    blocking_reason: "Нет подключённых и проверенных бесплатных адаптеров. Запрос сохранён; платные маршруты не запускались."
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "GET") return json({ ok: true, service: "BookCheef Telegram bot" });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -67,7 +232,9 @@ Deno.serve(async (req: Request) => {
 
   const suppliedWebhookSecret = req.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
   const suppliedInternalSecret = req.headers.get("x-telegram-internal-secret") ?? "";
-  const internalCall = safeEqual(suppliedInternalSecret, internalSecret);
+  const suppliedReportToken = req.headers.get("x-bookcheef-report-token") ?? "";
+  const internalCall = safeEqual(suppliedInternalSecret, internalSecret)
+    || safeEqual(suppliedReportToken, token);
 
   if (!internalCall && !safeEqual(suppliedWebhookSecret, webhookSecret)) {
     return json({ error: "Unauthorized" }, 401);
@@ -78,6 +245,67 @@ Deno.serve(async (req: Request) => {
   catch { return json({ error: "Invalid JSON" }, 400); }
 
   if (internalCall) {
+    if (update.action === "admin_notification") {
+      const notificationText = String(update.text ?? "").trim();
+      if (!notificationText) return json({ error: "text is required" }, 400);
+      if (!adminIds.size) return json({ error: "TELEGRAM_ADMIN_IDS is empty; cannot route notification" }, 503);
+      const results = [];
+      for (const adminId of adminIds) {
+        try {
+          const sent = await sendText(token, adminId, notificationText.slice(0, 3900)) as any;
+          results.push({ chat_id: adminId, message_id: sent.message_id, ok: true });
+        } catch (error) {
+          console.error("Could not deliver admin notification", adminId, String(error));
+          results.push({ chat_id: adminId, ok: false });
+        }
+      }
+      const delivered = results.filter((x) => x.ok).length;
+      return json({ ok: delivered > 0, delivered, total: results.length, results }, delivered > 0 ? 200 : 502);
+    }
+    if (update.action === "marketing_report") {
+      const report = update.report ?? {};
+      const required = ["platform", "community_name", "community_url", "post_url", "published_at", "post_text"];
+      const missing = required.filter((key) => !String(report[key] ?? "").trim());
+      if (missing.length) return json({ error: "Missing report fields", missing }, 400);
+      if (!adminIds.size) return json({ error: "TELEGRAM_ADMIN_IDS is empty; cannot route report" }, 503);
+      const safeUrl = (value: unknown) => {
+        const s = String(value ?? "").trim();
+        try {
+          const u = new URL(s);
+          return u.protocol === "https:" || u.protocol === "http:" ? s : "";
+        } catch {
+          return "";
+        }
+      };
+      const lines = [
+        report.status === "test" ? "🧪 ТЕСТ СВЯЗИ ОТЧЁТОВ BOOKCHEEF" : "📣 ОПУБЛИКОВАНА РЕКЛАМА BOOKCHEEF",
+        "",
+        "Площадка: " + String(report.platform).slice(0, 120),
+        "Сообщество: " + String(report.community_name).slice(0, 180),
+        "Ссылка на сообщество: " + safeUrl(report.community_url),
+        "Пост: " + safeUrl(report.post_url),
+        "Дата: " + String(report.published_at).slice(0, 80),
+        "Куда ведёт реклама: " + String(report.destination ?? "BookCheef").slice(0, 100),
+        "",
+        "Текст публикации:",
+        String(report.post_text).slice(0, 2200),
+        "",
+        "ID отчёта: " + String(report.report_id ?? "не указан").slice(0, 100)
+      ];
+      const messageText = lines.join("\n").slice(0, 3900);
+      const results = [];
+      for (const adminId of adminIds) {
+        try {
+          const sent = await sendText(token, adminId, messageText) as any;
+          results.push({ chat_id: adminId, message_id: sent.message_id, ok: true });
+        } catch (error) {
+          console.error("Could not deliver marketing report to admin", adminId, String(error));
+          results.push({ chat_id: adminId, ok: false });
+        }
+      }
+      const delivered = results.filter((x) => x.ok).length;
+      return json({ ok: delivered > 0, delivered, total: results.length, results }, delivered > 0 ? 200 : 502);
+    }
     const text = String(update.text ?? "").trim();
     const photo = String(update.photo_url ?? "").trim();
     if (!text && !photo) return json({ error: "text or photo_url is required" }, 400);
@@ -87,6 +315,7 @@ Deno.serve(async (req: Request) => {
           chat_id: chatId,
           photo,
           caption: text.slice(0, 1024),
+          parse_mode: "HTML",
         })
       : await telegram("sendMessage", token, {
           chat_id: chatId,
@@ -106,6 +335,23 @@ Deno.serve(async (req: Request) => {
   const text = String(message.text ?? message.caption ?? "");
   const isGroup = chat.type === "group" || chat.type === "supergroup";
 
+  let allowedUserIds = new Set(adminIds);
+  if (chat.type === "private" && from.is_bot !== true) {
+    try {
+      allowedUserIds = await getAllowedUserIds(adminIds);
+    } catch (error) {
+      console.error("Could not load private bot access list:", String(error));
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Временно не удалось проверить доступ. Попробуй позже.");
+        return json({ ok: true, access: "check_failed" });
+      }
+    }
+    if (!allowedUserIds.has(senderId)) {
+      await sendText(token, chat.id, "🔒 BookCheef_bot закрыт. Доступ предоставляется владельцем бота.");
+      return json({ ok: true, access: "denied" });
+    }
+  }
+
   if (isGroup && !isAdmin && isObviousSpam(text)) {
     try {
       await telegram("deleteMessage", token, {
@@ -121,6 +367,140 @@ Deno.serve(async (req: Request) => {
 
   if (chat.type === "private" && text.startsWith("/")) {
     const command = text.split(/\s+/)[0].split("@")[0].toLowerCase();
+
+    if (command === "/book") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Создавать книги может только администратор BookCheef.");
+        return json({ ok: true, command: "book_denied" });
+      }
+      const topic = text.replace(/^\/book(?:@\w+)?\s*/i, "").trim();
+      if (topic.length < 3) {
+        await sendText(token, chat.id, "Укажи тему или ТЗ книги.\\nФормат: /book <тема и пожелания>\\n\\nЦель — около 2 часов чтения, с обложкой и иллюстрациями.");
+        return json({ ok: true, command: "book_usage" });
+      }
+      if (topic.length > 2000) {
+        await sendText(token, chat.id, "ТЗ слишком длинное (максимум 2000 символов).");
+        return json({ ok: true, command: "book_too_long" });
+      }
+      try {
+        const report = buildBookPreflightReport();
+        const saved = await createOneShotBookRequest(topic, senderId, String(chat.id), report);
+        const lines = report.providers.map((p: any) => {
+          const mark = p.credential_configured ? "🔑" : "—";
+          return mark + " " + p.provider + ": " + p.status + "; квота: неизвестна";
+        });
+        await sendText(token, chat.id,
+          "📊 ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ BOOKCHEEF\\n\\n" +
+          lines.join("\\n") +
+          "\\n\\n🛡 Режим: только бесплатные тарифы; платные запросы запрещены." +
+          "\\n⏸ Генерация пока НЕ запущена: ни один бесплатный адаптер не прошёл проверку." +
+          "\\n\\nЗапрос сохранён: " + saved.id +
+          "\\nТема: " + topic.slice(0, 500) +
+          "\\nСтатус: ожидание подключения бесплатных адаптеров."
+        );
+        return json({ ok: true, command: "book", request_id: saved.id, status: saved.status, generation_started: false });
+      } catch (error) {
+        await sendText(token, chat.id, "❌ Не удалось сохранить запрос книги: " + String(error).slice(0, 350));
+        return json({ ok: false, command: "book", error: String(error).slice(0, 350) }, 502);
+      }
+    }
+    if (command === "/bookstatus") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Статус создания книг доступен только администратору.");
+        return json({ ok: true, command: "bookstatus_denied" });
+      }
+      try {
+        const latest = await getLatestOneShotBookRequest(senderId);
+        await sendText(token, chat.id, latest
+          ? "📚 ПОСЛЕДНИЙ ЗАПРОС КНИГИ\\nID: " + latest.id + "\\nТема: " + latest.topic + "\\nСтатус: " + latest.status + "\\nСоздан: " + latest.created_at
+          : "Пока нет запросов на создание книг.");
+        return json({ ok: true, command: "bookstatus", found: Boolean(latest) });
+      } catch (error) {
+        await sendText(token, chat.id, "Не удалось получить статус: " + String(error).slice(0, 300));
+        return json({ ok: false, command: "bookstatus" }, 502);
+      }
+    }
+
+    if (command === "/allow" || command === "/deny") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Управлять доступом может только главный администратор.");
+        return json({ ok: true, command: command.slice(1) + "_denied" });
+      }
+      const targetId = text.split(/\s+/)[1] || "";
+      if (!/^\d{5,15}$/.test(targetId)) {
+        await sendText(token, chat.id, "Формат: " + command + " TELEGRAM_ID\nПример: " + command + " 123456789");
+        return json({ ok: true, command: command.slice(1) + "_usage" });
+      }
+      if (command === "/deny" && adminIds.has(targetId)) {
+        await sendText(token, chat.id, "Нельзя удалить главного администратора из списка доступа.");
+        return json({ ok: true, command: "deny_protected_admin" });
+      }
+      try {
+        await changeAllowedUser(targetId, command === "/allow");
+        await sendText(token, chat.id, command === "/allow"
+          ? "✅ Доступ к BookCheef_bot открыт для ID " + targetId
+          : "🚫 Доступ к BookCheef_bot закрыт для ID " + targetId);
+      } catch (error) {
+        await sendText(token, chat.id, "Не удалось изменить доступ: " + String(error).slice(0, 350));
+      }
+      return json({ ok: true, command: command.slice(1) });
+    }
+    if (command === "/testnews") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Тестовая отправка новостей доступна только главному администратору.");
+        return json({ ok: true, command: "testnews_denied" });
+      }
+      try {
+        const result = await sendTestNews(token, channelId);
+        await sendText(token, chat.id, "✅ Тестовая новость опубликована в канале @BookCheef.\nЗаголовок: " + result.title + "\nID сообщения: " + result.message_id);
+        return json({ ok: true, command: "testnews", message_id: result.message_id });
+      } catch (error) {
+        await sendText(token, chat.id, "❌ Не удалось отправить тестовую новость: " + String(error).slice(0, 450));
+        return json({ ok: false, command: "testnews", error: String(error).slice(0, 450) }, 502);
+      }
+    }
+    if (["/genstart", "/genstop", "/genstatus", "/genclear"].includes(command)) {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Управление генератором доступно только главному администратору.");
+        return json({ ok: true, command: "generation_control_denied" });
+      }
+      try {
+        if (command === "/genstatus") {
+          const state = await getGenerationControl();
+          await sendText(token, chat.id, (state.enabled ? "🟢 Генератор BookCheef ВКЛЮЧЁН." : "⏸ Генератор BookCheef ОСТАНОВЛЕН.") +
+            "\nОчистка очереди: " + (state.clear_requested ? "ОЖИДАЕТСЯ" : "нет") +
+            "\nОбновлено: " + state.updated_at + "\nКем: " + state.updated_by + "\n\nЗапуск: /genstart\nОстановка: /genstop\nПолная очистка: /genclear");
+          return json({ ok: true, command: "genstatus", enabled: state.enabled, clear_requested: state.clear_requested });
+        }
+        if (command === "/genclear") {
+          const confirmation = text.split(/\s+/)[1] || "";
+          if (confirmation !== "CONFIRM") {
+            await sendText(token, chat.id, "⚠️ Полная очистка удалит ВСЕ незавершённые книги и их метаданные: черновики, контрольные точки, отложенные задачи и ожидающие публикации. Опубликованные книги останутся. Генератор будет остановлен.\n\nДля подтверждения отправь точно: /genclear CONFIRM");
+            return json({ ok: true, command: "genclear_confirmation_required" });
+          }
+          const state = await requestGenerationQueueClear(senderId);
+          await sendText(token, chat.id, "🛑 Генератор остановлен. Запрос на полную очистку принят. Очистка выполнится в ближайшем цикле GitHub Actions (обычно до 5 минут), после завершения бот пришлёт отдельное подтверждение. Опубликованные книги не затрагиваются.");
+          return json({ ok: true, command: "genclear", clear_requested: state.clear_requested });
+        }
+        const enabled = command === "/genstart";
+        if (enabled) {
+          const current = await getGenerationControl();
+          if (current.clear_requested) {
+            await sendText(token, chat.id, "⏳ Полная очистка очереди ещё выполняется. Запуск будет доступен после её завершения.");
+            return json({ ok: true, command: "genstart_blocked_by_clear" });
+          }
+        }
+        const state = await setGenerationControl(enabled, senderId);
+        await sendText(token, chat.id, enabled
+          ? "▶️ Генератор BookCheef включён. Возобновление начнётся в ближайшем цикле GitHub Actions (обычно до 5 минут). Сохранённые черновики и очередь остаются на месте."
+          : "⏸ Генератор BookCheef остановлен. Новые ИИ-запросы не будут начинаться; уже выполняющийся запрос может завершиться, после чего черновик останется сохранённым. Очередь не удаляется.");
+        return json({ ok: true, command: command.slice(1), enabled: state.enabled });
+      } catch (error) {
+        console.error("Generation control command failed:", String(error));
+        await sendText(token, chat.id, "❌ Не удалось изменить состояние генератора: " + String(error).slice(0, 300));
+        return json({ ok: false, command: command.slice(1) }, 502);
+      }
+    }
     if (command === "/status" && adminIds.has(senderId)) {
       try {
         const me = await telegram("getMe", token) as any;
@@ -156,9 +536,103 @@ Deno.serve(async (req: Request) => {
       await sendText(token, chat.id, "Эта команда доступна только администратору BookCheef.");
       return json({ ok: true, command: "status_denied" });
     }
+    if (command === "/fixpost4") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Исправление публикации доступно только администратору BookCheef.");
+        return json({ ok: true, command: "fixpost4_denied" });
+      }
+      const caption = [
+        "📚 <b>НОВАЯ КНИГА В BOOKCHEEF</b>",
+        "",
+        "🔥 <b>«Последний узел станции Межа»</b>",
+        "",
+        "На станции «Межа» автономная система использовала личные воспоминания экипажа без их согласия.",
+        "",
+        "Два маршрута расследования и два финала поставят перед выбором: что важнее — непрерывность работы, безопасность или право на личную память?",
+        "",
+        [
+          "✍️ <b>Автор:</b> Астэр Неваль",
+          "🏷 <b>Жанр:</b> Интерактивная научная фантастика, этический техно-триллер",
+          "📚 <b>Серия:</b> Станция «Межа»",
+          "👤 <b>Возраст:</b> 16+"
+        ].join("\n"),
+        "",
+        "🎮 <b>Интерактивная книга:</b> выбирайте маршрут расследования и влияйте на развитие истории.",
+        "",
+        '👇 <a href="https://kdnmgames.github.io/BookCheef/">ОТКРЫТЬ КНИГУ В BOOKCHEEF</a>'
+      ].join("\n");
+      try {
+        await telegram("editMessageCaption", token, {
+          chat_id: channelId,
+          message_id: 4,
+          caption,
+          parse_mode: "HTML"
+        });
+        await sendText(token, chat.id, "Пост https://t.me/BookCheef/4 обновлён: добавил настоящие пустые строки между абзацами.");
+        return json({ ok: true, command: "fixpost4", message_id: 4 });
+      } catch (error) {
+        await sendText(token, chat.id, "Не удалось обновить пост №4: " + String(error).slice(0, 400));
+        return json({ ok: false, command: "fixpost4", error: String(error).slice(0, 400) }, 502);
+      }
+    }
+    if (command === "/testbook") {
+      if (!adminIds.has(senderId)) {
+        await sendText(token, chat.id, "Тестовая публикация доступна только администратору BookCheef.");
+        return json({ ok: true, command: "testbook_denied" });
+      }
+      const caption = [
+        "📚 <b>НОВАЯ КНИГА В BOOKCHEEF</b>",
+        "🔥 <b>«Последний узел станции Межа»</b>",
+        "Интерактивный научно-фантастический триллер 16+ о станции, чья автономная система использовала личные воспоминания экипажа без согласия. Два маршрута расследования и два финала заставят решить, что важнее: непрерывность работы, безопасность или право на личную память.",
+        [
+          "✍️ <b>Автор:</b> Астэр Неваль",
+          "🏷 <b>Жанр:</b> Интерактивная научная фантастика, этический техно-триллер",
+          "📚 <b>Серия:</b> Станция «Межа»",
+          "👤 <b>Возраст:</b> 16+"
+        ].join("\n"),
+        "🎮 <b>Это интерактивная книга:</b> выбирайте маршрут расследования и влияйте на развитие истории.",
+        '👇 <a href="https://kdnmgames.github.io/BookCheef/">ОТКРЫТЬ КНИГУ В BOOKCHEEF</a>'
+      ].join("\n\n");
+      try {
+        const result = await telegram("sendPhoto", token, {
+          chat_id: channelId,
+          photo: "https://wendffewxxmnaglfksfg.supabase.co/storage/v1/object/public/gallery/Preview_posledniy_zel_stantsii_mezha.png",
+          caption,
+          parse_mode: "HTML",
+        }) as any;
+        await sendText(token, chat.id, "Тестовый анонс опубликован в канале @BookCheef. ID сообщения: " + result.message_id);
+        return json({ ok: true, command: "testbook", message_id: result.message_id });
+      } catch (error) {
+        await sendText(token, chat.id, "Не удалось опубликовать тестовый анонс: " + String(error).slice(0, 350));
+        return json({ ok: false, command: "testbook", error: String(error).slice(0, 350) }, 502);
+      }
+    }
+
+    if (command === "/help" && adminIds.has(senderId)) {
+      try {
+        await telegram("setMyCommands", token, {
+          scope: { type: "chat", chat_id: chat.id },
+          commands: [
+            { command: "start", description: "Приветствие BookCheef" },
+            { command: "help", description: "Список команд" },
+            { command: "status", description: "Проверить состояние бота" },
+            { command: "genstatus", description: "Состояние генератора книг" },
+            { command: "genstart", description: "Запустить генерацию книг" },
+            { command: "genstop", description: "Остановить генерацию книг" },
+            { command: "genclear", description: "Полностью очистить очередь (с подтверждением)" },
+            { command: "allow", description: "Разрешить доступ пользователю" },
+            { command: "deny", description: "Закрыть доступ пользователю" },
+            { command: "testnews", description: "Тестовая книжная новость" },
+            { command: "testbook", description: "Тестовый анонс книги" }
+          ]
+        });
+      } catch (error) {
+        console.warn("Could not refresh admin command menu:", String(error));
+      }
+    }
     const replies: Record<string, string> = {
       "/start": "Привет! Это бот BookCheef 📚\n\nЗдесь будут новости книжной галереи, новые истории и интересные события из мира литературы.\n\nСайт: https://kdnmgames.github.io/BookCheef/\nКанал: https://t.me/BookCheef",
-      "/help": "Команды BookCheef:\n/start — приветствие\n/help — помощь\n/site — открыть книжную галерею\n/channel — открыть Telegram-канал\n/status — проверить подключение канала и права бота (администратор)",
+      "/help": "📚 BOOKCHEEF BOT — СПИСОК КОМАНД\n\nОСНОВНЫЕ КОМАНДЫ\n/start — запустить бота и получить приветствие\n/help — показать этот список команд\n/site — открыть сайт и книжную галерею BookCheef\n/channel — открыть Telegram-канал BookCheef\n\nКОМАНДЫ АДМИНИСТРАТОРА\n/status — проверить работу бота, права публикации в канале и подключение группы обсуждений\n/allow ID — разрешить пользователю доступ к приватному боту (вместо ID укажи числовой Telegram ID)\n/deny ID — закрыть пользователю доступ к приватному боту\n/testnews — отправить в канал тестовую книжную новость из RSS; публикация будет помечена как тестовая\n/testbook — опубликовать тестовый анонс книги с обложкой\n/fixpost4 — исправить текст и абзацы в публикации канала №4\n/genstatus — проверить состояние генератора\n/genstart — включить генерацию книг\n/genstop — остановить генерацию книг\n/genclear — полная очистка очереди (подтверждение: /genclear CONFIRM)\n\nПримеры управления доступом:\n/allow 123456789\n/deny 123456789\n\nПриватный бот доступен только пользователям из списка разрешённых. Команды администратора работают только у главного администратора.\n\nСайт: https://kdnmgames.github.io/BookCheef/\nКанал: https://t.me/BookCheef",
       "/site": "Книжная галерея BookCheef: https://kdnmgames.github.io/BookCheef/",
       "/channel": "Telegram-канал BookCheef: https://t.me/BookCheef",
     };
