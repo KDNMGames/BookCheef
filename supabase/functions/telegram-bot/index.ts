@@ -419,10 +419,15 @@ async function checkOpenRouterFreeAccess() {
         ? "Бесплатный тариф подтверждён; генераторный адаптер Free Router готов к пошаговой работе."
         : "Бесплатный тариф не подтверждён или дневной лимит исчерпан. Генерация заблокирована."
     };
-  } catch (_error) {
+  } catch (error) {
+    const diagnostic = error instanceof Error
+      ? (error.name + (error.message ? ": " + error.message : ""))
+      : String(error);
+    console.warn("OpenRouter account preflight failed:", diagnostic.slice(0, 180));
     return { provider: "OpenRouter", credential_configured: true, quota: "unknown",
       free_tier_verified: false, preflight_ready: false, adapter_ready: false,
-      status: "account_check_failed", note: "Не удалось проверить аккаунт; провайдер заблокирован." };
+      status: "account_check_failed",
+      note: "Проверка аккаунта не завершилась: " + diagnostic.slice(0, 180) + ". Провайдер заблокирован." };
   }
 }
 
