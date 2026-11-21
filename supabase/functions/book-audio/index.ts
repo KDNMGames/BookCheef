@@ -173,7 +173,7 @@ ${voiceList}
 ${text}
 </BOOK_TEXT>`;
 
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent", {
     method: "POST",
     headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -184,7 +184,7 @@ ${text}
   const result = await response.json().catch(() => null);
   if (!response.ok) {
     const message = String(result?.error?.message ?? `HTTP ${response.status}`).slice(0, 350);
-    throw new Error(`Анализ голосов Gemini 2.5 Flash: ${message}`);
+    throw new Error(`Анализ голосов Gemini 3.8 Flash: ${message}`);
   }
   const output = result?.candidates?.[0]?.content?.parts?.map((part: any) => part?.text ?? "").join("") ?? "";
   const parsed = extractJson(output);
