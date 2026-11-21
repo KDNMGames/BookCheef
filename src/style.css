@@ -590,3 +590,25 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .analytics-multi-bars i:nth-child(3){background:#bd806f}
 @media(max-width:800px){.analytics-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.analytics-context-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.analytics-context-grid .analytics-kpi{padding:10px;min-height:70px}.analytics-context-grid .analytics-kpi b{font-size:18px}}
+
+
+/* Keep analytics table headings visible while scrolling inside the table. */
+.book-analytics-table-wrap{
+  max-height:min(72vh,760px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.book-analytics-table thead{
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+.book-analytics-table thead th,
+.book-analytics-table thead tr:first-child th{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:#24202b;
+  box-shadow:0 1px 0 #ffffff25;
+}
