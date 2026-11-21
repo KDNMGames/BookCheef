@@ -485,3 +485,48 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .book-review-profile-name{display:grid;gap:4px;color:#c9c1b6;font-size:12px}
 .book-review-profile-name small{color:#8f877d}
 @media(max-width:540px){.book-review-replies{margin-left:8px;padding-left:9px}.book-review-meta{margin-left:0}.book-review-top{align-items:flex-start;flex-wrap:wrap}}
+
+
+/* Имя пользователя в личном кабинете */
+.profile-name-form{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:0 0 22px;padding:16px;border:1px solid rgba(198,163,106,.25);border-radius:13px;background:#ffffff06}
+.profile-name-form label{display:grid;gap:7px;flex:1;min-width:220px;color:#c9c1b6;font-size:12px}
+.profile-name-form input{width:100%;padding:12px 13px;border:1px solid rgba(198,163,106,.3);border-radius:10px;background:#100f17;color:inherit;font:inherit}
+.profile-name-form button{display:flex;align-items:center;gap:8px;white-space:nowrap}
+
+/* Аналитика по отдельным книгам */
+.book-analytics-panel{margin:24px 0}
+.book-analytics-panel>.panel-title{align-items:flex-start;gap:16px}
+.book-analytics-panel .panel-hint{margin:6px 0 0}
+.book-analytics-refresh{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.book-analytics-legend{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 18px;color:#c9c1b6;font-size:11px}
+.book-analytics-legend span{display:flex;align-items:center;gap:7px}
+.book-analytics-legend svg{color:#d8b879}
+.book-analytics-list{display:grid;gap:13px}
+.book-analytics-card{padding:17px;border:1px solid #ffffff1b;border-radius:12px;background:#ffffff05}
+.book-analytics-book-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.book-analytics-book-head h3{margin:0;font:600 18px 'Playfair Display';overflow-wrap:anywhere}
+.book-analytics-book-head>span{display:flex;align-items:center;gap:6px;color:#c6a36a;font-size:11px;white-space:nowrap}
+.book-analytics-columns{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
+.book-analytics-columns>section{min-width:0;padding:13px;border:1px solid #ffffff16;border-radius:10px}
+.book-analytics-human{background:#c6a36a08}
+.book-analytics-bots{background:#9274c10a}
+.book-analytics-columns h4{display:flex;align-items:center;gap:8px;margin:0 0 11px;font-size:13px}
+.book-analytics-human h4 svg{color:#d8b879}
+.book-analytics-bots h4 svg{color:#b49bdc}
+.book-analytics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.book-analytics-bots .book-analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.book-analytics-metric{display:grid;grid-template-columns:16px 1fr;align-items:center;gap:5px 7px;min-width:0;padding:9px;border-radius:8px;background:#00000022}
+.book-analytics-metric svg{color:#b8a78d}
+.book-analytics-metric span{font-size:10px;color:#bdb4a8;line-height:1.3}
+.book-analytics-metric b{grid-column:2;font-size:18px;font-variant-numeric:tabular-nums}
+.book-analytics-bots .book-analytics-metric svg{color:#b49bdc}
+.book-analytics-bots p,.book-analytics-footnote{display:block;margin:12px 0 0;color:#a9a196;font-size:10px;line-height:1.55}
+.book-analytics-footnote{margin-top:15px}
+@media(max-width:720px){
+ .profile-name-form{align-items:stretch;flex-direction:column}
+ .profile-name-form label{min-width:0}
+ .book-analytics-columns{grid-template-columns:1fr}
+ .book-analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .book-analytics-book-head{align-items:flex-start;flex-direction:column}
+ .book-analytics-book-head>span{white-space:normal}
+}
