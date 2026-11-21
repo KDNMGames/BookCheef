@@ -434,3 +434,38 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .pro-book-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-width:min(100%,290px);margin:0 auto 10px}
 .book-front{display:block;color:inherit;text-decoration:none;cursor:pointer}
 @media(max-width:560px){.pro-book-preview{align-items:flex-start;gap:13px;padding:12px}.pro-book-preview img{width:82px}.pro-book-preview h2{font-size:16px}.pro-book-preview p{font-size:12px}.pro-book-gate{padding:22px 12px}}
+
+/* Book reviews */
+.book-reviews{width:min(850px,calc(100% - 36px));box-sizing:border-box;margin:38px auto 64px;padding:clamp(18px,3vw,28px);border:1px solid #c6a36a40;border-radius:16px;background:linear-gradient(145deg,#c6a36a0b,#17151d 65%);box-shadow:0 18px 48px #0002}
+.book-reviews-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid #ffffff18;color:#c6a36a}
+.book-reviews-heading h2{margin:5px 0 0;color:#f2ecdf;font-size:clamp(21px,3vw,28px)}
+.book-reviews-heading h2 span{color:#a99d8c;font-size:.72em;font-weight:500}
+.book-review-list{display:grid;gap:12px;margin-top:18px}
+.book-review{padding:17px 18px;border:1px solid #ffffff1c;border-radius:12px;background:#ffffff07}
+.book-review-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.book-review-author{display:flex;align-items:center;gap:10px;min-width:0}
+.book-review-avatar{width:36px;height:36px;display:grid;place-items:center;flex:none;border-radius:50%;background:#c6a36a22;border:1px solid #c6a36a55;color:#f0d69e;font-weight:700}
+.book-review-author>div{display:grid;gap:3px;min-width:0}
+.book-review-author b{color:#f0e9dc;font-size:13px;overflow-wrap:anywhere}
+.book-review-author time{color:#91897f;font-size:10px}
+.book-review-stars{display:flex;gap:2px;flex:none;color:#e5b95f}
+.book-review>p{margin:14px 0 4px;color:#d7d0c5;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.book-review-actions{display:flex;gap:8px;margin-top:12px}
+.book-review-actions button{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;font-size:11px}
+.book-review-actions .danger{color:#e59a91}
+.book-reviews-empty{padding:22px 4px;color:#aaa095;font-size:13px;line-height:1.65}
+.book-review-form{display:grid;gap:13px;margin-top:22px;padding:19px;border:1px solid #c6a36a44;border-radius:12px;background:#0f0d15aa}
+.book-review-form h3{margin:0;color:#f0e9dc;font-size:17px}
+.book-review-form>p{margin:0;color:#aaa095;font-size:12px}
+.book-review-form>label{display:grid;gap:7px;color:#c9c0b4;font-size:12px}
+.book-review-form input,.book-review-form textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #ffffff28;border-radius:8px;background:#0b0a10;color:#f2ecdf;font:inherit;font-size:13px;outline:none}
+.book-review-form input:focus,.book-review-form textarea:focus{border-color:#c6a36a}
+.book-review-form textarea{resize:vertical;line-height:1.6}
+.book-review-form label small{color:#8f877d;text-align:right}
+.book-review-rating{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#c9c0b4;font-size:12px}
+.book-review-rating>div{display:flex;gap:4px}
+.book-review-rating button{padding:3px;border:0;background:transparent;color:#6d655a;cursor:pointer}
+.book-review-rating button.active{color:#e5b95f}
+.book-review-form-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.book-review-form-actions button{display:inline-flex;align-items:center;gap:7px}
+@media(max-width:600px){.book-reviews{width:auto;margin:26px 14px 44px;padding:16px}.book-review{padding:14px}.book-review-top{align-items:flex-start;flex-direction:column}.book-review-stars{margin-left:46px}.book-review-form{padding:15px}.book-review-rating{align-items:flex-start;flex-direction:column;gap:6px}}
