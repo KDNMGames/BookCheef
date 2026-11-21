@@ -94,11 +94,17 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
   }
 
   function handleTrackEnded(){
-    if(!playingAll)return;
+    // Обычная аудиокнига автоматически переходит к следующей готовой главе,
+    // даже если читатель запустил текущую главу отдельно.
+    // Для интерактивных книг сохраняем прежнее поведение: переход только
+    // в режиме «Вся книга», без вмешательства в выбор сюжетных сцен.
+    if(book?.is_interactive&&!playingAll)return;
     const currentPosition=audioChapters.findIndex(item=>item.chapter_index===selectedIndex);
     const next=audioChapters[currentPosition+1];
-    if(next)setSelectedIndex(next.chapter_index);
-    else setPlayingAll(false);
+    if(next){
+      setPlayingAll(true);
+      setSelectedIndex(next.chapter_index);
+    }else setPlayingAll(false);
   }
 
   async function generateAll(){
