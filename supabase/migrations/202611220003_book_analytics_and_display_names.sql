@@ -16,18 +16,18 @@ alter table public.book_analytics_events enable row level security;
 revoke all on table public.book_analytics_events from public, anon, authenticated;
 
 drop function if exists public.increment_book_view(uuid);
-create or replace function public.increment_book_view(book_id uuid, visitor_key uuid default null)
+create or replace function public.increment_book_view(p_book_id uuid, p_visitor_key uuid default null)
 returns bigint
 language plpgsql security definer set search_path = ''
 as $$
 declare new_views bigint; effective_visitor uuid;
 begin
-  effective_visitor := coalesce(visitor_key, auth.uid(), gen_random_uuid());
+  effective_visitor := coalesce(p_visitor_key, auth.uid(), gen_random_uuid());
   update public.books set views = coalesce(views, 0) + 1
-   where id = book_id returning views into new_views;
+   where id = p_book_id returning views into new_views;
   if new_views is null then return null; end if;
   insert into public.book_analytics_events(book_id, user_id, visitor_key)
-  values (book_id, auth.uid(), effective_visitor)
+  values (p_book_id, auth.uid(), effective_visitor)
   on conflict (book_id, visitor_key, viewed_on) do nothing;
   return new_views;
 end;
