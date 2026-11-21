@@ -17,7 +17,6 @@ export default function BookAnalytics({books=[]}) {
   const [dashboard,setDashboard]=useState(null);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
-  const [period,setPeriod]=useState('30');
   const [section,setSection]=useState('books');
   const [search,setSearch]=useState('');
   const [sort,setSort]=useState({key:'total_views',direction:'desc'});
@@ -26,7 +25,7 @@ export default function BookAnalytics({books=[]}) {
     setLoading(true);setError('');
     const [bookResult,dashboardResult]=await Promise.all([
       supabase.rpc('get_book_analytics'),
-      supabase.rpc('get_book_analytics_dashboard',{p_days:Number(period)})
+      supabase.rpc('get_book_analytics_dashboard',{p_days:7})
     ]);
     if(bookResult.error||dashboardResult.error){
       setError(bookResult.error?.message||dashboardResult.error?.message||'Не удалось загрузить аналитику.');
@@ -35,7 +34,7 @@ export default function BookAnalytics({books=[]}) {
       setDashboard(dashboardResult.data||null);
     }
     setLoading(false);
-  },[period]);
+  },[]);
   useEffect(()=>{reload();},[reload]);
 
   const bookInfo=useMemo(()=>new Map(books.map(book=>[String(book.id),book])),[books]);
@@ -96,13 +95,13 @@ export default function BookAnalytics({books=[]}) {
     {label:'Завершили чтение',value:totals.completed_readers,icon:BookOpen},
     {label:'Отзывы людей',value:totals.human_reviews,icon:MessageCircle},
     {label:'Отзывы ботов',value:totals.bot_reviews,icon:Bot},
-    {label:'Поиски за период',value:totals.searches,icon:Search},
+    {label:'Поиски за 7 дней',value:totals.searches,icon:Search},
     {label:'Поиски без результата',value:totals.search_no_results,icon:TrendingUp}
   ];
 
   return <section className="panel book-analytics-panel">
     <div className="panel-title"><div><h2>Аналитика BookCheef</h2><p className="panel-hint">Книги, категории, авторы и поведение посетителей</p></div><button type="button" className="ghost book-analytics-refresh" onClick={reload} disabled={loading}><RefreshCw size={15} className={loading?'spin':''}/> Обновить</button></div>
-    <div className="analytics-period"><CalendarDays size={15}/><label>Период поисковой аналитики <select value={period} onChange={e=>setPeriod(e.target.value)}><option value="7">7 дней</option><option value="30">30 дней</option><option value="90">90 дней</option><option value="0">За всё время</option></select></label><small>Статистика книг, категорий и авторов — накопительная.</small></div>
+    <div className="analytics-period"><CalendarDays size={15}/><span>Поисковая аналитика хранится только за последние 7 дней.</span><small>Статистика книг, категорий и авторов — накопительная.</small></div>
     {error&&<div className="error" role="alert">{error}</div>}
     {loading&&!dashboard?<p className="muted">Загружаем статистику…</p>:<>
       <div className="analytics-kpis">{metricCards.map(({label,value,icon:Icon})=><div className="analytics-kpi" key={label}><Icon size={16}/><span>{label}</span><b>{number(value)}</b></div>)}</div>
@@ -117,8 +116,8 @@ export default function BookAnalytics({books=[]}) {
           {!visibleRows.length&&<tr><td colSpan={columns.length} className="analytics-empty">{search?'По этому запросу ничего не найдено.':'Пока нет данных для отображения.'}</td></tr>}
         </tbody>
       </table></div>
-      {section==='search'&&<div className="analytics-search-summary"><h3>Поисковые запросы за выбранный период</h3><p>Сохраняются запросы длиной от двух символов. Повтор одного и того же запроса с одного браузера в течение 10 минут не учитывается повторно.</p><div className="analytics-daily-list">{daily.map(day=><div className="analytics-daily-row" key={day.search_day}><span>{dateLabel(day.search_day)}</span><div><i style={{width:Math.max(2,Math.min(100,Number(day.searches)/Math.max(1,...daily.map(x=>Number(x.searches)))*100))+'%'}}/></div><b>{number(day.searches)}</b><small>без результата: {number(day.no_results)}</small></div>)}</div></div>}
-      <small className="book-analytics-footnote">* Уникальные посетители — псевдонимные идентификаторы браузеров, а не подтверждённые личности. Поисковые запросы не связываются с аккаунтами; текст запроса ограничен 100 символами. Боты не учитываются как посетители или читатели. Исторические поиски до включения этой функции недоступны.</small>
+      {section==='search'&&<div className="analytics-search-summary"><h3>Поисковые запросы за последние 7 дней</h3><p>Сохраняются запросы длиной от двух символов. Повтор одного и того же запроса с одного браузера в течение 10 минут не учитывается повторно.</p><div className="analytics-daily-list">{daily.map(day=><div className="analytics-daily-row" key={day.search_day}><span>{dateLabel(day.search_day)}</span><div><i style={{width:Math.max(2,Math.min(100,Number(day.searches)/Math.max(1,...daily.map(x=>Number(x.searches)))*100))+'%'}}/></div><b>{number(day.searches)}</b><small>без результата: {number(day.no_results)}</small></div>)}</div></div>}
+      <small className="book-analytics-footnote">* Уникальные посетители — псевдонимные идентификаторы браузеров, а не подтверждённые личности. Поисковые запросы не связываются с аккаунтами; текст запроса ограничен 100 символами и автоматически удаляется через 7 дней. Боты не учитываются как посетители или читатели. Исторические поиски до включения этой функции недоступны.</small>
     </>}
   </section>;
 }
