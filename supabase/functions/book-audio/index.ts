@@ -216,7 +216,7 @@ ${text}
     const id = String(item?.id ?? "").toUpperCase().replace(/[^A-Z0-9_]/g, "").slice(0, 32);
     if (!id || id === "NARRATOR") continue;
     const name = String(item?.name ?? id).slice(0, 60);
-    const profileKey = name.toLocaleLowerCase("ru-RU").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+    const profileKey = name.toLocaleLowerCase("ru-RU").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
     const savedProfile = settings.speaker_profiles?.[profileKey];
     const suggestedVoice = Object.hasOwn(VOICE_CATALOG, String(item?.voice ?? "")) ? String(item.voice) : "Sulafat";
     const voice = Object.hasOwn(VOICE_CATALOG, String(savedProfile?.voice ?? "")) ? String(savedProfile.voice) : suggestedVoice;
@@ -398,7 +398,7 @@ Deno.serve(async (req: Request) => {
     const { data: audioRows, error: audioError } = await adminDb.from("book_audio_chapters")
       .select("book_id,chapter_index,content_hash,updated_at");
     const { data: settingRows } = await adminDb.from("book_audio_settings")
-      .select("book_id,voice_mode,narrator_voice,style_prompt");
+      .select("book_id,voice_mode,narrator_voice,style_prompt,speaker_profiles");
     const settingsByBook = new Map((settingRows ?? []).map((row: any) => [row.book_id, normalizeVoiceSettings(row)]));
     if (audioError) return json({ error: "Не удалось проверить уже созданные аудиоглавы" }, 500);
 
@@ -455,7 +455,7 @@ Deno.serve(async (req: Request) => {
   if (spokenText.length > 50000) return json({ error: "Глава слишком большая для одной операции. Раздели её на несколько глав (до 50 000 символов)." }, 413);
 
   const { data: savedSettings } = await adminDb.from("book_audio_settings")
-    .select("voice_mode,narrator_voice,style_prompt").eq("book_id", bookId).maybeSingle();
+    .select("voice_mode,narrator_voice,style_prompt,speaker_profiles").eq("book_id", bookId).maybeSingle();
   const voiceSettings = normalizeVoiceSettings(savedSettings ?? {});
   const contentHash = await buildAudioHash(spokenText, voiceSettings);
   const { data: existing } = await adminDb.from("book_audio_chapters")
@@ -485,7 +485,7 @@ Deno.serve(async (req: Request) => {
     const profiles = { ...voiceSettings.speaker_profiles };
     for (const speaker of voicePlan.speakers) {
       if (speaker.id === "NARRATOR") continue;
-      const key = String(speaker.name ?? speaker.id).toLocaleLowerCase("ru-RU").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+      const key = String(speaker.name ?? speaker.id).toLocaleLowerCase("ru-RU").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
       if (key) profiles[key] = { voice: speaker.voice, style: speaker.style };
     }
     const { error: profileError } = await adminDb.from("book_audio_settings").upsert({
