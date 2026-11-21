@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import {supabase} from './supabase';
-import {RefreshCw,UserRound,Bot,Search,BookOpen,Users,Eye,MessageCircle,TrendingUp,CalendarDays,Gift,Crown,UserPlus,UserMinus} from 'lucide-react';
+import {RefreshCw,UserRound,Bot,Search,BookOpen,Users,Eye,MessageCircle,TrendingUp,CalendarDays,Gift,Crown,UserPlus,UserMinus,Trash2} from 'lucide-react';
 
 const number=value=>Number(value||0).toLocaleString('ru-RU');
 const dateLabel=value=>value?new Date(value).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
@@ -171,7 +171,7 @@ export default function BookAnalytics({books=[]}) {
         {[['Активные подписчики',proSummary.active_subscribers,Crown],['Новые подключения',proSummary.new_activations,UserPlus],['Вернулись',proSummary.reactivations,TrendingUp],['Продления',proSummary.renewals,CalendarDays],['Закончились',proSummary.outgoing,UserMinus],['Базовые подписки до аналитики',proSummary.legacy_active,Users]].map(([label,value,Icon])=><div className="analytics-kpi" key={label}><Icon size={16}/><span>{label}</span><b>{number(value)}</b></div>)}
       </div>}
       {section==='users'&&<div className="analytics-context-grid">
-        {[['Всего аккаунтов',userSummary.total_users,Users],['Новые за 30 дней',userSummary.new_users,UserPlus],['Активны 7 дней',userSummary.active_7d,TrendingUp],['Активны 30 дней',userSummary.active_30d,Users],['Неактивны 30+ дней',userSummary.inactive_30d,UserMinus],['Неактивны 90+ дней',userSummary.inactive_90d,UserMinus],['Удалено за 30 дней',userSummary.deleted_users,TrashIcon]].map(([label,value,Icon])=><div className="analytics-kpi" key={label}><Icon size={16}/><span>{label}</span><b>{number(value)}</b></div>)}
+        {[['Всего аккаунтов',userSummary.total_users,Users],['Новые за 30 дней',userSummary.new_users,UserPlus],['Активны 7 дней',userSummary.active_7d,TrendingUp],['Активны 30 дней',userSummary.active_30d,Users],['Неактивны 30+ дней',userSummary.inactive_30d,UserMinus],['Неактивны 90+ дней',userSummary.inactive_90d,UserMinus],['Удалено за 30 дней',userSummary.deleted_users,Trash2]].map(([label,value,Icon])=><div className="analytics-kpi" key={label}><Icon size={16}/><span>{label}</span><b>{number(value)}</b></div>)}
       </div>}
       <div className="analytics-table-toolbar"><label className="analytics-search"><Search size={16}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder={section==='search'?'Найти поисковый запрос…':'Поиск по таблице…'}/></label><span>{visibleRows.length} строк</span></div>
       <div className="book-analytics-table-wrap"><table className="book-analytics-table">
