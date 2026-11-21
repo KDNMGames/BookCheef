@@ -186,7 +186,7 @@ ${text}
     const message = String(result?.error?.message ?? `HTTP ${response.status}`).slice(0, 350);
     throw new Error(`Анализ голосов Gemini 3.8 Flash: ${message}`);
   }
-  const output = result?.candidates?.[0]?.content?.parts?.map((part: any) => part?.text ?? "").join("") ?? "";
+  const output = result?.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((part: any) => part?.text ?? "").join("") ?? "";
   const parsed = extractJson(output);
   if (!Array.isArray(parsed?.segments) || !Array.isArray(parsed?.speakers)) {
     throw new Error("ИИ вернул сценарий озвучки без списка сегментов или голосов");
@@ -206,6 +206,7 @@ ${text}
     };
   }
   const speakers = new Map<string, any>();
+  const usedVoices = new Set<string>([settings.narrator_voice]);
   speakers.set("NARRATOR", {
     id: "NARRATOR",
     name: "Рассказчик",
@@ -219,7 +220,11 @@ ${text}
     const profileKey = name.toLocaleLowerCase("ru-RU").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
     const savedProfile = settings.speaker_profiles?.[profileKey];
     const suggestedVoice = Object.hasOwn(VOICE_CATALOG, String(item?.voice ?? "")) ? String(item.voice) : "Sulafat";
-    const voice = Object.hasOwn(VOICE_CATALOG, String(savedProfile?.voice ?? "")) ? String(savedProfile.voice) : suggestedVoice;
+    let voice = Object.hasOwn(VOICE_CATALOG, String(savedProfile?.voice ?? "")) ? String(savedProfile.voice) : suggestedVoice;
+    if (!savedProfile && usedVoices.has(voice)) {
+      voice = Object.keys(VOICE_CATALOG).find((candidate) => !usedVoices.has(candidate)) ?? voice;
+    }
+    usedVoices.add(voice);
     speakers.set(id, {
       id,
       name,
