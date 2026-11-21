@@ -12,8 +12,14 @@ create table if not exists public.book_analytics_events (
 );
 create index if not exists book_analytics_events_book_idx
   on public.book_analytics_events(book_id, viewed_on desc);
+create index if not exists book_analytics_events_user_idx
+  on public.book_analytics_events(user_id) where user_id is not null;
 alter table public.book_analytics_events enable row level security;
 revoke all on table public.book_analytics_events from public, anon, authenticated;
+drop policy if exists "No direct access to book analytics events" on public.book_analytics_events;
+create policy "No direct access to book analytics events"
+  on public.book_analytics_events for all to anon, authenticated
+  using (false) with check (false);
 
 drop function if exists public.increment_book_view(uuid);
 create or replace function public.increment_book_view(p_book_id uuid, p_visitor_key uuid default null)
