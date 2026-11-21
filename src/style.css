@@ -530,3 +530,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
  .book-analytics-book-head{align-items:flex-start;flex-direction:column}
  .book-analytics-book-head>span{white-space:normal}
 }
+
+.admin-section-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px;padding:7px;background:#111117d9;border:1px solid #ffffff18;border-radius:8px}
+.admin-section-tabs button{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border:1px solid transparent;border-radius:5px;background:transparent;color:#bdb5aa;font:600 12px 'DM Sans';cursor:pointer}
+.admin-section-tabs button:hover{background:#ffffff0a;color:#fff}
+.admin-section-tabs button.active{background:var(--accent);color:#17120b}
+.book-analytics-panel{margin:0 0 24px;min-width:0}
+.book-analytics-table-wrap{width:100%;overflow:auto;border:1px solid #ffffff1a;border-radius:7px}
+.book-analytics-table{width:100%;min-width:1120px;border-collapse:separate;border-spacing:0;font-size:11px}
+.book-analytics-table th,.book-analytics-table td{padding:12px 11px;border-right:1px solid #ffffff12;border-bottom:1px solid #ffffff12;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-analytics-table thead th{background:#1c1a22;color:#d8bd8c;font-weight:700;line-height:1.4;white-space:normal;min-width:82px}
+.book-analytics-table thead tr:first-child th{background:#24202b;color:#f0d7a6}
+.book-analytics-table tbody th{position:sticky;left:0;z-index:1;background:#17151d;text-align:left;white-space:normal;min-width:190px;max-width:260px;color:#f4f0e8}
+.book-analytics-table tbody td{color:#d8d0c4}
+.book-analytics-table tbody tr:hover td,.book-analytics-table tbody tr:hover th{background:#ffffff0b}
+.book-analytics-table tr:last-child th,.book-analytics-table tr:last-child td{border-bottom:0}
+.book-analytics-table th:last-child,.book-analytics-table td:last-child{border-right:0}
+@media(max-width:540px){.admin-section-tabs button{flex:1;justify-content:center;padding:10px 8px;font-size:11px}.book-analytics-panel{padding:13px}.book-analytics-panel>.panel-title{align-items:flex-start}.book-analytics-table{min-width:1050px}}
