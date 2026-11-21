@@ -46,7 +46,7 @@ begin
  end if;
  if new.parent_id is not null and not exists(select 1 from public.book_reviews p where p.id=new.parent_id and p.book_id=new.book_id) then raise exception 'Ответ должен относиться к той же книге';end if;
  foreach w in array bad loop
-  if new.body ~* ('(^|[^[:alnum:]_])('||w||')([^[:alnum:]_]|$)') then new.body:=regexp_replace(new.body,'(^|[^[:alnum:]_])('||w||')([^[:alnum:]_]|$)','\\1***\\3','gi');new.moderation_status:='censored';end if;
+  if new.body ~* ('(^|[^[:alnum:]_])('||w||')([^[:alnum:]_]|$)') then new.body:=regexp_replace(new.body,'(^|[^[:alnum:]_])('||w||')([^[:alnum:]_]|$)','\1***\3','gi');new.moderation_status:='censored';end if;
  end loop;
  new.updated_at:=now();return new;
 end $$;
@@ -114,6 +114,8 @@ end $$;
 drop function if exists public.get_book_comments(uuid);
 drop function if exists public.vote_book_comment(uuid,smallint);
 drop function if exists public.generate_daily_book_discussion();
+drop function if exists public.moderate_book_comment();
+drop function if exists public.prevent_self_comment_vote();
 drop table if exists public.book_comment_votes cascade;
 drop table if exists public.book_comments cascade;
 commit;
