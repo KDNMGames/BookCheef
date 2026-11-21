@@ -181,6 +181,7 @@ export default function BookAudioPlayer({book,allowGeneration=false}){
         {playingAll?'Стоп':'Вся книга'}
       </button>
       {urlLoading?<span className="book-audio-loading"><LoaderCircle size={16}/></span>:audioUrl?<audio ref={audioRef} controls preload="metadata" src={audioUrl} onEnded={handleTrackEnded} className="book-audio-element">Ваш браузер не поддерживает аудиоплеер.</audio>:null}
+      {selected?.voice_name?<small className="book-audio-voice-cast">Голоса главы: {selected.voice_name}</small>:null}
     </div>:null}
     {allowGeneration&&chapters.length>0?<div className="book-audio-admin">
       <div className="book-audio-voice-settings">
