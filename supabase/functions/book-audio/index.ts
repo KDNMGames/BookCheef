@@ -114,11 +114,20 @@ function normalizeVoiceSettings(value: any = {}) {
     voice_mode: value?.voice_mode === "single" ? "single" : "auto_multi",
     narrator_voice: narratorVoice,
     style_prompt: String(value?.style_prompt ?? "").trim().slice(0, 500),
+    speaker_profiles: value?.speaker_profiles && typeof value.speaker_profiles === "object" && !Array.isArray(value.speaker_profiles)
+      ? value.speaker_profiles
+      : {},
   };
 }
 
 async function buildAudioHash(text: string, settings: ReturnType<typeof normalizeVoiceSettings>) {
-  const value = JSON.stringify({ text, settings, version: AUDIO_VOICE_RULES_VERSION });
+  // Character profiles are learned as chapters are processed; they must not invalidate the chapter hash.
+  const stableSettings = {
+    voice_mode: settings.voice_mode,
+    narrator_voice: settings.narrator_voice,
+    style_prompt: settings.style_prompt,
+  };
+  const value = JSON.stringify({ text, settings: stableSettings, version: AUDIO_VOICE_RULES_VERSION });
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -147,6 +156,7 @@ async function analyzeChapterVoices(text: string, book: any, apiKey: string, set
 - Прямую речь назначай персонажу только если это ясно из текста и контекста. Неоднозначную речь назначай NARRATOR.
 - Для каждого персонажа подбери один голос из списка ниже. Голоса должны различаться, но не быть карикатурными. Учитывай атмосферу произведения, возраст аудитории, характер и манеру речи.
 - Рассказчику назначь голос ${settings.narrator_voice}. Не меняй его.
+- Уже сохранённые профили персонажей этой книги: ${JSON.stringify(settings.speaker_profiles)}. Если персонаж совпадает по имени с сохранённым профилем, обязательно сохрани его voice и style. Не создавай для него новый голос.
 - Верни segments в исходном порядке. Текст всех сегментов должен дословно, символ в символ, включая пробелы, переносы строк и пунктуацию, составлять исходный фрагмент при простом объединении segments[].text без разделителей.
 - Ничего не исправляй, не сокращай, не пересказывай, не добавляй ремарки и звуковые эффекты.
 - Если невозможно надёжно отделить реплики, отдай весь неоднозначный абзац рассказчику.
@@ -205,12 +215,16 @@ ${text}
   for (const item of parsed.speakers.slice(0, 10)) {
     const id = String(item?.id ?? "").toUpperCase().replace(/[^A-Z0-9_]/g, "").slice(0, 32);
     if (!id || id === "NARRATOR") continue;
-    const voice = Object.hasOwn(VOICE_CATALOG, String(item?.voice ?? "")) ? String(item.voice) : "Sulafat";
+    const name = String(item?.name ?? id).slice(0, 60);
+    const profileKey = name.toLocaleLowerCase("ru-RU").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+    const savedProfile = settings.speaker_profiles?.[profileKey];
+    const suggestedVoice = Object.hasOwn(VOICE_CATALOG, String(item?.voice ?? "")) ? String(item.voice) : "Sulafat";
+    const voice = Object.hasOwn(VOICE_CATALOG, String(savedProfile?.voice ?? "")) ? String(savedProfile.voice) : suggestedVoice;
     speakers.set(id, {
       id,
-      name: String(item?.name ?? id).slice(0, 60),
+      name,
       voice,
-      style: String(item?.style ?? "естественная выразительная речь").slice(0, 240),
+      style: String(savedProfile?.style ?? item?.style ?? "естественная выразительная речь").slice(0, 240),
     });
   }
   const safeSegments = segments.map((segment: any) => ({
@@ -465,6 +479,24 @@ Deno.serve(async (req: Request) => {
       const rateLimited = /429|RESOURCE_EXHAUSTED|quota|rate.?limit|exhausted/i.test(message);
       return json({ error: message, rate_limited: rateLimited, retry_later: true }, rateLimited ? 429 : 503);
     }
+  }
+
+  if (voiceSettings.voice_mode === "auto_multi") {
+    const profiles = { ...voiceSettings.speaker_profiles };
+    for (const speaker of voicePlan.speakers) {
+      if (speaker.id === "NARRATOR") continue;
+      const key = String(speaker.name ?? speaker.id).toLocaleLowerCase("ru-RU").replace(/[^\\p{L}\\p{N}]+/gu, " ").trim();
+      if (key) profiles[key] = { voice: speaker.voice, style: speaker.style };
+    }
+    const { error: profileError } = await adminDb.from("book_audio_settings").upsert({
+      book_id: bookId,
+      voice_mode: voiceSettings.voice_mode,
+      narrator_voice: voiceSettings.narrator_voice,
+      style_prompt: voiceSettings.style_prompt,
+      speaker_profiles: profiles,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "book_id" });
+    if (profileError) return json({ error: "Не удалось сохранить постоянные голоса персонажей этой книги" }, 500);
   }
 
   const speakerById = new Map(voicePlan.speakers.map((speaker: any) => [speaker.id, speaker]));
