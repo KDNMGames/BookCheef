@@ -71,6 +71,155 @@ function cleanForSpeech(markdown: string) {
     .trim();
 }
 
+const VOICE_CATALOG: Record<string, string> = {
+  Achernar: "мягкий, деликатный, спокойный",
+  Achird: "дружелюбный, естественный, располагающий",
+  Algenib: "низкий, слегка хрипловатый, характерный",
+  Algieba: "гладкий, бархатистый, ровный",
+  Alnilam: "твёрдый, собранный, уверенный",
+  Aoede: "лёгкий, воздушный, музыкальный",
+  Autonoe: "яркий, ясный, энергичный",
+  Callirrhoe: "непринуждённый, разговорный, живой",
+  Charon: "информативный, уверенный, нейтральный",
+  Despina: "плавный, мягкий, выразительный",
+  Enceladus: "мягкий, с лёгким придыханием",
+  Erinome: "чистый, чёткий, хорошо артикулированный",
+  Fenrir: "энергичный, сильный, решительный",
+  Gacrux: "зрелый, основательный, спокойный",
+  Iapetus: "ясный, нейтральный, аккуратный",
+  Kore: "твёрдый, собранный, уверенный",
+  Laomedeia: "бодрый, позитивный, открытый",
+  Leda: "молодой по звучанию, лёгкий, мягкий",
+  Orus: "твёрдый, сдержанный, авторитетный",
+  Puck: "живой, оптимистичный, подвижный",
+  Pulcherrima: "выразительный, яркий, направленный",
+  Rasalgethi: "информативный, выразительный, устойчивый",
+  Sadachbia: "оживлённый, эмоционально подвижный",
+  Sadaltager: "знающий, спокойный, рассудительный",
+  Schedar: "ровный, нейтральный, уравновешенный",
+  Sulafat: "тёплый, мягкий, располагающий",
+  Umbriel: "непринуждённый, естественный, спокойный",
+  Vindemiatrix: "нежный, деликатный, мягкий",
+  Zephyr: "светлый, яркий, лёгкий",
+  Zubenelgenubi: "разговорный, непринуждённый, современный",
+};
+
+const AUDIO_VOICE_RULES_VERSION = "multi-voice-v1";
+
+function normalizeVoiceSettings(value: any = {}) {
+  const narratorVoice = Object.hasOwn(VOICE_CATALOG, String(value?.narrator_voice ?? ""))
+    ? String(value.narrator_voice)
+    : "Charon";
+  return {
+    voice_mode: value?.voice_mode === "single" ? "single" : "auto_multi",
+    narrator_voice: narratorVoice,
+    style_prompt: String(value?.style_prompt ?? "").trim().slice(0, 500),
+  };
+}
+
+async function buildAudioHash(text: string, settings: ReturnType<typeof normalizeVoiceSettings>) {
+  const value = JSON.stringify({ text, settings, version: AUDIO_VOICE_RULES_VERSION });
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function extractJson(text: string) {
+  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error("ИИ не вернул корректный сценарий распределения голосов");
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
+async function analyzeChapterVoices(text: string, book: any, apiKey: string, settings: ReturnType<typeof normalizeVoiceSettings>) {
+  const voiceList = Object.entries(VOICE_CATALOG).map(([name, traits]) => `${name}: ${traits}`).join("\n");
+  const prompt = `Ты — режиссёр аудиокниг и специалист по русской художественной озвучке BookCheef.
+Проанализируй произведение и раздели данный фрагмент на последовательные речевые сегменты.
+Книга: ${String(book?.title ?? "Без названия")}
+Жанр: ${String(book?.genre ?? "не указан")}
+Возрастная аудитория: ${String(book?.age ?? "не указана")}
+Описание: ${String(book?.description ?? "").slice(0, 1000)}
+Дополнительное пожелание по подаче: ${settings.style_prompt || "нет"}.
+
+Задача:
+- NARRATOR — отдельный рассказчик для авторского текста, описаний и любых неоднозначных реплик.
+- Для каждого достоверно определяемого говорящего персонажа создай один постоянный speaker id вида CHAR_1, CHAR_2 и т. д. Не выдумывай новых персонажей.
+- Прямую речь назначай персонажу только если это ясно из текста и контекста. Неоднозначную речь назначай NARRATOR.
+- Для каждого персонажа подбери один голос из списка ниже. Голоса должны различаться, но не быть карикатурными. Учитывай атмосферу произведения, возраст аудитории, характер и манеру речи.
+- Рассказчику назначь голос ${settings.narrator_voice}. Не меняй его.
+- Верни segments в исходном порядке. Текст всех сегментов должен дословно, символ в символ, включая пробелы, переносы строк и пунктуацию, составлять исходный фрагмент при простом объединении segments[].text без разделителей.
+- Ничего не исправляй, не сокращай, не пересказывай, не добавляй ремарки и звуковые эффекты.
+- Если невозможно надёжно отделить реплики, отдай весь неоднозначный абзац рассказчику.
+- Стиль для каждого голоса опиши кратко на русском: темп, интонация и эмоциональная окраска. Не включай в style слова, которые модель может произнести как часть текста.
+
+Допустимые голоса:
+${voiceList}
+
+Верни ТОЛЬКО JSON следующей формы:
+{"speakers":[{"id":"NARRATOR","name":"Рассказчик","voice":"Charon","style":"спокойное литературное повествование"}],"segments":[{"speaker":"NARRATOR","text":"точный фрагмент исходного текста"}]}
+
+ИСХОДНЫЙ ТЕКСТ МЕЖДУ МАРКЕРАМИ:
+<BOOK_TEXT>
+${text}
+</BOOK_TEXT>`;
+
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+    method: "POST",
+    headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 12000 },
+    }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = String(result?.error?.message ?? `HTTP ${response.status}`).slice(0, 350);
+    throw new Error(`Анализ голосов Gemini 2.5 Flash: ${message}`);
+  }
+  const output = result?.candidates?.[0]?.content?.parts?.map((part: any) => part?.text ?? "").join("") ?? "";
+  const parsed = extractJson(output);
+  if (!Array.isArray(parsed?.segments) || !Array.isArray(parsed?.speakers)) {
+    throw new Error("ИИ вернул сценарий озвучки без списка сегментов или голосов");
+  }
+  const segments = parsed.segments
+    .filter((item: any) => typeof item?.text === "string" && item.text.length > 0)
+    .map((item: any) => ({
+      speaker: String(item.speaker ?? "NARRATOR").toUpperCase().replace(/[^A-Z0-9_]/g, "").slice(0, 32) || "NARRATOR",
+      text: String(item.text),
+    }));
+  if (!segments.length || segments.map((item: any) => item.text).join("") !== text) {
+    // Never risk losing, rewriting, or inventing words: use narrator for the complete fragment.
+    return {
+      speakers: [{ id: "NARRATOR", name: "Рассказчик", voice: settings.narrator_voice, style: "естественное литературное повествование" }],
+      segments: [{ speaker: "NARRATOR", text }],
+      usedSafeFallback: true,
+    };
+  }
+  const speakers = new Map<string, any>();
+  speakers.set("NARRATOR", {
+    id: "NARRATOR",
+    name: "Рассказчик",
+    voice: settings.narrator_voice,
+    style: "естественное литературное повествование",
+  });
+  for (const item of parsed.speakers.slice(0, 10)) {
+    const id = String(item?.id ?? "").toUpperCase().replace(/[^A-Z0-9_]/g, "").slice(0, 32);
+    if (!id || id === "NARRATOR") continue;
+    const voice = Object.hasOwn(VOICE_CATALOG, String(item?.voice ?? "")) ? String(item.voice) : "Sulafat";
+    speakers.set(id, {
+      id,
+      name: String(item?.name ?? id).slice(0, 60),
+      voice,
+      style: String(item?.style ?? "естественная выразительная речь").slice(0, 240),
+    });
+  }
+  const safeSegments = segments.map((segment: any) => ({
+    ...segment,
+    speaker: speakers.has(segment.speaker) ? segment.speaker : "NARRATOR",
+  }));
+  return { speakers: [...speakers.values()], segments: safeSegments, usedSafeFallback: false };
+}
+
 function splitText(text: string, maxChars = 6200) {
   const paragraphs = text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
   const chunks: string[] = [];
@@ -146,19 +295,16 @@ function makeWav(pcm: Uint8Array) {
   return output;
 }
 
-async function callTts(model: string, text: string, apiKey: string) {
+async function callTts(model: string, text: string, apiKey: string, voiceName = "Charon", style = "") {
   const isNew = model === "gemini-3.8-flash-tts";
+  const delivery = style || "Русская художественная аудиокнига. Естественная, выразительная и уверенная подача; ясная артикуляция, плавный темп, точные паузы, деликатная эмоциональная окраска без театрального переигрывания.";
   const part: Record<string, unknown> = {
     text,
-    ...(isNew ? {
-      speechMetadata: {
-        style: "Русская художественная аудиокнига. Естественная, выразительная, тёплая и уверенная дикторская подача; ясная артикуляция, плавный темп, точные паузы, деликатная эмоциональная окраска без театрального переигрывания."
-      }
-    } : {}),
+    ...(isNew ? { speechMetadata: { style: delivery } } : {}),
   };
   const speechConfig = isNew
-    ? { voiceConfig: { voice: "Charon" }, languageCode: "ru-RU" }
-    : { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } }, languageCode: "ru-RU" };
+    ? { voiceConfig: { voice: voiceName }, languageCode: "ru-RU" }
+    : { voiceConfig: { prebuiltVoiceConfig: { voiceName } }, languageCode: "ru-RU" };
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -181,13 +327,13 @@ async function callTts(model: string, text: string, apiKey: string) {
   return decodeBase64(encoded);
 }
 
-async function generateChunk(text: string, apiKey: string) {
+async function generateChunk(text: string, apiKey: string, voiceName = "Charon", style = "") {
   try {
-    return { bytes: await callTts("gemini-3.8-flash-tts", text, apiKey), model: "gemini-3.8-flash-tts" };
+    return { bytes: await callTts("gemini-3.8-flash-tts", text, apiKey, voiceName, style), model: "gemini-3.8-flash-tts" };
   } catch (primaryError) {
-    // The fallback is also on Google's Gemini API free tier; no paid provider is called.
+    // Free-tier fallback only. No paid provider, paid model, or billing upgrade is attempted.
     try {
-      return { bytes: await callTts("gemini-2.5-flash-preview-tts", text, apiKey), model: "gemini-2.5-flash-preview-tts" };
+      return { bytes: await callTts("gemini-2.5-flash-preview-tts", text, apiKey, voiceName, style), model: "gemini-2.5-flash-preview-tts" };
     } catch (fallbackError) {
       throw new Error(`Не удалось создать аудио ни основной, ни резервной бесплатной моделью. ${String(primaryError).slice(0, 180)}; ${String(fallbackError).slice(0, 180)}`);
     }
@@ -231,12 +377,15 @@ Deno.serve(async (req: Request) => {
   if (payload.action === "process_next") {
     if (!internalCall) return json({ error: "Недостаточно прав для фоновой обработки" }, 403);
     const { data: books, error: booksError } = await adminDb.from("books")
-      .select("id,title,book_content,interactive_content,is_interactive,created_at")
+      .select("id,title,book_content,interactive_content,is_interactive,created_at,genre,age,description")
       .order("created_at", { ascending: true })
       .limit(1000);
     if (booksError) return json({ error: "Не удалось получить список книг для озвучки" }, 500);
     const { data: audioRows, error: audioError } = await adminDb.from("book_audio_chapters")
       .select("book_id,chapter_index,content_hash,updated_at");
+    const { data: settingRows } = await adminDb.from("book_audio_settings")
+      .select("book_id,voice_mode,narrator_voice,style_prompt");
+    const settingsByBook = new Map((settingRows ?? []).map((row: any) => [row.book_id, normalizeVoiceSettings(row)]));
     if (audioError) return json({ error: "Не удалось проверить уже созданные аудиоглавы" }, 500);
 
     const rowsByBook = new Map<string, any[]>();
@@ -254,8 +403,8 @@ Deno.serve(async (req: Request) => {
       for (let i = 0; i < chapters.length; i++) {
         const spoken = cleanForSpeech(chapters[i].text);
         if (!spoken) continue;
-        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(spoken));
-        const hash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+        const settings = settingsByBook.get(book.id) ?? normalizeVoiceSettings();
+        const hash = await buildAudioHash(spoken, settings);
         const existing = existingRows.find((row) => row.chapter_index === i + 1);
         if (existing?.content_hash !== hash) { pendingIndex = i + 1; break; }
       }
@@ -280,7 +429,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const { data: book, error: bookError } = await adminDb
-    .from("books").select("id,title,book_content,interactive_content,is_interactive,is_free").eq("id", bookId).single();
+    .from("books").select("id,title,book_content,interactive_content,is_interactive,is_free,genre,age,description").eq("id", bookId).single();
   if (bookError || !book) return json({ error: "Книга не найдена" }, 404);
   const chapters = splitBook(book.book_content, book.title, book.interactive_content);
   if (!chapters.length) return json({ error: "Для озвучки нужен текст книги или заполненные сцены интерактивной книги; вложенные PDF/DOCX пока не поддерживаются" }, 400);
@@ -291,9 +440,10 @@ Deno.serve(async (req: Request) => {
   if (!spokenText) return json({ error: "В этой главе нет текста для озвучки" }, 400);
   if (spokenText.length > 50000) return json({ error: "Глава слишком большая для одной операции. Раздели её на несколько глав (до 50 000 символов)." }, 413);
 
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(spokenText));
-  const contentHash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  const voiceName = "Charon";
+  const { data: savedSettings } = await adminDb.from("book_audio_settings")
+    .select("voice_mode,narrator_voice,style_prompt").eq("book_id", bookId).maybeSingle();
+  const voiceSettings = normalizeVoiceSettings(savedSettings ?? {});
+  const contentHash = await buildAudioHash(spokenText, voiceSettings);
   const { data: existing } = await adminDb.from("book_audio_chapters")
     .select("id,content_hash,storage_path,model,duration_seconds")
     .eq("book_id", bookId).eq("chapter_index", chapterIndex).maybeSingle();
@@ -302,20 +452,51 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, skipped: true, reason: "already_current", chapter_index: chapterIndex, chapter_title: chapter.title, audio: existing });
   }
 
-  const chunks = splitText(spokenText);
+  let voicePlan: any = {
+    speakers: [{ id: "NARRATOR", name: "Рассказчик", voice: voiceSettings.narrator_voice, style: "естественное литературное повествование" }],
+    segments: [{ speaker: "NARRATOR", text: spokenText }],
+    usedSafeFallback: false,
+  };
+  if (voiceSettings.voice_mode === "auto_multi") {
+    try {
+      voicePlan = await analyzeChapterVoices(spokenText, book, apiKey, voiceSettings);
+    } catch (analysisError) {
+      const message = String(analysisError instanceof Error ? analysisError.message : analysisError).slice(0, 900);
+      const rateLimited = /429|RESOURCE_EXHAUSTED|quota|rate.?limit|exhausted/i.test(message);
+      return json({ error: message, rate_limited: rateLimited, retry_later: true }, rateLimited ? 429 : 503);
+    }
+  }
+
+  const speakerById = new Map(voicePlan.speakers.map((speaker: any) => [speaker.id, speaker]));
   const pcmParts: Uint8Array[] = [];
-  let selectedModel = "gemini-3.8-flash-tts";
+  const selectedModels = new Set<string>();
+  const speakerUsed = new Map<string, { name: string; voice: string }>();
   try {
-    for (const chunk of chunks) {
-      const generated = await generateChunk(chunk, apiKey);
-      selectedModel = generated.model;
-      pcmParts.push(extractPcm(generated.bytes));
+    for (const segment of voicePlan.segments) {
+      const speaker = speakerById.get(segment.speaker) ?? speakerById.get("NARRATOR");
+      const voiceName = Object.hasOwn(VOICE_CATALOG, String(speaker?.voice ?? "")) ? speaker.voice : voiceSettings.narrator_voice;
+      const style = [
+        "Русская художественная аудиокнига. Естественная речь, ясная артикуляция, выразительная, но не театральная подача.",
+        String(speaker?.style ?? ""),
+        voiceSettings.style_prompt,
+      ].filter(Boolean).join(" ");
+      for (const chunk of splitText(segment.text)) {
+        const generated = await generateChunk(chunk, apiKey, voiceName, style);
+        selectedModels.add(generated.model);
+        pcmParts.push(extractPcm(generated.bytes));
+      }
+      speakerUsed.set(segment.speaker, { name: String(speaker?.name ?? segment.speaker), voice: voiceName });
+      // Short natural pause between speaker/narration turns.
+      if (segment !== voicePlan.segments[voicePlan.segments.length - 1]) {
+        pcmParts.push(new Uint8Array(24000 * 2 * 0.16));
+      }
     }
   } catch (generationError) {
     const message = String(generationError instanceof Error ? generationError.message : generationError).slice(0, 900);
     const rateLimited = /429|RESOURCE_EXHAUSTED|quota|rate.?limit|exhausted/i.test(message);
     return json({ error: message, rate_limited: rateLimited, retry_later: true }, rateLimited ? 429 : 503);
   }
+  const selectedModel = [...selectedModels].join("+") || "gemini-3.8-flash-tts";
   const totalLength = pcmParts.reduce((sum, part) => sum + part.length, 0);
   const pcm = new Uint8Array(totalLength);
   let cursor = 0;
@@ -337,7 +518,7 @@ Deno.serve(async (req: Request) => {
     chapter_title: chapter.title,
     storage_path: storagePath,
     duration_seconds: duration,
-    voice_name: voiceName,
+    voice_name: [...speakerUsed.values()].map((speaker) => `${speaker.name}=${speaker.voice}`).join("; ").slice(0, 500) || voiceSettings.narrator_voice,
     model: selectedModel,
     content_hash: contentHash,
     status: "ready",
@@ -351,8 +532,11 @@ Deno.serve(async (req: Request) => {
     chapter_title: chapter.title,
     audio: saved,
     model: selectedModel,
-    voice_name: voiceName,
-    chunks: chunks.length,
+    voice_name: [...speakerUsed.values()].map((speaker) => `${speaker.name}=${speaker.voice}`).join("; ").slice(0, 500) || voiceSettings.narrator_voice,
+    voice_mode: voiceSettings.voice_mode,
+    speakers: [...speakerUsed.values()],
+    safe_fallback: !!voicePlan.usedSafeFallback,
+    chunks: pcmParts.length,
     bytes: wav.length,
   });
 });
