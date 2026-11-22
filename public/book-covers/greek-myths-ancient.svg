@@ -1,1 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200"><defs><linearGradient id="g" y2="1"><stop stop-color="#f1d9a5"/><stop offset="1" stop-color="#b66a3c"/></linearGradient><pattern id="m" width="48" height="24" patternUnits="userSpaceOnUse"><path d="M0 12H10V2H38V22H10V12H0" fill="none" stroke="#e5c27e" stroke-width="4"/></pattern></defs><rect width="800" height="1200" fill="#eee0c1"/><rect x="24" y="24" width="752" height="1152" rx="12" fill="url(#g)" stroke="#7b3025" stroke-width="22"/><rect x="52" y="55" width="696" height="30" fill="url(#m)"/><rect x="52" y="820" width="696" height="30" fill="url(#m)"/><g fill="none" stroke="#282321" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"><circle cx="405" cy="240" r="68"/><path d="M405 308L365 525 445 525Z M366 350L250 470 M444 350L560 470 M382 525L330 700 M428 525L485 700"/><path d="M230 475Q150 410 185 330Q225 285 260 350 M580 475Q655 400 620 325Q590 290 555 350"/><path d="M180 700Q400 610 620 700"/><path d="M160 735H650"/></g><g fill="#282321"><path d="M380 165Q330 100 380 90Q430 100 420 160Z"/><circle cx="405" cy="235" r="7"/></g><rect x="52" y="900" width="696" height="225" rx="8" fill="#f2e4c6" opacity=".96"/><text x="400" y="970" text-anchor="middle" font-family="Georgia,serif" font-size="46" fill="#302824">МИФЫ ДРЕВНЕЙ</text><text x="400" y="1035" text-anchor="middle" font-family="Georgia,serif" font-size="62" font-weight="bold" fill="#7b3025">ГРЕЦИИ</text><text x="400" y="1085" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="#4c3b30">Боги, герои и древние предания</text><text x="400" y="1135" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" letter-spacing="3" fill="#7b3025">ПО АНТИЧНЫМ ПИСЬМЕННЫМ ИСТОЧНИКАМ</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200">
+<defs>
+ <linearGradient id="paper" x2="0" y2="1"><stop stop-color="#f4e8ca"/><stop offset="1" stop-color="#d8bd8e"/></linearGradient>
+ <linearGradient id="clay" x2="0" y2="1"><stop stop-color="#c96f45"/><stop offset=".55" stop-color="#a9472f"/><stop offset="1" stop-color="#762e26"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="1.2"/></filter>
+</defs>
+<rect width="800" height="1200" fill="url(#paper)"/>
+<rect x="24" y="24" width="752" height="1152" rx="9" fill="none" stroke="#5b3027" stroke-width="5"/>
+<path d="M55 78 Q400 42 745 78 M55 1120 Q400 1155 745 1120" fill="none" stroke="#8b4a34" stroke-width="3"/>
+<g fill="#8b4a34"><path d="M85 78q18-22 36 0q-18 22-36 0m42 0q18-22 36 0q-18 22-36 0m500 0q18-22 36 0q-18 22-36 0m42 0q18-22 36 0q-18 22-36 0"/></g>
+<text x="400" y="170" text-anchor="middle" font-family="Georgia,serif" font-size="48" letter-spacing="4" fill="#552d25">МИФЫ ДРЕВНЕЙ ГРЕЦИИ</text>
+<text x="400" y="220" text-anchor="middle" font-family="Georgia,serif" font-size="25" letter-spacing="3" fill="#8a4b36">БОГИ · ГЕРОИ · ПРЕДАНИЯ</text>
+<!-- large ancient amphora, shaped as a real vessel -->
+<g>
+ <path d="M325 300 Q325 275 345 270 L455 270 Q475 275 475 300 L490 365 Q560 390 575 485 Q594 620 550 790 Q520 900 465 940 L335 940 Q280 900 250 790 Q206 620 225 485 Q240 390 310 365Z" fill="url(#clay)" stroke="#542b25" stroke-width="13"/>
+ <path d="M325 300 L475 300 L468 360 Q400 382 332 360Z" fill="#c77a4e" stroke="#542b25" stroke-width="9"/>
+ <path d="M325 285 Q400 265 475 285 L470 310 Q400 292 330 310Z" fill="#542b25"/>
+ <path d="M312 365 Q235 365 230 455 Q230 510 270 520 Q285 523 287 504 Q255 484 263 448 Q270 410 322 408" fill="none" stroke="#542b25" stroke-width="18"/>
+ <path d="M488 365 Q565 365 570 455 Q570 510 530 520 Q515 523 513 504 Q545 484 537 448 Q530 410 478 408" fill="none" stroke="#542b25" stroke-width="18"/>
+ <path d="M335 925 L465 925 L480 970 L320 970Z" fill="#9e4932" stroke="#542b25" stroke-width="10"/>
+ <path d="M315 970 Q400 990 485 970 L490 990 Q400 1010 310 990Z" fill="#542b25"/>
+</g>
+<!-- red-figure style myth scene painted on the belly -->
+<g stroke="#542b25" stroke-linecap="round" stroke-linejoin="round">
+ <!-- olive tree -->
+ <path d="M400 760 Q390 650 410 560 Q420 510 405 460" fill="none" stroke="#542b25" stroke-width="15"/>
+ <path d="M405 565 Q350 520 330 470 M410 540 Q470 500 485 455 M402 610 Q340 590 310 560" fill="none" stroke="#542b25" stroke-width="9"/>
+ <g fill="#542b25">
+  <path d="M338 477q-40-30-55-2q22 38 55 2m-2 30q-42-18-50 12q32 29 50-12m140-48q25-42 54-20q-4 39-54 20m-2 42q35-32 57-7q-19 38-57 7m-158 75q-35-29-55-3q21 37 55 3"/>
+ </g>
+ <!-- golden fleece hanging from tree -->
+ <path d="M400 455 Q425 425 450 450 Q474 480 449 510 Q422 535 400 510 Q380 485 400 455Z" fill="#e6bd72" stroke="#542b25" stroke-width="8"/>
+ <path d="M402 462q-10 18 0 33m15-42q-9 22 3 44m15-35q-8 18 5 30" fill="none" stroke="#8b4a34" stroke-width="5"/>
+ <!-- Jason left, profile and cloak -->
+ <circle cx="300" cy="515" r="25" fill="#e9c49b" stroke="#542b25" stroke-width="8"/>
+ <path d="M278 500q5-35 42-28q15 9 11 26q-20-10-35 4Z" fill="#542b25" stroke="none"/>
+ <path d="M278 545 Q245 560 244 640 L258 700 Q290 725 330 700 L340 615 Q335 560 310 545Z" fill="#e9c49b" stroke-width="8"/>
+ <path d="M280 555 Q245 590 235 665 Q255 685 270 674 L300 590" fill="#542b25" stroke-width="7"/>
+ <path d="M320 565 Q350 540 375 500 Q387 488 397 500 Q405 515 388 530 L345 610" fill="none" stroke="#e9c49b" stroke-width="18"/>
+ <path d="M270 700 Q250 760 270 795 M310 705 Q330 755 320 795" fill="none" stroke="#542b25" stroke-width="16"/>
+ <path d="M258 795l-20 12m82-12 18 12" fill="none" stroke="#542b25" stroke-width="10"/>
+ <!-- Athena right with helmet, spear, flowing peplos -->
+ <circle cx="505" cy="520" r="25" fill="#e9c49b" stroke="#542b25" stroke-width="8"/>
+ <path d="M480 510 Q475 480 500 470 Q530 468 535 500 L525 500 L516 486 L500 500Z" fill="#542b25" stroke="none"/>
+ <path d="M484 482q20-36 43-15l12 24" fill="none" stroke="#542b25" stroke-width="9"/>
+ <path d="M485 550 Q455 575 455 645 L465 710 Q505 730 545 700 L548 620 Q540 565 520 550Z" fill="#e9c49b" stroke-width="8"/>
+ <path d="M490 560 Q465 615 480 700 M520 560 Q550 620 530 700" fill="none" stroke="#542b25" stroke-width="7"/>
+ <path d="M480 570 Q450 550 435 515 Q425 500 415 510 Q405 525 420 540 L470 620" fill="none" stroke="#e9c49b" stroke-width="17"/>
+ <path d="M535 565 Q560 535 568 500" fill="none" stroke="#e9c49b" stroke-width="17"/>
+ <path d="M568 500 L570 410" fill="none" stroke="#542b25" stroke-width="9"/>
+ <path d="M465 710 Q450 760 465 800 M525 710 Q540 760 530 800" fill="none" stroke="#542b25" stroke-width="16"/>
+ <!-- painted ground and decorative palmettes -->
+ <path d="M270 820 Q400 845 530 820" fill="none" stroke="#542b25" stroke-width="9"/>
+ <path d="M290 850q-22-30-40 0q20 30 40 0m220 0q22-30 40 0q-20 30-40 0" fill="#542b25" stroke="none"/>
+</g>
+<path d="M270 390 Q400 415 530 390 M260 875 Q400 900 540 875" fill="none" stroke="#e8bd7d" stroke-width="5"/>
+</g>
+<rect x="62" y="1015" width="676" height="105" rx="5" fill="#f3e6c9" stroke="#8a4b36" stroke-width="3"/>
+<text x="400" y="1060" text-anchor="middle" font-family="Georgia,serif" font-size="29" fill="#552d25">Боги, герои и древние предания</text>
+<text x="400" y="1098" text-anchor="middle" font-family="Georgia,serif" font-size="18" letter-spacing="3" fill="#8a4b36">АНТИЧНЫЕ МИФЫ</text>
+</svg>
