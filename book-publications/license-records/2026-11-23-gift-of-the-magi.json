@@ -1,0 +1,58 @@
+{
+  "title": "The Gift of the Magi (Дары волхвов)",
+  "format": "short_story",
+  "language": "English",
+  "status": "rights_checked_prepared_for_publication",
+  "work": {
+    "author": "O. Henry (William Sydney Porter)",
+    "birth_year": 1862,
+    "death_year": 1910,
+    "first_publication": "10 December 1905, The New York Sunday World, under the title “Gifts of the Magi”; collected in The Four Million, 10 April 1906",
+    "edition_used": "Original English text; no modern translation or editorial commentary intentionally added",
+    "source_urls": [
+      "https://webhome.auburn.edu/~vestmon/Gift_of_the_Magi.html",
+      "https://www.gutenberg.org/ebooks/1595"
+    ],
+    "legal_basis": "Public domain. In the EU, the author’s economic rights last for life plus 70 years under Directive 2006/116/EC, Article 1(1). O. Henry died in 1910; the term expired on 31 December 1980, so the work entered the public domain on 1 January 1981. The United States publication dates are also far before the current public-domain cutoff. No translation is used.",
+    "commercial_use": "Permitted as a public-domain work; full text reproduced without a modern translation."
+  },
+  "cover": {
+    "file": "public/book-covers/gift-of-the-magi.svg",
+    "creator": "Original vector cover artwork created for BookCheef for this publication; no third-party artwork, fonts, photographs, or characters embedded",
+    "license": "Original work; released for unrestricted commercial use by BookCheef owner",
+    "commercial_use": "Permitted; original SVG asset created specifically for this publication."
+  },
+  "attribution": "Text: O. Henry, “The Gift of the Magi” (1905/1906), public domain. Cover: original BookCheef vector artwork.",
+  "checks": {
+    "text_complete": true,
+    "translation_used": false,
+    "cover_rights_checked": true,
+    "external_images_used": false,
+    "commercial_republication_basis_checked": true,
+    "duplicate_checked": true,
+    "checked_at": "2026-11-23",
+    "notes": "Public-domain term checked against EU Directive 2006/116/EC and Dutch government guidance. The book uses only the original English story and an original SVG cover. No external scan, modern edition, or illustration is embedded."
+  },
+  "sources": [
+    {
+      "url": "https://webhome.auburn.edu/~vestmon/Gift_of_the_Magi.html",
+      "supports": "Full English story text; page identifies O. Henry and Project Gutenberg etext source."
+    },
+    {
+      "url": "https://www.gutenberg.org/ebooks/1595",
+      "supports": "Project Gutenberg record for the story / text."
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/The_Gift_of_the_Magi",
+      "supports": "First publication and collected edition bibliographic dates; secondary corroboration."
+    },
+    {
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006L0116",
+      "supports": "EU Directive 2006/116/EC, Article 1: author life plus 70 years; anonymous work term."
+    },
+    {
+      "url": "https://business.gov.nl/regulations/copyright/",
+      "supports": "Dutch government guidance: copyright lasts 70 years after creator's death."
+    }
+  ]
+}
