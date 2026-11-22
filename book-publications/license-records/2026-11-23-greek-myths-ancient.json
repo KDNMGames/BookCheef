@@ -43,10 +43,60 @@
     }
   ],
   "translation": "Original Russian retellings prepared independently for BookCheef from ancient mythographic/literary accounts. No modern Russian translation copied.",
-  "illustrations": "All six interior illustrations and cover are original vector drawings in an ancient Greek black-figure / red-figure vase-inspired visual language. They are not stills, posters, character designs, or reproductions from films, television, games, or modern adaptations.",
+  "illustrations": [
+    {
+      "chapter": "Персефона и возвращение весны",
+      "source_url": "https://www.metmuseum.org/art/collection/search/252973",
+      "image_url": "https://collectionapi.metmuseum.org/api/collection/v1/iiif/252973/533739/main-image",
+      "object": "Attic red-figure bell-krater, attributed to the Persephone Painter, ca. 440 BCE, object 28.57.23",
+      "rights": "Public Domain; The Metropolitan Museum of Art Open Access",
+      "note": "The vase depicts Persephone ascending from the underworld and reuniting with Demeter."
+    },
+    {
+      "chapter": "Прометей и огонь для людей",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Prometeusz.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/07/Prometeusz.jpg",
+      "object": "Ancient Greek vase painting showing Heracles freeing Prometheus",
+      "creator": "Owczarczak",
+      "rights": "Public domain dedication by the photographer (CC0 / PD-self)",
+      "note": "Attribution retained in the visible image caption although CC0 does not require it."
+    },
+    {
+      "chapter": "Геракл и Немейский лев",
+      "source_url": "https://www.metmuseum.org/art/collection/search/254869",
+      "image_url": "https://collectionapi.metmuseum.org/api/collection/v1/iiif/254869/546261/main-image",
+      "object": "Attic black-figure amphora, Group E painter, ca. 540 BCE, object 56.171.11",
+      "rights": "Public Domain; The Metropolitan Museum of Art Open Access",
+      "note": "The vase depicts Heracles wrestling the Nemean Lion."
+    },
+    {
+      "chapter": "Дедал и Икар",
+      "source_url": "https://www.metmuseum.org/art/collection/search/251497",
+      "image_url": "https://collectionapi.metmuseum.org/api/collection/v1/iiif/251497/534403/main-image",
+      "object": "Attic red-figure lekythos, attributed to the Icarus Painter, second quarter of the 5th century BCE, object 24.97.37",
+      "rights": "Public Domain; The Metropolitan Museum of Art Open Access",
+      "note": "The museum describes a winged youth and bird; it notes that the figure is often identified as Icarus or Hypnos and that the identification is uncertain. The caption in the book preserves this uncertainty."
+    },
+    {
+      "chapter": "Тесей и Минотавр",
+      "source_url": "https://www.metmuseum.org/art/collection/search/254578",
+      "image_url": "https://collectionapi.metmuseum.org/api/collection/v1/iiif/254578/533738/main-image",
+      "object": "Attic black-figure amphora signed by Taleides, attributed to the Taleides Painter, ca. 540–530 BCE, object 47.11.5",
+      "rights": "Public Domain; The Metropolitan Museum of Art Open Access",
+      "note": "The vase depicts Theseus slaying the Minotaur."
+    },
+    {
+      "chapter": "Ясон и золотое руно",
+      "source_url": "https://www.metmuseum.org/art/collection/search/253427",
+      "image_url": "https://collectionapi.metmuseum.org/api/collection/v1/iiif/253427/538904/main-image",
+      "object": "Attic red-figure column-krater, attributed to the Orchard Painter, ca. 470–460 BCE, object 34.11.7",
+      "rights": "Public Domain; The Metropolitan Museum of Art Open Access",
+      "note": "The vase depicts Jason reaching for the Golden Fleece with Athena beside him and the Argo at the right."
+    }
+  ],
   "rights_assessment": {
     "underlying_texts": "Ancient Greek works are public-domain source material. The modern 1914 English translations and the 1921 Frazer translation are not reproduced; only source facts and narrative elements are independently retold in Russian.",
-    "artwork": "Original BookCheef vector artwork created for this edition. No museum image or copyrighted reproduction incorporated.",
+    "artwork": "Interior chapter images are photographs of ancient vase paintings, not modern illustrations: five The Metropolitan Museum of Art Open Access images marked Public Domain, plus one Wikimedia Commons photograph explicitly dedicated to the public domain by its photographer (CC0 / PD-self). Object/source metadata and attribution are retained in each image caption and this ledger. The Icarus chapter caption notes that the museum considers the winged figure's identity uncertain.",
     "historical_scope": "The stories are myths recorded in ancient literature, not claims that the events happened as verifiable history. The edition identifies the ancient textual witnesses and does not blend in modern screen adaptations."
   },
   "attribution": "Based on the Homeric Hymn to Demeter, Hesiod's Theogony, and Apollodorus' Bibliotheca/Epitome. Independent Russian retellings and original illustrations prepared for BookCheef.",
@@ -56,6 +106,8 @@
     "Cross-checked narrative episodes against the cited ancient-source traditions.",
     "Kept Roman-era Apollodorus distinct from archaic Greek poets in source notes.",
     "Excluded Ovid-only versions and modern film/television/game interpretations.",
-    "All illustration URLs point to original SVG assets in the BookCheef repository."
-  ]
+    "All illustration URLs point to original SVG assets in the BookCheef repository.",
+    "Replaced all six in-book original SVG drawings with six source-verified photographs of ancient Greek vase paintings; rights checked individually and image captions include object/creator and rights attribution."
+  ],
+  "illustrations_summary": "The six former original SVG chapter drawings have been replaced in the publication package with photographs of authentic ancient Greek vase paintings. Five photographs are from The Metropolitan Museum of Art Open Access records, each marked Public Domain by the museum and available for unrestricted commercial and noncommercial use. The Prometheus photograph is by Owczarczak and is explicitly dedicated to the public domain on Wikimedia Commons. No film, television, game, or modern adaptation imagery is used."
 }
