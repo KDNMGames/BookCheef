@@ -1,0 +1,28 @@
+{
+  "publication_key": "bookcheef-2026-11-23-open-window-saki",
+  "title": "Открытое окно",
+  "author": "Hector Hugh Munro (Saki), 1870–1916",
+  "first_publication": "18 November 1911, Westminster Gazette; reprinted in Beasts and Super-Beasts (1914)",
+  "source_urls": [
+    "https://www.gutenberg.org/ebooks/269",
+    "https://www.gutenberg.org/files/269/269-h/269-h.htm",
+    "https://www.annotated-saki.info/first-publication/"
+  ],
+  "evidence": "Project Gutenberg identifies Saki (1870–1916), the 1914 collection and the story's text; its author note says The Open Window first appeared in the Westminster Gazette. The Annotated Saki bibliography dates first publication to 18 November 1911.",
+  "rights_assessment": {
+    "us": "Project Gutenberg marks the 1914 collection as public domain in the USA.",
+    "eu_eea": "Saki died in 1916. Under EU Directive 2006/116/EC Article 1(1), the ordinary author term is life plus 70 years; on the supplied author/death evidence, the term expired at the end of 1986. The story's earlier 1911 newspaper publication is also documented.",
+    "germany": "German UrhG §64 provides life plus 70 years; Saki died in 1916, so protection expired 31 December 1986.",
+    "translations": "No modern third-party Russian translation is reused. This Russian text is a new independent translation prepared for BookCheef.",
+    "illustrations": "The source story is text-only in the consulted edition. The BookCheef cover and two in-book illustrations are newly authored SVG artwork."
+  },
+  "attribution": "H. H. Munro (Saki), “The Open Window,” first published 1911; collected in Beasts and Super-Beasts (1914). New Russian translation and original illustrations for BookCheef.",
+  "status": "approved_with_scope",
+  "scope": "Commercial digital publication in the USA and EU/EEA based on cited publication and author-death evidence; not a worldwide legal opinion.",
+  "review_notes": [
+    "Original story was checked in Project Gutenberg's transcription of the 1914 edition.",
+    "First publication date cross-checked against The Annotated Saki bibliography.",
+    "Author death year 1916 checked against Project Gutenberg metadata.",
+    "Original cover and in-book SVG illustrations created for BookCheef; no third-party image reused."
+  ]
+}
