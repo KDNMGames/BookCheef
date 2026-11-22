@@ -688,3 +688,34 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @media(prefers-reduced-motion:reduce){
   .pro-book-card .book-back::before{animation:none;transform:translateX(0) rotate(8deg);opacity:.22}
 }
+
+
+/* Stronger typography contrast on Pro gold card backs */
+.pro-book-card .book-back{
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+}
+.pro-book-card .book-back .back-top,
+.pro-book-card .book-back h3,
+.pro-book-card .book-back p{
+  color:#fff !important;
+  font-weight:700;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.98),
+    0 2px 5px rgba(0,0,0,.92),
+    0 0 12px rgba(0,0,0,.72);
+  -webkit-text-stroke:.2px rgba(35,21,3,.72);
+}
+.pro-book-card .book-back h3{
+  font-weight:800;
+  text-shadow:
+    0 2px 2px rgba(0,0,0,1),
+    0 3px 8px rgba(0,0,0,.95),
+    0 0 16px rgba(0,0,0,.72);
+}
+.pro-book-card .book-back p{
+  line-height:1.55;
+}
+.pro-book-card .book-back .back-top{
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));
+}
