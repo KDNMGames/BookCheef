@@ -1,0 +1,61 @@
+{
+  "publication_key": "bookcheef-2026-11-23-greek-myths-ancient",
+  "title": "Мифы Древней Греции: боги, герои и древние предания",
+  "source_urls": [
+    "https://www.theoi.com/Text/HomericHymns.html",
+    "https://www.theoi.com/Text/HesiodTheogony.html",
+    "https://www.theoi.com/Text/Apollodorus1.html",
+    "https://www.theoi.com/Text/Apollodorus2.html",
+    "https://www.theoi.com/Text/Apollodorus3.html",
+    "https://www.theoi.com/Text/ApollodorusE.html",
+    "https://www.gutenberg.org/ebooks/348"
+  ],
+  "sources": [
+    {
+      "myths": "Persephone and Demeter",
+      "ancient_source": "Homeric Hymn to Demeter",
+      "source_type": "ancient Greek literary source"
+    },
+    {
+      "myths": "Prometheus",
+      "ancient_source": "Hesiod, Theogony; Works and Days",
+      "source_type": "ancient Greek literary source"
+    },
+    {
+      "myths": "Heracles and the Nemean Lion",
+      "ancient_source": "Apollodorus, Bibliotheca 2.5",
+      "source_type": "ancient mythographic compilation"
+    },
+    {
+      "myths": "Daedalus and Icarus",
+      "ancient_source": "Apollodorus, Bibliotheca 3.15.8",
+      "source_type": "ancient mythographic compilation"
+    },
+    {
+      "myths": "Theseus and the Minotaur",
+      "ancient_source": "Apollodorus, Epitome 1.1–1.11",
+      "source_type": "ancient mythographic compilation"
+    },
+    {
+      "myths": "Jason and the Golden Fleece",
+      "ancient_source": "Apollodorus, Bibliotheca 1.9.16 and following",
+      "source_type": "ancient mythographic compilation"
+    }
+  ],
+  "translation": "Original Russian retellings prepared independently for BookCheef from ancient mythographic/literary accounts. No modern Russian translation copied.",
+  "illustrations": "All six interior illustrations and cover are original vector drawings in an ancient Greek black-figure / red-figure vase-inspired visual language. They are not stills, posters, character designs, or reproductions from films, television, games, or modern adaptations.",
+  "rights_assessment": {
+    "underlying_texts": "Ancient Greek works are public-domain source material. The modern 1914 English translations and the 1921 Frazer translation are not reproduced; only source facts and narrative elements are independently retold in Russian.",
+    "artwork": "Original BookCheef vector artwork created for this edition. No museum image or copyrighted reproduction incorporated.",
+    "historical_scope": "The stories are myths recorded in ancient literature, not claims that the events happened as verifiable history. The edition identifies the ancient textual witnesses and does not blend in modern screen adaptations."
+  },
+  "attribution": "Based on the Homeric Hymn to Demeter, Hesiod's Theogony, and Apollodorus' Bibliotheca/Epitome. Independent Russian retellings and original illustrations prepared for BookCheef.",
+  "status": "approved_with_scope",
+  "scope": "Underlying ancient literary material and original artwork; independent modern translations are not reused. This rights record covers the supplied text and artwork, not a claim that mythic events are historical fact.",
+  "review_notes": [
+    "Cross-checked narrative episodes against the cited ancient-source traditions.",
+    "Kept Roman-era Apollodorus distinct from archaic Greek poets in source notes.",
+    "Excluded Ovid-only versions and modern film/television/game interpretations.",
+    "All illustration URLs point to original SVG assets in the BookCheef repository."
+  ]
+}
