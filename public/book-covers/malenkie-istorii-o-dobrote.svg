@@ -1,12 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200">
-<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#b7d5d0"/><stop offset=".62" stop-color="#e9d8b8"/><stop offset="1" stop-color="#f0e6d2"/></linearGradient><linearGradient id="field" x2="0" y2="1"><stop stop-color="#829c78"/><stop offset="1" stop-color="#405f52"/></linearGradient><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .07 0"/></filter></defs>
-<rect width="800" height="1200" fill="#f4ecdc"/><rect x="32" y="32" width="736" height="1136" rx="10" fill="url(#sky)"/>
-<circle cx="635" cy="180" r="72" fill="#f8e8b8" opacity=".8"/>
-<path d="M32 680 Q190 560 360 680 T768 650 V930 H32Z" fill="#a8b69a"/><path d="M32 780 Q240 660 410 790 T768 760 V930 H32Z" fill="url(#field)"/>
-<path d="M90 770 Q120 650 180 600 Q210 680 210 760" fill="none" stroke="#5e7c62" stroke-width="15" stroke-linecap="round"/>
-<path d="M120 640 Q65 580 110 530 Q165 550 160 620 Q220 560 250 615 Q235 680 165 680" fill="#718f73"/>
-<path d="M540 650 Q590 590 650 610 Q690 660 650 710" fill="#6f8f73"/>
-<g transform="translate(350 420)"><path d="M0 140 Q40 40 130 55 Q205 65 235 155 Q170 230 65 220Z" fill="#e6c9a0" stroke="#765f4b" stroke-width="8"/><path d="M15 140 Q110 90 220 145" fill="none" stroke="#765f4b" stroke-width="7"/><path d="M75 55 Q60 -10 115 -24 Q160 -4 145 65" fill="#b8a07e" stroke="#765f4b" stroke-width="8"/><path d="M104 75 Q125 20 165 40 Q198 70 160 102" fill="#b8a07e" stroke="#765f4b" stroke-width="7"/><path d="M130 75 Q205 10 260 60 Q230 125 155 120" fill="#6e927b" stroke="#405c50" stroke-width="7"/><path d="M155 100 Q225 95 245 130" fill="none" stroke="#405c50" stroke-width="6"/></g>
-<g fill="#f4e7c8"><circle cx="270" cy="540" r="7"/><circle cx="300" cy="515" r="5"/><circle cx="620" cy="520" r="8"/><circle cx="590" cy="555" r="5"/></g>
-<rect x="32" y="930" width="736" height="238" fill="#f5eddd"/><path d="M72 965 H728" stroke="#b18d5b" stroke-width="3"/><text x="400" y="1035" text-anchor="middle" font-family="Georgia,serif" font-size="53" fill="#3e5548" letter-spacing="1">МАЛЕНЬКИЕ ИСТОРИИ</text><text x="400" y="1095" text-anchor="middle" font-family="Georgia,serif" font-size="54" fill="#3e5548" font-weight="bold">О ДОБРОТЕ</text><text x="400" y="1140" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" fill="#78664f" letter-spacing="4">СТАРИННЫЕ РАССКАЗЫ · 1847</text><rect x="32" y="32" width="736" height="1136" rx="10" fill="none" stroke="#8e7654" stroke-width="5"/><rect width="800" height="1200" filter="url(#grain)" opacity=".28"/>
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a8c8c2"/><stop offset=".55" stop-color="#e7d5b3"/><stop offset="1" stop-color="#f0e2c7"/></linearGradient>
+ <linearGradient id="meadow" x2="0" y2="1"><stop stop-color="#91a17a"/><stop offset="1" stop-color="#526c54"/></linearGradient>
+ <filter id="paper"><feTurbulence type="fractalNoise" baseFrequency=".65" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .08 0"/></filter>
+</defs>
+<rect width="800" height="1200" fill="#f1e7d2"/>
+<rect x="28" y="28" width="744" height="1144" fill="url(#sky)" stroke="#806c51" stroke-width="4"/>
+<circle cx="640" cy="175" r="66" fill="#f6e6bd" opacity=".9"/>
+<path d="M30 590 Q160 490 280 560 T520 545 T770 540 V930 H30Z" fill="#b5b995"/>
+<path d="M30 700 Q170 610 330 690 T600 670 T770 660 V930 H30Z" fill="url(#meadow)"/>
+<!-- distant cottage and orchard -->
+<g stroke="#75634d" stroke-width="7" stroke-linejoin="round">
+ <path d="M75 535 L170 455 L270 535 V660 H75Z" fill="#e6d3b0"/>
+ <path d="M55 540 L170 435 L290 540" fill="none" stroke="#805846" stroke-width="17"/>
+ <rect x="125" y="565" width="48" height="95" fill="#96735a"/>
+ <rect x="195" y="555" width="42" height="48" fill="#8eaaa1"/>
+ <path d="M355 570 Q340 500 385 455 Q435 425 475 480 Q505 535 475 600" fill="#708967"/>
+ <path d="M420 570 L420 710" fill="none" stroke="#715640" stroke-width="17"/>
+</g>
+<!-- elderly villager seated on a low garden bench -->
+<g stroke="#5c4b3e" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M455 770 Q490 735 560 755 L585 795 L550 825 L470 815Z" fill="#8b715b" stroke-width="8"/>
+ <path d="M470 815 L455 875 M560 815 L580 875" fill="none" stroke-width="13"/>
+ <path d="M465 625 Q490 585 535 600 Q580 625 575 700 L550 785 Q510 805 465 770 L445 685Z" fill="#7d8d83" stroke-width="8"/>
+ <path d="M472 620 Q485 575 530 582 Q570 595 560 630 Q525 648 480 638Z" fill="#e3c7a2" stroke-width="7"/>
+ <path d="M482 602 Q495 560 535 575 Q565 585 565 615" fill="none" stroke="#eee1cb" stroke-width="15"/>
+ <path d="M470 650 Q430 680 400 725" fill="none" stroke="#e3c7a2" stroke-width="19"/>
+ <path d="M530 660 Q570 680 600 710" fill="none" stroke="#e3c7a2" stroke-width="18"/>
+ <path d="M480 690 Q515 710 550 690" fill="none" stroke="#5c4b3e" stroke-width="4"/>
+</g>
+<!-- young child offering a small bunch of flowers -->
+<g stroke="#59483b" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M250 665 Q265 620 305 615 Q350 625 355 685 L345 795 Q305 820 260 795Z" fill="#b45e4a" stroke-width="8"/>
+ <path d="M265 635 Q260 590 300 575 Q340 578 345 620 Q330 645 265 635Z" fill="#e8c6a0" stroke-width="7"/>
+ <path d="M265 600 Q260 560 300 550 Q345 550 352 600 Q320 580 292 605Z" fill="#76523f" stroke-width="8"/>
+ <path d="M265 690 Q235 705 210 740 M345 690 Q370 680 397 706" fill="none" stroke="#e8c6a0" stroke-width="19"/>
+ <path d="M260 790 L250 875 M330 790 L350 875" fill="none" stroke="#4b4138" stroke-width="19"/>
+ <path d="M397 706 Q420 680 440 665" fill="none" stroke="#4b4138" stroke-width="6"/>
+</g>
+<!-- little flowers, held between them -->
+<g stroke="#49634d" stroke-width="5" stroke-linecap="round">
+ <path d="M405 705 L420 650 M420 705 L447 660 M414 685 L395 665" fill="none"/>
+ <g fill="#e9d7a7" stroke="#8c694e" stroke-width="3"><circle cx="420" cy="642" r="12"/><circle cx="447" cy="654" r="11"/><circle cx="393" cy="659" r="10"/></g>
+ <g fill="#b96b59" stroke="none"><circle cx="420" cy="642" r="4"/><circle cx="447" cy="654" r="4"/><circle cx="393" cy="659" r="4"/></g>
+</g>
+<!-- little dog watching kindly -->
+<g stroke="#59483b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M600 815 Q625 770 680 790 Q715 810 700 850 L665 875 L610 860Z" fill="#c9a77d"/>
+ <path d="M615 800 Q600 770 620 755 Q645 760 650 790" fill="#9c795b"/>
+ <path d="M675 800 Q695 770 712 790 L700 825" fill="#9c795b"/>
+ <path d="M620 860 L615 900 M680 865 L690 900" fill="none" stroke-width="12"/>
+ <path d="M600 820 Q575 800 580 780" fill="none" stroke-width="9"/>
+ <circle cx="665" cy="815" r="5" fill="#302a25" stroke="none"/>
+</g>
+<g fill="#f1e3c4" opacity=".8"><path d="M80 835q-10-30 8-45q15 20 3 45m30 10q-8-25 10-40q14 23 2 42m-4-30q15-20 30-8q-8 25-30 8"/></g>
+<rect x="28" y="930" width="744" height="242" fill="#f3ead8"/>
+<path d="M80 965 Q400 980 720 965" fill="none" stroke="#9a7c58" stroke-width="3"/>
+<text x="400" y="1035" text-anchor="middle" font-family="Georgia,serif" font-size="47" fill="#405b4b">МАЛЕНЬКИЕ ИСТОРИИ</text>
+<text x="400" y="1095" text-anchor="middle" font-family="Georgia,serif" font-size="59" font-weight="bold" fill="#8a4e3d">О ДОБРОТЕ</text>
+<text x="400" y="1140" text-anchor="middle" font-family="Georgia,serif" font-size="17" letter-spacing="4" fill="#78664f">СТАРИННЫЕ РАССКАЗЫ · 1847</text>
+<rect x="28" y="28" width="744" height="1144" fill="none" stroke="#806c51" stroke-width="4"/>
+<rect width="800" height="1200" filter="url(#paper)" opacity=".3"/>
 </svg>
