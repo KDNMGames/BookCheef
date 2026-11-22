@@ -719,3 +719,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .pro-book-card .book-back .back-top{
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));
 }
+
+
+/* Маркер и отдельный рейтинг коротких книг */
+.short-book-label{display:inline-flex;align-items:center;white-space:nowrap;padding:5px 8px;border:1px solid #d9b77788;border-radius:999px;background:#d9b77718;color:#f1d49c;font-size:9px;font-weight:700;letter-spacing:.02em}.card-under{flex-wrap:wrap;row-gap:5px}#short-books .section-head h2{color:#f0d5a0}#short-books .section-head .eyebrow{color:#e0bd7f}#short-books .book-card:first-child .book-inner{box-shadow:0 0 0 1px #d8b777aa,0 0 32px #d8b77735}
+@media(max-width:600px){.short-book-label{font-size:8px;padding:4px 6px}.card-under{flex-direction:row;align-items:center}}
