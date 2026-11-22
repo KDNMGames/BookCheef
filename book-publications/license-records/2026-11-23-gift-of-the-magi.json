@@ -1,58 +1,55 @@
 {
-  "title": "The Gift of the Magi",
+  "title": "Дары волхвов",
   "format": "short_story",
-  "language": "English",
-  "status": "rights_checked_prepared_for_publication",
+  "language": "Russian translation",
+  "status": "rights_checked_translation_prepared",
   "work": {
-    "author": "O. Henry (William Sydney Porter)",
+    "author": "О. Генри (Уильям Сидни Портер)",
     "birth_year": 1862,
     "death_year": 1910,
     "first_publication": "10 December 1905, The New York Sunday World, under the title “Gifts of the Magi”; collected in The Four Million, 10 April 1906",
-    "edition_used": "Original English text; no modern translation, later adaptation, or commentary used",
     "source_urls": [
       "https://www.gutenberg.org/ebooks/7256",
       "https://www.gutenberg.org/files/7256/7256-h/7256-h.htm"
     ],
-    "legal_basis": "Public domain in the United States as an early-20th-century published work. In the EU, Directive 2006/116/EC Article 1(1) provides life plus 70 years; O. Henry died in 1910, so the term expired at the end of 1980 and the work entered the public domain on 1 January 1981. Dutch government guidance confirms the 70-year post-mortem term. This assessment covers the original English literary work; no translation is used.",
-    "commercial_use": "The underlying original story is public domain in the checked US and EU/NL jurisdictions and may be reproduced and commercially distributed there. No Project Gutenberg branding or electronic-edition license text is embedded in the site content; the text itself is the public-domain story."
+    "translation": "Новый русский перевод подготовлен для BookCheef по тексту произведения, находящегося в общественном достоянии в проверенных юрисдикциях. Современный сторонний перевод не использован.",
+    "legal_basis": "Оригинальное произведение находится в общественном достоянии в США; в ЕС срок охраны — жизнь автора плюс 70 лет. О. Генри умер в 1910 году, срок истёк в конце 1980 года, произведение перешло в общественное достояние 1 января 1981 года. Русский перевод создан заново для BookCheef.",
+    "commercial_use": "Оригинальный текст и самостоятельно созданный перевод допускаются к коммерческому использованию в проверенных США и ЕС/Нидерландах. Международный статус вне этих юрисдикций отдельно не сертифицирован."
   },
   "cover": {
     "file": "public/book-covers/gift-of-the-magi.svg",
-    "creator": "Original vector cover artwork created specifically for BookCheef; no third-party artwork, photographs, logos, or embedded fonts",
-    "license": "Original artwork; released for unrestricted commercial use by the BookCheef owner",
-    "commercial_use": "Permitted; newly created original SVG."
+    "creator": "Обновлённая оригинальная векторная иллюстрация, созданная для BookCheef.",
+    "layout": "Иллюстрация расположена в верхней самостоятельной области. Название, автор и подпись находятся в отдельной нижней панели; текст не накладывается на изображение.",
+    "license": "Оригинальная графика BookCheef; разрешено коммерческое использование владельцем проекта."
   },
-  "attribution": "Text: O. Henry, “The Gift of the Magi” (first published 1905; collected 1906), public domain. Cover: original BookCheef vector artwork.",
+  "attribution": "Текст: О. Генри, «Дары волхвов» (1905), общественное достояние; перевод: новый перевод для BookCheef. Обложка: оригинальная иллюстрация BookCheef.",
   "checks": {
     "text_complete": true,
-    "translation_used": false,
+    "translation_created": true,
+    "third_party_translation_used": false,
     "cover_rights_checked": true,
-    "external_images_used": false,
+    "cover_text_overlaps_illustration": false,
     "commercial_republication_basis_checked": true,
     "duplicate_checked": true,
     "checked_at": "2026-11-23",
-    "notes": "Verified author dates and EU/NL term. The book contains the original English story and an original SVG cover. Project Gutenberg was used as a transcription/source reference only; Project Gutenberg name, branding, and its electronic-edition license are not presented as part of the book. International status outside the US and EU/NL has not been individually certified; do not represent this review as worldwide legal clearance."
+    "notes": "Проверены даты автора и срок охраны в ЕС/Нидерландах. Project Gutenberg использован только как источник исходного текста; его фирменное оформление и электронное издание не воспроизводятся. Международный статус вне США и ЕС/Нидерландов отдельно не подтверждён."
   },
   "sources": [
     {
       "url": "https://www.gutenberg.org/ebooks/7256",
-      "supports": "Official Project Gutenberg bibliographic record; author, dates, language, and public-domain-in-US statement."
+      "supports": "Официальная библиографическая запись Project Gutenberg: автор, даты, язык и статус общественного достояния в США."
     },
     {
       "url": "https://www.gutenberg.org/files/7256/7256-h/7256-h.htm",
-      "supports": "Complete English text used as transcription reference; includes explicit distinction between the public-domain underlying work and Project Gutenberg trademark/electronic-work terms."
-    },
-    {
-      "url": "https://en.wikipedia.org/wiki/The_Gift_of_the_Magi",
-      "supports": "Secondary corroboration of first publication and 1906 collection publication dates."
+      "supports": "Исходный английский текст для нового перевода."
     },
     {
       "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006L0116",
-      "supports": "EU Directive 2006/116/EC Article 1(1): life plus 70 years; Article 1(3): anonymous work duration."
+      "supports": "Директива ЕС 2006/116/EC, статья 1(1): срок охраны — жизнь автора плюс 70 лет."
     },
     {
       "url": "https://business.gov.nl/regulations/copyright/",
-      "supports": "Dutch government guidance: copyright expires 70 years after creator's death."
+      "supports": "Разъяснение правительства Нидерландов о сроке охраны авторского права."
     }
   ]
 }
