@@ -1,20 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800">
-<defs><linearGradient id="bg" x2="0" y2="1"><stop stop-color="#173b35"/><stop offset="1" stop-color="#081f22"/></linearGradient><linearGradient id="gold" x2="1" y2="1"><stop stop-color="#f9df9a"/><stop offset="1" stop-color="#b97a32"/></linearGradient></defs>
+<defs>
+  <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#183c36"/><stop offset="1" stop-color="#071e22"/></linearGradient>
+  <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#f8e3ad"/><stop offset="1" stop-color="#b98743"/></linearGradient>
+  <linearGradient id="gift" x2="0" y2="1"><stop stop-color="#bd5550"/><stop offset="1" stop-color="#762b35"/></linearGradient>
+</defs>
 <rect width="1200" height="1800" fill="url(#bg)"/>
-<rect x="70" y="70" width="1060" height="1660" rx="18" fill="none" stroke="url(#gold)" stroke-width="8"/>
-<circle cx="600" cy="690" r="300" fill="none" stroke="#d9b46b" stroke-opacity=".22" stroke-width="3"/>
-<path d="M600 300 C520 420 520 520 600 610 C680 520 680 420 600 300Z" fill="#d9b46b" opacity=".14"/>
-<g transform="translate(330 680)">
-<rect x="30" y="160" width="480" height="350" rx="22" fill="#9d3436" stroke="url(#gold)" stroke-width="14"/>
-<path d="M240 160 V510 M30 300 H510" stroke="url(#gold)" stroke-width="34"/>
-<path d="M270 160 C140 70 100 5 190 12 C255 18 270 100 270 160Z" fill="#d9b46b" stroke="#f9df9a" stroke-width="8"/>
-<path d="M270 160 C400 70 440 5 350 12 C285 18 270 100 270 160Z" fill="#d9b46b" stroke="#f9df9a" stroke-width="8"/>
-<circle cx="270" cy="160" r="28" fill="#f9df9a"/>
-</g>
-<text x="600" y="220" text-anchor="middle" font-family="Georgia,serif" font-size="38" letter-spacing="9" fill="#f3dca7">A CHRISTMAS CLASSIC</text>
-<text x="600" y="1250" text-anchor="middle" font-family="Georgia,serif" font-size="88" font-weight="bold" fill="#fff2d5">THE GIFT</text>
-<text x="600" y="1360" text-anchor="middle" font-family="Georgia,serif" font-size="88" font-weight="bold" fill="#fff2d5">OF THE MAGI</text>
-<path d="M320 1425 H880" stroke="url(#gold)" stroke-width="4"/>
-<text x="600" y="1515" text-anchor="middle" font-family="Georgia,serif" font-size="48" fill="#e6c98c">O. HENRY</text>
-<text x="600" y="1640" text-anchor="middle" font-family="Georgia,serif" font-size="24" letter-spacing="5" fill="#d8c59c">ORIGINAL ENGLISH TEXT</text>
+<rect x="58" y="58" width="1084" height="1684" rx="22" fill="none" stroke="url(#gold)" stroke-width="7"/>
+<rect x="105" y="125" width="990" height="1050" rx="24" fill="#102e2d" stroke="#9d814e" stroke-opacity=".65" stroke-width="3"/>
+<circle cx="600" cy="455" r="260" fill="none" stroke="#e5c985" stroke-opacity=".28" stroke-width="4"/>
+<circle cx="600" cy="455" r="215" fill="none" stroke="#e5c985" stroke-opacity=".14" stroke-width="2"/>
+<path d="M220 205 H980 V870 H220Z" fill="#0b2229" stroke="#d4b779" stroke-width="15"/>
+<path d="M600 212 V862 M228 540 H972" stroke="#d4b779" stroke-width="12" opacity=".8"/>
+<path d="M260 240 Q410 165 560 240 T860 240" fill="none" stroke="#f3dca7" stroke-opacity=".35" stroke-width="5"/>
+<g fill="#f8e6b4"><circle cx="350" cy="335" r="8"/><circle cx="470" cy="285" r="6"/><circle cx="755" cy="330" r="8"/><circle cx="870" cy="420" r="6"/><circle cx="410" cy="690" r="6"/><circle cx="805" cy="720" r="7"/><circle cx="690" cy="270" r="5"/></g>
+<ellipse cx="600" cy="960" rx="255" ry="42" fill="#000" opacity=".25"/>
+<rect x="365" y="700" width="470" height="270" rx="18" fill="url(#gift)" stroke="url(#gold)" stroke-width="12"/>
+<path d="M600 700 V970 M365 805 H835" stroke="url(#gold)" stroke-width="34"/>
+<path d="M600 705 C470 610 425 520 510 530 C580 538 600 635 600 705Z" fill="#d9b46b" stroke="#f9df9a" stroke-width="8"/>
+<path d="M600 705 C730 610 775 520 690 530 C620 538 600 635 600 705Z" fill="#d9b46b" stroke="#f9df9a" stroke-width="8"/>
+<circle cx="600" cy="705" r="26" fill="#fff0c9"/>
+<path d="M160 1220 H1040" stroke="url(#gold)" stroke-width="5"/>
+<text x="600" y="1335" text-anchor="middle" font-family="Georgia,serif" font-size="94" font-weight="bold" letter-spacing="2" fill="#fff0d0">ДАРЫ ВОЛХВОВ</text>
+<text x="600" y="1455" text-anchor="middle" font-family="Georgia,serif" font-size="52" fill="#e6ca91">О. ГЕНРИ</text>
+<text x="600" y="1590" text-anchor="middle" font-family="Georgia,serif" font-size="26" letter-spacing="5" fill="#d8c59c">РОЖДЕСТВЕНСКИЙ РАССКАЗ</text>
 </svg>
