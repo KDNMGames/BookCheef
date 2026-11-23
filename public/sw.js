@@ -14,7 +14,8 @@ self.addEventListener('fetch',event=>{
  if(['script','style','font','image'].includes(request.destination)){
   event.respondWith(caches.match(request).then(cached=>{
    const update=fetch(request).then(response=>{if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));return response});
-   return cached||update;
+   if(cached){event.waitUntil(update.catch(()=>{}));return cached;}
+   return update;
   }));
  }
 });
