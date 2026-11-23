@@ -776,3 +776,6 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
  .book-card.card-arrived .book-inner,.collection-card-wrap{animation:none}
  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+/* Scroll reveal owns the entrance timing; disable the legacy page-load animation. */
+.book-card{animation:none}
