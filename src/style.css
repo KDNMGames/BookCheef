@@ -844,3 +844,13 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
   }
   .pro-book-card:active .book-description-drawer{border-color:rgba(255,220,130,.72)}
 }
+
+/* Performance defaults for low-power devices and long catalogs. */
+.book-card,.collection-card-wrap{content-visibility:auto;contain-intrinsic-size:440px}
+.book-card img{background:#17151d}
+@media(prefers-reduced-motion:reduce){
+ .book-card,.book-card *,.collection-card-wrap,.collection-card-wrap *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+}
+@media(hover:none){
+ .book-card:hover .book-description-drawer{max-height:0;padding:0 15px;border-color:transparent}
+}
