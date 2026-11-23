@@ -764,18 +764,12 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 .socials a{border-color:rgba(214,190,145,.28);background:rgba(255,255,255,.035);transition:all .22s var(--ui-ease)}
 .socials a:hover{background:var(--ui-gold-soft);box-shadow:0 4px 18px rgba(198,163,106,.12);transform:translateY(-2px)}
 /* Cards are revealed as if gently placed onto the shelf while scrolling. */
-.book-card.card-arrival-pending{opacity:0;transform:translate3d(0,58px,0) rotateX(8deg) scale(.965);transform-origin:50% 100%;filter:blur(3px)}
-.book-card.card-arrived{opacity:1;transform:translate3d(0,0,0) rotateX(0) scale(1);filter:blur(0);transition:opacity .72s var(--ui-ease),transform .82s var(--ui-ease),filter .72s var(--ui-ease);transition-delay:calc(var(--arrival-order,0)*65ms)}
-.book-card.card-arrived .book-inner{animation:shelf-settle .65s var(--ui-ease) both;animation-delay:calc(var(--arrival-order,0)*65ms)}
-@keyframes shelf-settle{0%{box-shadow:0 0 0 rgba(0,0,0,0);transform:translateY(7px)}65%{box-shadow:0 18px 34px rgba(0,0,0,.22);transform:translateY(-2px)}100%{box-shadow:none;transform:translateY(0)}}
+.book-card.card-arrived{animation:book-card-place .78s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(var(--arrival-order,0)*65ms);transform-origin:50% 100%}
+@keyframes book-card-place{0%{opacity:.25;transform:translate3d(0,38px,0) rotateX(5deg) scale(.97);filter:blur(2px)}72%{opacity:1;transform:translate3d(0,-3px,0) rotateX(0) scale(1);filter:blur(0)}100%{opacity:1;transform:translate3d(0,0,0) rotateX(0) scale(1);filter:none}}
 .collection-card-wrap{animation:collection-arrive .65s var(--ui-ease) both}
 .collection-card-wrap:nth-child(2n){animation-delay:.08s}.collection-card-wrap:nth-child(3n){animation-delay:.16s}
 @keyframes collection-arrive{from{opacity:0;transform:translateY(28px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(prefers-reduced-motion:reduce){
- .book-card.card-arrival-pending,.book-card.card-arrived{opacity:1;transform:none;filter:none;transition:none}
- .book-card.card-arrived .book-inner,.collection-card-wrap{animation:none}
- *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
-}
+@media(prefers-reduced-motion:reduce){.book-card.card-arrived,.collection-card-wrap{animation:none!important}*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
 
 /* Scroll reveal owns the entrance timing; disable the legacy page-load animation. */
 .book-card{animation:none}
