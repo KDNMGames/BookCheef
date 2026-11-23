@@ -1,62 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 900 1350">
 <defs>
- <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#d8c6a6"/><stop offset="1" stop-color="#a58b70"/></linearGradient>
- <linearGradient id="garden" x2="0" y2="1"><stop stop-color="#8c9b82"/><stop offset="1" stop-color="#344f45"/></linearGradient>
- <linearGradient id="dusk" x2="0" y2="1"><stop stop-color="#82949a"/><stop offset="1" stop-color="#d7b98d"/></linearGradient>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#d0bea0"/><stop offset="1" stop-color="#74614f"/></linearGradient>
+ <linearGradient id="dusk" x2="0" y2="1"><stop stop-color="#536879"/><stop offset=".55" stop-color="#bd8a70"/><stop offset="1" stop-color="#293d3b"/></linearGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#6d4e39"/><stop offset="1" stop-color="#2a201c"/></linearGradient>
 </defs>
-<rect width="800" height="1200" fill="#eee3cf"/>
-<rect x="28" y="28" width="744" height="1144" fill="url(#wall)" stroke="#725b45" stroke-width="5"/>
-<!-- interior wall, floor and wainscoting -->
-<path d="M30 760 H770 V930 H30Z" fill="#8c745c"/>
-<path d="M30 795 H770 M30 910 H770" stroke="#d4bd97" stroke-width="8"/>
-<path d="M65 805 V900 M735 805 V900" stroke="#6f5945" stroke-width="5"/>
-<!-- wide French window, open casements -->
-<rect x="180" y="150" width="445" height="580" fill="#6d6556" stroke="#604c3c" stroke-width="22"/>
-<rect x="205" y="175" width="395" height="530" fill="url(#dusk)"/>
-<path d="M205 480 Q290 390 365 465 T600 455 V705 H205Z" fill="url(#garden)"/>
-<g fill="#435f4c"><path d="M220 480q-30-150 45-210q75 75 35 220m-10 10q5-170 85-225q60 100 10 230m90-5q-10-140 65-190q55 80 20 195"/></g>
-<path d="M205 590 Q320 535 420 590 T600 575" fill="none" stroke="#c2ad83" stroke-width="9"/>
-<!-- open left and right shutters, natural wood panels -->
-<path d="M180 150 Q105 185 92 255 L92 690 Q145 720 180 680Z" fill="#7e4f3f" stroke="#503b31" stroke-width="13"/>
-<path d="M160 205 L125 260 L125 650 L160 665Z" fill="#a76e54" stroke="#5c4033" stroke-width="7"/>
-<path d="M625 150 Q700 185 713 255 L713 690 Q660 720 625 680Z" fill="#7e4f3f" stroke="#503b31" stroke-width="13"/>
-<path d="M645 205 L680 260 L680 650 L645 665Z" fill="#a76e54" stroke="#5c4033" stroke-width="7"/>
-<!-- pale curtain caught in evening breeze -->
-<path d="M205 180 Q245 250 220 365 Q250 430 218 535 Q245 640 210 700" fill="none" stroke="#eadfc9" stroke-width="23" opacity=".9"/>
-<path d="M600 180 Q570 250 590 365 Q560 430 595 535 Q565 640 600 700" fill="none" stroke="#eadfc9" stroke-width="23" opacity=".9"/>
-<!-- three returning hunters in the distant garden, deliberately small -->
-<g fill="#273b35" stroke="#273b35" stroke-linecap="round">
- <circle cx="365" cy="500" r="14"/><path d="M352 520 Q365 510 378 520 L390 570 L375 575 L365 545 L355 575 L340 570Z"/>
- <circle cx="420" cy="492" r="14"/><path d="M407 512 Q420 502 433 512 L445 562 L430 568 L420 538 L410 568 L395 562Z"/>
- <circle cx="470" cy="510" r="13"/><path d="M458 529 Q470 518 482 529 L492 574 L480 580 L470 550 L460 580 L448 574Z"/>
- <path d="M390 565 Q410 550 425 568 Q440 590 418 596 Q395 595 390 565Z"/>
-</g>
-<!-- small spaniel running ahead -->
-<path d="M493 580 Q510 560 532 570 Q550 580 540 596 Q522 610 505 596Z" fill="#a77b55" stroke="#503b31" stroke-width="6"/>
-<path d="M505 575 Q490 555 484 570 L495 590 M535 577 Q552 560 556 578" fill="none" stroke="#503b31" stroke-width="7" stroke-linecap="round"/>
-<path d="M510 600 L505 616 M533 600 L540 615" stroke="#503b31" stroke-width="6" stroke-linecap="round"/>
-<!-- room, chair and startled visitor -->
-<path d="M80 760 Q85 680 160 675 Q230 690 230 770 L215 870 H90Z" fill="#765a43" stroke="#4e3b2e" stroke-width="12"/>
-<path d="M95 740 Q145 700 205 740 L195 825 H105Z" fill="#a17b5b"/>
-<g stroke="#49382e" stroke-linecap="round" stroke-linejoin="round">
- <path d="M120 650 Q130 600 180 600 Q220 615 215 670 L195 740 Q155 760 120 720Z" fill="#4b514e" stroke-width="9"/>
- <path d="M130 615 Q135 570 180 565 Q220 575 220 620 Q200 642 150 635Z" fill="#e1c29e" stroke-width="7"/>
- <path d="M135 600 Q140 555 180 552 Q215 558 222 592" fill="none" stroke="#55483d" stroke-width="18"/>
- <path d="M140 720 L115 800 M190 725 L215 800" fill="none" stroke="#4b514e" stroke-width="17"/>
-</g>
-<!-- Vera, composed young woman by the open window -->
-<g stroke="#503d31" stroke-linecap="round" stroke-linejoin="round">
- <path d="M610 650 Q625 590 670 590 Q715 610 710 680 L690 790 Q650 820 610 780Z" fill="#8d4e43" stroke-width="8"/>
- <path d="M620 620 Q610 565 660 550 Q710 560 710 615 Q690 640 640 632Z" fill="#e4c29d" stroke-width="7"/>
- <path d="M615 600 Q610 545 660 535 Q710 540 718 590 Q685 570 650 590Z" fill="#6b4b38" stroke-width="8"/>
- <path d="M620 680 Q590 700 570 725 M700 680 Q720 700 730 725" fill="none" stroke="#e4c29d" stroke-width="16"/>
- <path d="M630 790 L620 870 M685 790 L700 870" fill="none" stroke="#4d4036" stroke-width="17"/>
-</g>
-<!-- botanical foreground -->
-<g fill="#566f53"><path d="M55 880q-25-45 0-70q35 25 15 70m-5 0q25-50 60-40q-5 42-60 40m610 0q-25-45 0-70q35 25 15 70m-5 0q25-50 60-40q-5 42-60 40"/></g>
-<rect x="28" y="930" width="744" height="242" fill="#f1e7d4"/>
-<path d="M75 967 H725" stroke="#9c7858" stroke-width="3"/>
-<text x="400" y="1045" text-anchor="middle" font-family="Georgia,serif" font-size="73" fill="#344b4c">ОТКРЫТОЕ ОКНО</text>
-<text x="400" y="1105" text-anchor="middle" font-family="Georgia,serif" font-size="36" fill="#875744">Саки</text>
-<text x="400" y="1145" text-anchor="middle" font-family="Georgia,serif" font-size="17" letter-spacing="4" fill="#806a50">КОРОТКИЙ РАССКАЗ · 1911</text>
+<rect width="900" height="1350" fill="#171b1c"/>
+<rect x="30" y="30" width="840" height="1290" fill="none" stroke="#b58b58" stroke-width="5"/>
+<rect x="48" y="48" width="804" height="1254" fill="none" stroke="#6c563e" stroke-width="2"/>
+<text x="450" y="145" text-anchor="middle" fill="#ead4ad" font-family="Georgia,serif" font-size="76" letter-spacing="8">ОТКРЫТОЕ</text>
+<text x="450" y="230" text-anchor="middle" fill="#ead4ad" font-family="Georgia,serif" font-size="76" letter-spacing="8">ОКНО</text>
+<text x="450" y="285" text-anchor="middle" fill="#b9976b" font-family="Georgia,serif" font-size="27" letter-spacing="8">САКИ</text>
+<!-- room -->
+<rect x="90" y="340" width="720" height="670" fill="url(#wall)" stroke="#a98a61" stroke-width="8"/>
+<path d="M90 875h720v135H90Z" fill="url(#floor)"/>
+<!-- window opening and dusk garden -->
+<rect x="270" y="390" width="365" height="480" fill="url(#dusk)" stroke="#4b3a2c" stroke-width="22"/>
+<circle cx="540" cy="515" r="58" fill="#e8bd91" opacity=".75"/>
+<path d="M270 740q90-130 180-50t185-30v210H270Z" fill="#405b4b"/>
+<path d="M270 800q90-85 180-30t185-20v120H270Z" fill="#263f36"/>
+<g fill="#192e29"><path d="M300 720l40-210 40 210Zm270 0 35-240 42 240Z"/></g>
+<!-- open casements -->
+<path d="M270 390L125 455v400l145 15Z" fill="#574536" stroke="#b58d5c" stroke-width="14"/>
+<path d="M635 390l145 65v400l-145 15Z" fill="#574536" stroke="#b58d5c" stroke-width="14"/>
+<path d="M145 480l100-45v370l-100-35Zm615 0-100-45v370l100-35Z" fill="#8b7153" stroke="#d0b17d" stroke-width="7"/>
+<!-- book on sill -->
+<path d="M330 875q80-35 150 0v70q-70-35-150 0Z" fill="#c8b28e" stroke="#544230" stroke-width="5"/>
+<path d="M480 875q75-35 145 0v70q-70-35-145 0Z" fill="#e4d2ae" stroke="#544230" stroke-width="5"/>
+<path d="M480 875v70" stroke="#715b43" stroke-width="4"/>
+<!-- lamp and table -->
+<path d="M670 980h90m-45-5v-120" stroke="#2a201b" stroke-width="14"/>
+<path d="M670 850l45-90 45 90Z" fill="#d9b67b" stroke="#49382a" stroke-width="6"/>
+<path d="M680 845h70" stroke="#f5d9a0" stroke-width="6"/>
+<!-- small spaniel silhouette in garden -->
+<g fill="#151d1a"><ellipse cx="480" cy="805" rx="38" ry="22"/><circle cx="515" cy="790" r="19"/><path d="M448 820l-10 35m48-35 8 35m-60-45q-35-35-45-5" stroke="#151d1a" stroke-width="12" fill="none"/></g>
+<text x="450" y="1100" text-anchor="middle" fill="#e6d1ae" font-family="Georgia,serif" font-size="31" font-style="italic">История о доверчивости</text>
+<text x="450" y="1150" text-anchor="middle" fill="#e6d1ae" font-family="Georgia,serif" font-size="31" font-style="italic">и неожиданной выдумке</text>
+<text x="450" y="1245" text-anchor="middle" fill="#b58b58" font-family="Georgia,serif" font-size="24" letter-spacing="7">КЛАССИКА АНГЛИЙСКОЙ ПРОЗЫ</text>
 </svg>
