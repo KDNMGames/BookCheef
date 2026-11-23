@@ -1,5 +1,4 @@
 import React,{useEffect,useState} from 'react';
-import mammoth from 'mammoth';
 import DOMPurify from 'dompurify';
 
 const IMAGE_FALLBACK='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420"><rect width="640" height="420" fill="#211d29"/><g fill="none" stroke="#a98b5d" stroke-width="12"><rect x="220" y="105" width="200" height="180" rx="14"/><circle cx="275" cy="160" r="18"/><path d="m235 260 65-65 42 42 30-30 33 53"/></g><text x="320" y="345" fill="#d7c6a7" font-family="sans-serif" font-size="22" text-anchor="middle">Изображение недоступно</text></svg>');
@@ -28,6 +27,7 @@ export default function BookDocument({url,fileName='',fileType=''}) {
         if(!response.ok)throw new Error('Не удалось загрузить документ ('+response.status+').');
         if(type==='docx'){
           const buffer=await response.arrayBuffer();
+          const {default:mammoth}=await import('mammoth');
           const result=await mammoth.convertToHtml({arrayBuffer:buffer},{
             convertImage:mammoth.images.inline(async image=>({src:'data:'+image.contentType+';base64,'+await image.read('base64')}))
           });
