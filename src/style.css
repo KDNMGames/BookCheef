@@ -773,3 +773,14 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 
 /* Scroll reveal owns the entrance timing; disable the legacy page-load animation. */
 .book-card{animation:none}
+
+
+/* A short synopsis slides out from beneath each book card. */
+.book-card{z-index:0;transition:z-index 0s}
+.book-card:hover,.book-card:focus-within{z-index:3}
+.book-description-drawer{position:relative;z-index:1;max-height:0;overflow:hidden;margin:-1px 8px 0;padding:0 13px;border:1px solid rgba(198,163,106,0);border-top:0;border-radius:0 0 9px 9px;background:linear-gradient(145deg,#211d27,#141219);opacity:0;transform:translateY(-12px);transition:max-height .42s cubic-bezier(.2,.75,.25,1),padding .35s ease,opacity .28s ease,transform .42s cubic-bezier(.2,.75,.25,1),border-color .3s ease;box-shadow:0 12px 24px rgba(0,0,0,.22)}
+.book-card:hover .book-description-drawer,.book-card:focus-within .book-description-drawer{max-height:116px;padding:11px 13px 13px;border-color:rgba(198,163,106,.28);opacity:1;transform:translateY(0)}
+.book-description-label{display:block;margin-bottom:5px;color:#c6a36a;font-size:8px;font-weight:700;letter-spacing:.16em}
+.book-description-drawer p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;margin:0;color:#d8d0c4;font-size:10px;line-height:1.55}
+@media(hover:none){.book-card:active .book-description-drawer{max-height:116px;padding:11px 13px 13px;border-color:rgba(198,163,106,.28);opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.book-description-drawer{transition:none}}
