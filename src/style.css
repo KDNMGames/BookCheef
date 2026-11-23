@@ -724,3 +724,55 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 /* Маркер и отдельный рейтинг коротких книг */
 .short-book-label{display:inline-flex;align-items:center;white-space:nowrap;padding:5px 8px;border:1px solid #d9b77788;border-radius:999px;background:#d9b77718;color:#f1d49c;font-size:9px;font-weight:700;letter-spacing:.02em}.card-under{flex-wrap:wrap;row-gap:5px}#short-books .section-head h2{color:#f0d5a0}#short-books .section-head .eyebrow{color:#e0bd7f}#short-books .book-card:first-child .book-inner{box-shadow:0 0 0 1px #d8b777aa,0 0 32px #d8b77735}
 @media(max-width:600px){.short-book-label{font-size:8px;padding:4px 6px}.card-under{flex-direction:row;align-items:center}}
+
+/* BookCheef unified interaction language */
+:root{--ui-gold:var(--accent,#c6a36a);--ui-gold-soft:rgba(198,163,106,.18);--ui-line:rgba(214,190,145,.34);--ui-surface:rgba(255,255,255,.055);--ui-ease:cubic-bezier(.22,.72,.22,1)}
+.ghost,.primary,.hero-cta,.buy,.back-link,.icon-btn,.favorite-chip,.collection-favorite,.reader-scale-tools button,.book-review-actions button,.book-audio-play-all,.admin-section-tabs button,.analytics-tabs button,.interactive-ending button,.reader-question button{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid var(--ui-line);border-radius:999px;
+  transition:color .22s var(--ui-ease),background .22s var(--ui-ease),border-color .22s var(--ui-ease),box-shadow .22s var(--ui-ease),transform .22s var(--ui-ease);
+}
+.ghost,.back-link,.book-review-actions button,.book-audio-play-all,.analytics-tabs button{
+  background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.025));color:#e8dfd0;
+}
+.ghost:hover,.back-link:hover,.book-review-actions button:hover,.book-audio-play-all:hover,.analytics-tabs button:hover{
+  color:#fff;border-color:var(--ui-gold);background:var(--ui-gold-soft);box-shadow:0 5px 20px rgba(0,0,0,.2);transform:translateY(-1px)
+}
+.primary,.hero-cta,.buy{
+  border-color:rgba(236,202,139,.72);background:linear-gradient(135deg,#e4c48c,#b88e52);color:#21180d;
+  box-shadow:inset 0 1px rgba(255,255,255,.35),0 5px 18px rgba(0,0,0,.16)
+}
+.primary:hover,.hero-cta:hover,.buy:hover{
+  color:#171108;background:linear-gradient(135deg,#f0d8a8,#c59b5e);border-color:#f0d8a8;box-shadow:0 8px 24px rgba(198,163,106,.22);transform:translateY(-2px)
+}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2px solid #e4c48c;outline-offset:3px
+}
+.icon-btn,.favorite-chip,.collection-favorite{
+  width:38px;height:38px;padding:0;border-radius:50%;background:rgba(13,12,16,.78);border:1px solid rgba(230,211,176,.3);color:#e6d6b8;backdrop-filter:blur(10px)
+}
+.icon-btn:hover,.favorite-chip:hover,.collection-favorite:hover{color:#17120b;background:var(--ui-gold);border-color:var(--ui-gold);transform:translateY(-2px)}
+.back-link{padding:10px 16px;font-weight:600}
+.back-link svg,.hero-cta svg,.buy svg{transition:transform .22s var(--ui-ease)}
+.back-link:hover svg{transform:translateX(-3px)}
+.hero-cta:hover svg,.buy:hover svg{transform:translate(3px,-2px)}
+.reader-scale-tools button{min-width:38px;min-height:38px;background:#ffffff08;color:#d9c8a7;border-color:#c6a36a55}
+.reader-scale-tools button:hover{background:var(--ui-gold-soft);border-color:var(--ui-gold);color:#fff}
+.admin-section-tabs button.active,.analytics-tabs button.active{border-color:var(--ui-gold);background:linear-gradient(135deg,#e4c48c,#b88e52);color:#21180d;box-shadow:0 4px 16px rgba(198,163,106,.16)}
+.filters button,.filter-select{border-color:rgba(214,190,145,.25);background:rgba(255,255,255,.045);transition:all .2s var(--ui-ease)}
+.filters button.active,.filters button:hover{background:var(--ui-gold-soft);border-color:var(--ui-gold);color:#f5e5c6}
+.socials a{border-color:rgba(214,190,145,.28);background:rgba(255,255,255,.035);transition:all .22s var(--ui-ease)}
+.socials a:hover{background:var(--ui-gold-soft);box-shadow:0 4px 18px rgba(198,163,106,.12);transform:translateY(-2px)}
+/* Cards are revealed as if gently placed onto the shelf while scrolling. */
+.book-card.card-arrival-pending{opacity:0;transform:translate3d(0,58px,0) rotateX(8deg) scale(.965);transform-origin:50% 100%;filter:blur(3px)}
+.book-card.card-arrived{opacity:1;transform:translate3d(0,0,0) rotateX(0) scale(1);filter:blur(0);transition:opacity .72s var(--ui-ease),transform .82s var(--ui-ease),filter .72s var(--ui-ease);transition-delay:calc(var(--arrival-order,0)*65ms)}
+.book-card.card-arrived .book-inner{animation:shelf-settle .65s var(--ui-ease) both;animation-delay:calc(var(--arrival-order,0)*65ms)}
+@keyframes shelf-settle{0%{box-shadow:0 0 0 rgba(0,0,0,0);transform:translateY(7px)}65%{box-shadow:0 18px 34px rgba(0,0,0,.22);transform:translateY(-2px)}100%{box-shadow:none;transform:translateY(0)}}
+.collection-card-wrap{animation:collection-arrive .65s var(--ui-ease) both}
+.collection-card-wrap:nth-child(2n){animation-delay:.08s}.collection-card-wrap:nth-child(3n){animation-delay:.16s}
+@keyframes collection-arrive{from{opacity:0;transform:translateY(28px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){
+ .book-card.card-arrival-pending,.book-card.card-arrived{opacity:1;transform:none;filter:none;transition:none}
+ .book-card.card-arrived .book-inner,.collection-card-wrap{animation:none}
+ *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
