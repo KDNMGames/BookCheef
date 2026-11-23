@@ -784,3 +784,63 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 .book-description-drawer p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;margin:0;color:#d8d0c4;font-size:10px;line-height:1.55}
 @media(hover:none){.book-card:active .book-description-drawer{max-height:116px;padding:11px 13px 13px;border-color:rgba(198,163,106,.28);opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.book-description-drawer{transition:none}}
+
+
+/* Полное описание книги выдвигается под карточкой; текст не дублируется на обороте. */
+.book-description-drawer{
+  box-sizing:border-box;
+  max-height:0;
+  padding:0 15px;
+  margin:0 8px;
+  border:1px solid transparent;
+  border-top:0;
+  border-radius:0 0 10px 10px;
+  background:linear-gradient(145deg,#24242a,#17171c);
+  color:#e8e8eb;
+  box-shadow:0 12px 24px rgba(0,0,0,.22);
+}
+.book-card:hover .book-description-drawer,
+.book-card:focus-within .book-description-drawer{
+  max-height:2000px;
+  padding:13px 15px 16px;
+  border-color:rgba(190,190,200,.24);
+}
+.book-description-label{
+  color:#bfc2ca;
+  font-size:9px;
+  letter-spacing:.18em;
+}
+.book-description-drawer p{
+  display:block;
+  overflow:visible;
+  -webkit-line-clamp:unset;
+  -webkit-box-orient:initial;
+  margin:0;
+  color:#e2e2e7;
+  font-size:12px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+/* Pro: единая золотая отделка панели и оборота книги. */
+.pro-book-card .book-description-drawer{
+  background:
+    radial-gradient(ellipse at 15% 0%,rgba(255,239,178,.2),transparent 48%),
+    linear-gradient(135deg,#3b290b 0%,#765318 32%,#3a280b 68%,#201706 100%);
+  border-color:rgba(231,190,91,.45);
+  box-shadow:0 12px 28px rgba(174,125,32,.2),inset 0 0 24px rgba(255,220,130,.07);
+}
+.pro-book-card:hover .book-description-drawer,
+.pro-book-card:focus-within .book-description-drawer{
+  border-color:rgba(255,220,130,.72);
+}
+.pro-book-card .book-description-label{color:#ffe3a0}
+.pro-book-card .book-description-drawer p{color:#fff0c9}
+@media(hover:none){
+  .book-card:active .book-description-drawer{
+    max-height:2000px;
+    padding:13px 15px 16px;
+    border-color:rgba(190,190,200,.24);
+  }
+  .pro-book-card:active .book-description-drawer{border-color:rgba(255,220,130,.72)}
+}
