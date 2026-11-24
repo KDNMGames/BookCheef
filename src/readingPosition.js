@@ -125,7 +125,7 @@ export function useReadingPosition({active,owner,bookId,client}) {
  return {ready:!!key&&initial?.key===key,initial:initial?.key===key?initial.value:null,save};
 }
 
-export function useReadingScroll({active,identity,position,save}) {
+export function useReadingScroll({active,identity,position,expectNative,save}) {
  const record=useRef(null);
  useEffect(()=>{
   if(!active)return;
@@ -146,17 +146,18 @@ export function useReadingScroll({active,identity,position,save}) {
   }
   const flush=()=>{if(timer){clearTimeout(timer);timer=null;save(pendingPosition);}};
   const scroll=()=>{
-   if(!working||article.querySelector('[data-reader-incomplete]')||performance.now()<scrollOverride)return;
+   if(!working||waiting()||article.querySelector('[data-reader-incomplete]')||performance.now()<scrollOverride)return;
    if(timer)clearTimeout(timer);
    pendingPosition=getPosition();
    timer=setTimeout(flush,450);
   };
   const release=()=>{working=true;scrollOverride=performance.now()+200;};
   let firstApplied,loadingObserver,restoreAnchor,nextAnchor;
+  const waiting=()=>!article.querySelector('[data-reader-incomplete]:not([data-reader-pending])')&&(article.querySelector('[data-reader-pending]')||(expectNative&&area()===article));
   const observeLoad=()=>{
    if(loadingObserver)return;
    loadingObserver=new MutationObserver(()=>{
-    if(article.querySelector('[data-reader-pending]'))return;
+    if(waiting())return;
     loadingObserver.disconnect();loadingObserver=null;
     if(!working)frame=requestAnimationFrame(restore);
    });
@@ -164,9 +165,8 @@ export function useReadingScroll({active,identity,position,save}) {
   };
   function restore(){
    if(working)return;
-   const pending=article.querySelector('[data-reader-pending]');
    const now=performance.now();
-   if(pending){observeLoad();return;}
+   if(waiting()){observeLoad();return;}
    if(article.querySelector('[data-reader-incomplete]')){release();return;}
    const content=area();
    const anchor=position?.anchorId&&content!==article?content.querySelector('#'+position.anchorId):null;
@@ -206,6 +206,6 @@ export function useReadingScroll({active,identity,position,save}) {
    window.removeEventListener('wheel',cancelRestore);window.removeEventListener('touchstart',cancelRestore);
    document.removeEventListener('visibilitychange',hidden);
   };
- },[active,identity,position,save]);
+ },[active,identity,position,expectNative,save]);
  return record;
 }

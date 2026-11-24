@@ -153,7 +153,7 @@ const readingOwner=user?.id||null;
 const readingBook=page==='detail'&&selected&&String(bookDetails?.id)===String(selected)&&authReady&&adminReady&&(bookDetails.is_free!==false||isAdmin||hasPro);
 const readingIdentity=(readingOwner||'guest')+':'+(selected||'');
 const readingPosition=useReadingPosition({active:readingBook,owner:readingOwner,bookId:selected,client:supabase});
-const readingScroll=useReadingScroll({active:readingPosition.ready,identity:readingIdentity,position:readingPosition.initial,save:readingPosition.save});
+const readingScroll=useReadingScroll({active:readingPosition.ready,identity:readingIdentity,position:readingPosition.initial,expectNative:current?.book_file_type==='html'&&String(current.book_file_name||'').toLowerCase().endsWith('.bookcheef.html'),save:readingPosition.save});
 function rememberReaderScene(nodeId){readingScroll.current?.reset();readingPosition.save({nodeId,scrollOffset:0,scrollY:undefined});}
 useEffect(()=>{
  if(!readingPosition.ready||!readingOwner||!supabase)return;
