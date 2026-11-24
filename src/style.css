@@ -1026,3 +1026,20 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
   .book-back-metadata-row>b,.pro-book-card .book-back-metadata-row>b{font-size:10.5px;line-height:1.3}
   .book-back .buy{min-height:35px;padding:8px 9px;font-size:9px}
 }
+
+
+/* Подсказка о сохранении позиции чтения для подписчиков Pro. */
+.reading-progress-pro-note{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 18px;
+  padding:12px 15px;
+  border:1px solid rgba(198,163,106,.28);
+  border-radius:9px;
+  background:rgba(198,163,106,.07);
+  color:#d8c7a7;
+  font-size:12px;
+  line-height:1.55;
+}
+.reading-progress-pro-note svg{flex:none;color:#c6a36a}
