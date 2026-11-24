@@ -1174,14 +1174,6 @@ body{
   box-shadow:0 4px 16px rgba(0,0,0,.22);
   letter-spacing:.17em;
 }
-.book-back{
-  border-color:rgba(218,190,139,.24);
-  background:linear-gradient(145deg,#25212a,#111015 78%);
-}
-.book-description-drawer{
-  border-radius:0 0 9px 9px;
-  background:linear-gradient(145deg,rgba(34,30,39,.98),rgba(16,15,20,.98));
-}
 .detail-page{padding-top:62px}
 .detail-layout{gap:clamp(36px,6vw,78px)}
 .detail-cover{
