@@ -891,3 +891,18 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
  .detail-catalog-tags{gap:7px;padding:12px;margin:14px 0 20px}
  .detail-catalog-tag{padding:8px 10px;font-size:10px}
 }
+
+
+/* Clickable metadata stays inline beneath the book title. */
+.detail-metadata-line{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px}
+.detail-metadata-link{
+  display:inline;padding:0;border:0;background:transparent;color:inherit;
+  font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;
+  text-decoration:underline;text-decoration-color:rgba(198,163,106,.42);
+  text-underline-offset:3px;transition:color .18s ease,text-decoration-color .18s ease;
+}
+.detail-metadata-link:hover,.detail-metadata-link:focus-visible{
+  color:#d9b879;text-decoration-color:currentColor;outline:none;
+}
+.detail-metadata-separator{opacity:.55;pointer-events:none}
+.detail-page:has(.detail-copy .detail-metadata-line) .detail-copy .detail-metadata-line{margin-bottom:10px}
