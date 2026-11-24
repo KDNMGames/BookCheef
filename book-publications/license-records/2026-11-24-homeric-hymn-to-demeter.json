@@ -1,0 +1,138 @@
+{
+  "publication_key": "bookcheef-2026-11-24-homeric-hymn-to-demeter",
+  "title": "Гомеровский гимн к Деметре",
+  "status": "prepared_not_published",
+  "format": "Полный древнегреческий эпический гимн; новый русский перевод",
+  "language": "ru",
+  "work": {
+    "original_title": "Homeric Hymn II to Demeter",
+    "original_author": "Анонимный древнегреческий поэт; традиционная атрибуция Гомеру не является установленным авторством",
+    "origin": "Древняя Греция",
+    "approximate_composition_date": "Архаический период, ориентировочно VII–VI века до н. э.",
+    "editor_of_1914_edition": "Hugh G. Evelyn-White (1884–1924)",
+    "edition": "Hesiod, the Homeric Hymns, and Homerica, Loeb Classical Library 57, 1914; издатели W. Heinemann / G. P. Putnam's Sons",
+    "source_catalog_url": "https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg0013.tlg002",
+    "digital_text_source": "Perseus Digital Library, canonical-greekLit",
+    "digital_text_source_url": "https://github.com/PerseusDL/canonical-greekLit",
+    "digital_text_license": "Creative Commons Attribution-ShareAlike 4.0 International",
+    "digital_text_license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "commercial_use_basis": "CC BY-SA 4.0 прямо разрешает копирование, распространение, переработку и коммерческое использование при указании авторства/источника, ссылке на лицензию, указании изменений и распространении адаптации на той же или совместимой лицензии. Русский перевод является адаптацией и выпускается под CC BY-SA 4.0."
+  },
+  "translation": {
+    "language": "Русский",
+    "method": "Новый самостоятельный перевод непосредственно с древнегреческого текста; современный сторонний русский перевод не использован.",
+    "prepared_for": "BookCheef",
+    "date": "2026-11-24",
+    "changes": "Выполнен полный русский перевод; структура повествования сохранена, добавлены только поясняющие подписи к двум историческим изображениям и вопросы для читателя.",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "attribution": "Анонимный древнегреческий автор, «Гомеровский гимн II к Деметре»; греческий текст Perseus Digital Library, редакция Hugh G. Evelyn-White, 1914, CC BY-SA 4.0. Новый русский перевод для BookCheef, 2026, CC BY-SA 4.0. Изменение: перевод с древнегреческого."
+  },
+  "images": [
+    {
+      "role": "Иллюстрация в начале главы",
+      "object": "Аттический сосуд типа Samnos, Афины, около 470 года до н. э.; Louvre, inventory G 371, Cp 738",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Demeter,_Pers%C3%A9phone_et_Triptol%C3%A8me_(Louvre,_G_371).jpg",
+      "file_url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Demeter%2C_Pers%C3%A9phone_et_Triptol%C3%A8me_%28Louvre%2C_G_371%29.jpg",
+      "photographer": "Tangopaso",
+      "photograph_date": "2025-03-27",
+      "source": "Самостоятельная фотография автора в Лувре, Париж, Франция",
+      "license": "Public domain dedication by photographer (PD-self); worldwide dedication",
+      "license_page": "https://commons.wikimedia.org/wiki/File:Demeter,_Pers%C3%A9phone_et_Triptol%C3%A8me_(Louvre,_G_371).jpg",
+      "attribution": "Фото Tangopaso, 27.03.2025; Wikimedia Commons; общественное достояние (добровольный отказ автора от прав).",
+      "changes": "Изображение не изменялось.",
+      "commercial_use": "На странице файла фотограф прямо передал изображение в общественное достояние для использования в любых целях; коммерческое воспроизведение разрешено."
+    },
+    {
+      "role": "Иллюстрация в конце главы",
+      "object": "Вотивный рельеф с Деметрой, Персефоной и Триптолемом, Элевсин, IV век до н. э.",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Votive_relief_showing_Demeter,_Persephone_and_Triptolemos,_Eleusis,_4th_c_BC.jpg",
+      "file_url": "https://upload.wikimedia.org/wikipedia/commons/9/94/Votive_relief_showing_Demeter%2C_Persephone_and_Triptolemos%2C_Eleusis%2C_4th_c_BC.jpg",
+      "photographer": "Furius",
+      "photograph_date": "2022-08-29",
+      "source": "Самостоятельная фотография автора в Археологическом музее Элевсина, Греция",
+      "license": "CC0 1.0 Universal Public Domain Dedication",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "Фото Furius, 29.08.2022; Wikimedia Commons; CC0 1.0. Атрибуция сохранена добровольно.",
+      "changes": "Изображение не изменялось.",
+      "commercial_use": "Автор отказался от всех прав, которые мог передать, и посвятил фотографию общественному достоянию по CC0 1.0; разрешены копирование, распространение, переработка и коммерческое использование."
+    }
+  ],
+  "cover": {
+    "file": "book-publications/assets/2026-11-24-homeric-hymn-to-demeter-cover.svg",
+    "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/book-publications/assets/2026-11-24-homeric-hymn-to-demeter-cover.svg",
+    "creator": "Оригинальная векторная иллюстрация, созданная для BookCheef в этом пакете",
+    "source": "Создано с нуля; сторонние изображения, шрифты и графические элементы не использованы",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "layout": "Обложка содержит только иллюстрацию без надписей. Название и автор остаются в отдельной типографической области интерфейса и не накладываются на рисунок.",
+    "commercial_use": "Оригинальная графика создана специально для проекта и выпускается по CC BY-SA 4.0; коммерческое использование разрешено."
+  },
+  "jurisdiction_review": {
+    "united_states": "Издание 1914 года опубликовано до 1931 года; соответствующий текст и перевод Hugh G. Evelyn-White указаны Project Gutenberg как public domain in the USA. Дополнительно цифровой греческий текст Perseus распространяется по CC BY-SA 4.0.",
+    "eu_eea": "Директива 2006/116/EC, статья 1(1), устанавливает срок жизни автора плюс 70 лет; сроки исчисляются с 1 января года после юридически значимого события. Редактор издания Hugh G. Evelyn-White умер 09.09.1924; срок охраны его авторского вклада закончился 31.12.1994, общественное достояние — с 01.01.1995. Древний оригинал анонимен и создан за много веков до современного авторского права. Современная русская адаптация дополнительно разрешена CC BY-SA 4.0.",
+    "germany": "UrhG §64 устанавливает 70 лет после смерти автора, §69 — исчисление с конца календарного года; §70 предусматривает 25-летнее право на некоторые научные издания, если выполнены его условия. Для издания 1914 года даже возможный 25-летний срок истёк не позднее 31.12.1939. Современная адаптация разрешена CC BY-SA 4.0.",
+    "netherlands": "Официальное разъяснение Business.gov.nl устанавливает срок 70 лет после смерти автора, начиная с 1 января следующего года. Для Hugh G. Evelyn-White срок закончился 31.12.1994; с 01.01.1995 его вклад находится в общественном достоянии. Современная адаптация дополнительно разрешена CC BY-SA 4.0."
+  },
+  "scope_limit": "Проверены США и ЕС/ЕЭЗ с отдельной проверкой правовых норм Германии и Нидерландов. Статус во всех странах мира не сертифицирован; при расширении целевых юрисдикций потребуется отдельная проверка.",
+  "attribution_for_book": "Анонимный древнегреческий автор, «Гомеровский гимн II к Деметре». Греческий текст: Perseus Digital Library, критическая редакция Hugh G. Evelyn-White, 1914, CC BY-SA 4.0. Новый перевод с древнегреческого для BookCheef, 2026, CC BY-SA 4.0. Изменение: перевод. Иллюстрация 1: Tangopaso, 2025, public domain dedication. Иллюстрация 2: Furius, 2022, CC0 1.0. Обложка: оригинальная графика BookCheef, CC BY-SA 4.0.",
+  "checks": {
+    "complete_source_text": true,
+    "full_russian_translation": true,
+    "modern_russian_translation_used": false,
+    "greek_source_edition_verified": true,
+    "digital_source_license_verified": true,
+    "share_alike_applied_to_translation": true,
+    "images_individually_checked": true,
+    "image_file_urls_opened": true,
+    "image_rights_allow_commercial_use": true,
+    "cover_original_and_textless": true,
+    "cover_text_overlaps_illustration": false,
+    "publication_key_unique_in_repository": true,
+    "database_duplicate_check": false,
+    "supabase_skill_available": false,
+    "supabase_insert_attempted": false,
+    "catalog_visibility_verified": false,
+    "website_card_verified": false,
+    "checked_at": "2026-11-24",
+    "notes": "Файлы подготовлены в GitHub, но Supabase не читался и не изменялся: в текущем окружении не удалось получить инструкцию Supabase skill. По обязательному правилу публикации без доверенного Supabase MCP не выполнялась. Перед будущим INSERT необходимо отдельно проверить дубликаты по названию, автору, языку и изданию."
+  },
+  "sources": [
+    {
+      "url": "https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg0013.tlg002",
+      "supports": "Каталожная запись произведения Hymn 2 to Demeter; идентификатор текста, редактор, переводчик, издатели и дата издания 1914."
+    },
+    {
+      "url": "https://github.com/PerseusDL/canonical-greekLit",
+      "supports": "Репозиторий цифрового греческого текста и указание лицензии CC BY-SA 4.0 для материалов репозитория."
+    },
+    {
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "supports": "Официальные условия CC BY-SA 4.0: коммерческое использование, атрибуция, ссылка на лицензию, указание изменений и ShareAlike."
+    },
+    {
+      "url": "https://www.gutenberg.org/ebooks/348",
+      "supports": "Библиографическая запись издания 1914 года и сведения о Hugh G. Evelyn-White (1884–1924); статус английского электронного издания в США. Английский текст не копировался в BookCheef."
+    },
+    {
+      "url": "https://eur-lex.europa.eu/eli/dir/2006/116/oj/eng",
+      "supports": "Директива ЕС 2006/116/EC, статья 1(1) и статья 8: срок охраны и исчисление срока."
+    },
+    {
+      "url": "https://service.edge.juris.de/englisch_urhg/englisch_urhg.html",
+      "supports": "Германия: UrhG §§64, 69 и 70 — срок жизни плюс 70 лет, порядок исчисления и возможная охрана научных изданий."
+    },
+    {
+      "url": "https://business.gov.nl/regulations/copyright/",
+      "supports": "Официальное разъяснение правительства Нидерландов о сроке охраны 70 лет после смерти автора и начале срока с 1 января следующего года."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Demeter,_Pers%C3%A9phone_et_Triptol%C3%A8me_(Louvre,_G_371).jpg",
+      "supports": "Конкретная страница изображения, автор фотографии Tangopaso, дата, описание артефакта и worldwide public-domain dedication."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Votive_relief_showing_Demeter,_Persephone_and_Triptolemos,_Eleusis,_4th_c_BC.jpg",
+      "supports": "Конкретная страница фотографии Furius, дата, описание рельефа и лицензия CC0 1.0."
+    }
+  ]
+}
