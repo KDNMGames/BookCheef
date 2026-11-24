@@ -1043,3 +1043,13 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
   line-height:1.55;
 }
 .reading-progress-pro-note svg{flex:none;color:#c6a36a}
+
+/* Native text uses the same reading article, typography and chapter headings. */
+.bookcheef-native-text .reader-table-of-contents{margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid #b9a583}
+.bookcheef-native-text .reader-table-of-contents h2{color:#5c4129;margin:0 0 .75rem}
+.bookcheef-native-text .reader-table-of-contents ol{padding-inline-start:1.5em}
+.bookcheef-native-text .reader-table-of-contents a{display:inline-flex;align-items:center;min-height:44px;padding:3px 0;color:#63431f;text-decoration:underline;text-underline-offset:.17em}
+.bookcheef-native-text .reader-table-of-contents a:focus-visible{outline:2px solid #63431f;outline-offset:3px}
+.bookcheef-native-text figure img{display:block;max-width:100%;height:auto;margin-inline:auto}
+.bookcheef-native-text :is(h2,h3){scroll-margin-top:2rem}
+.reader:has([data-reader-incomplete]) .reader-end-marker{display:none}
