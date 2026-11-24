@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1100" role="img" aria-label="Original Greek vase-inspired illustration without text">
+<defs>
+  <pattern id="meander" width="92" height="48" patternUnits="userSpaceOnUse">
+    <path d="M4 4H68V20H22V42H88" fill="none" stroke="#d28a56" stroke-width="5" stroke-linecap="square" stroke-linejoin="miter"/>
+  </pattern>
+  <linearGradient id="clay" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#e18a55"/>
+    <stop offset=".5" stop-color="#b64d30"/>
+    <stop offset="1" stop-color="#7f2f25"/>
+  </linearGradient>
+</defs>
+<rect width="800" height="1100" fill="#17130f"/>
+<rect x="38" y="38" width="724" height="1024" rx="18" fill="none" stroke="#c47a4a" stroke-width="5"/>
+<rect x="62" y="70" width="676" height="48" fill="url(#meander)"/>
+<rect x="62" y="982" width="676" height="48" fill="url(#meander)"/>
+<g fill="none" stroke="#c47a4a" stroke-width="7" opacity=".9">
+  <path d="M118 270C80 225 88 185 137 174C178 165 193 212 165 245"/>
+  <path d="M682 270C720 225 712 185 663 174C622 165 607 212 635 245"/>
+  <path d="M112 830C70 790 78 745 128 734C168 725 183 772 154 804"/>
+  <path d="M688 830C730 790 722 745 672 734C632 725 617 772 646 804"/>
+</g>
+<g fill="#c47a4a">
+  <ellipse cx="130" cy="215" rx="12" ry="34" transform="rotate(-38 130 215)"/>
+  <ellipse cx="151" cy="195" rx="11" ry="29" transform="rotate(24 151 195)"/>
+  <ellipse cx="670" cy="215" rx="12" ry="34" transform="rotate(38 670 215)"/>
+  <ellipse cx="649" cy="195" rx="11" ry="29" transform="rotate(-24 649 195)"/>
+  <ellipse cx="124" cy="775" rx="12" ry="34" transform="rotate(-38 124 775)"/>
+  <ellipse cx="151" cy="755" rx="11" ry="29" transform="rotate(24 151 755)"/>
+  <ellipse cx="676" cy="775" rx="12" ry="34" transform="rotate(38 676 775)"/>
+  <ellipse cx="649" cy="755" rx="11" ry="29" transform="rotate(-24 649 755)"/>
+</g>
+<g transform="translate(0 10)">
+  <path d="M326 205H474L489 290C535 332 579 397 580 516C581 663 520 777 400 824C280 777 219 663 220 516C221 397 265 332 311 290Z" fill="url(#clay)" stroke="#f1d7b1" stroke-width="9"/>
+  <path d="M311 290C271 281 250 305 252 352C255 392 286 402 306 382" fill="none" stroke="#f1d7b1" stroke-width="18"/>
+  <path d="M489 290C529 281 550 305 548 352C545 392 514 402 494 382" fill="none" stroke="#f1d7b1" stroke-width="18"/>
+  <path d="M326 205V160H474V205M309 160H491V205H309Z" fill="#b64d30" stroke="#f1d7b1" stroke-width="8"/>
+  <path d="M340 824H460L476 864H324Z" fill="#b64d30" stroke="#f1d7b1" stroke-width="8"/>
+  <path d="M300 382H500M245 700H555" stroke="#f1d7b1" stroke-width="8" fill="none"/>
+  <path d="M270 405H530V680H270Z" fill="none" stroke="#5b201b" stroke-width="7"/>
+  <g fill="#241713">
+    <circle cx="345" cy="465" r="23"/>
+    <path d="M325 489Q345 478 365 492L382 584L354 618L319 584Z"/>
+    <path d="M327 508L292 554L301 566L340 540Z"/>
+    <path d="M360 507L394 540L385 554L350 537Z"/>
+    <path d="M328 611L313 668H337L350 622Z"/>
+    <path d="M356 613L365 668H390L377 607Z"/>
+    <circle cx="457" cy="462" r="21"/>
+    <path d="M438 485Q456 477 477 488L489 568L458 603L428 568Z"/>
+    <path d="M438 503L405 526L410 542L449 529Z"/>
+    <path d="M477 504L508 531L500 545L466 531Z"/>
+    <path d="M438 594L424 667H447L461 604Z"/>
+    <path d="M463 599L470 667H494L484 588Z"/>
+    <path d="M454 433Q474 418 488 436L481 448L457 447Z"/>
+    <path d="M335 443Q352 425 367 442L363 451L342 453Z"/>
+  </g>
+  <g fill="none" stroke="#f1d7b1" stroke-width="8" stroke-linecap="round">
+    <path d="M292 546Q270 530 274 506"/>
+    <path d="M506 545Q526 520 518 495"/>
+    <path d="M400 424V382"/>
+  </g>
+  <circle cx="400" cy="374" r="14" fill="#f1d7b1"/>
+  <path d="M389 355Q400 329 411 355" fill="none" stroke="#f1d7b1" stroke-width="7"/>
+  <path d="M280 728Q400 762 520 728" fill="none" stroke="#5b201b" stroke-width="9"/>
+</g>
+<g fill="none" stroke="#d28a56" stroke-width="6">
+  <path d="M184 445Q152 478 184 512Q216 546 184 579"/>
+  <path d="M616 445Q648 478 616 512Q584 546 616 579"/>
+  <path d="M184 600Q152 633 184 666Q216 699 184 732"/>
+  <path d="M616 600Q648 633 616 666Q584 699 616 732"/>
+</g>
+</svg>
