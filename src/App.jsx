@@ -82,7 +82,7 @@ function renderFootnotedText(text,footnotes=[],style={},onFootnoteOpen){
   if(!found){result.push(matchedText);lastIndex=regex.lastIndex;continue;}
   const targetId='book-footnote-'+found._index;
   // Сохраняем сам элемент слова: кнопка возврата сможет прокрутить точно к нему.
-  result.push(<a key={'footnote-'+found._index+'-'+match.index} className="footnote-word" href={'#'+targetId} title={'Нажми, чтобы открыть пояснение: '+found.definition} aria-label={matchedText+'. Перейти к пояснению '+(found._index+1)} onClick={e=>{e.preventDefault();onFootnoteOpen?.(e.currentTarget);document.getElementById(targetId)?.scrollIntoView({behavior:'smooth',block:'center'});}}><span className="footnote-word-text">{matchedText}</span><sup className="footnote-marker"><span style={markerStyle}>{found._index+1}</span></sup></a>);
+  result.push(<button type="button" key={'footnote-'+found._index+'-'+match.index} className="footnote-word" style={{display:'inline',padding:0,border:0,background:'none',font:'inherit',verticalAlign:'baseline'}} title={'Нажми, чтобы открыть пояснение: '+found.definition} aria-label={matchedText+'. Перейти к пояснению '+(found._index+1)} onClick={e=>{onFootnoteOpen?.(e.currentTarget);document.getElementById(targetId)?.scrollIntoView({behavior:'smooth',block:'center'});}}><span className="footnote-word-text">{matchedText}</span><sup className="footnote-marker"><span style={markerStyle}>{found._index+1}</span></sup></button>);
   lastIndex=regex.lastIndex;
  }
  if(lastIndex<source.length)result.push(source.slice(lastIndex));
