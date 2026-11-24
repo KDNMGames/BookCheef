@@ -854,3 +854,40 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 @media(hover:none){
  .book-card:hover .book-description-drawer{max-height:0;padding:0 15px;border-color:transparent}
 }
+
+
+/* Характеристики для поиска похожих книг находятся на странице книги, а не на карточке. */
+.detail-catalog-tags{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin:18px 0 24px;padding:15px;
+  border:1px solid rgba(198,163,106,.24);border-radius:10px;
+  background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+}
+.detail-catalog-tags-title{
+  flex-basis:100%;margin-bottom:2px;color:#c6a36a;
+  font-size:9px;font-weight:800;letter-spacing:.16em;
+}
+.detail-catalog-tag{
+  display:inline-flex;align-items:center;gap:7px;max-width:100%;
+  padding:9px 12px;border:1px solid rgba(198,163,106,.32);
+  border-radius:999px;background:rgba(198,163,106,.075);
+  color:#eee4d2;font:600 11px 'DM Sans';cursor:pointer;
+  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+}
+.detail-catalog-tag span{color:#c6a36a;font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+.detail-catalog-tag:hover{background:rgba(198,163,106,.18);border-color:#c6a36a;transform:translateY(-1px)}
+.detail-catalog-tag svg{flex:none;color:#c6a36a}
+.detail-catalog-tags.is-pro{
+  border-color:rgba(231,190,91,.45);
+  background:linear-gradient(135deg,rgba(118,83,24,.22),rgba(32,23,6,.3));
+  box-shadow:inset 0 0 24px rgba(255,220,130,.04);
+}
+.detail-catalog-tags.is-pro .detail-catalog-tags-title,
+.detail-catalog-tags.is-pro .detail-catalog-tag span,
+.detail-catalog-tags.is-pro .detail-catalog-tag svg{color:#ffe3a0}
+.detail-catalog-tags.is-pro .detail-catalog-tag{border-color:rgba(231,190,91,.4);background:rgba(231,190,91,.09);color:#fff0c9}
+.detail-catalog-tags.is-pro .detail-catalog-tag:hover{border-color:#ffe3a0;background:rgba(231,190,91,.2)}
+@media(max-width:600px){
+ .detail-catalog-tags{gap:7px;padding:12px;margin:14px 0 20px}
+ .detail-catalog-tag{padding:8px 10px;font-size:10px}
+}
