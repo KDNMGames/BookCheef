@@ -1,0 +1,25 @@
+{
+  "publication_key": "bookcheef-2026-11-24-homeric-hymn-to-demeter",
+  "supplements": "2026-11-24-homeric-hymn-to-demeter.json and its rights ledger",
+  "status": "prepared_not_published",
+  "source_text": {
+    "title": "Hymn 2 To Demeter",
+    "author": "Anonymous",
+    "editor": "Hugh G. Evelyn-White",
+    "printed_edition": "Hesiod, the Homeric Hymns and Homerica, Loeb Classical Library 57, 1914, William Heinemann Ltd. / The Macmillan Co.",
+    "perseus_project_page": "https://www.perseus.tufts.edu/",
+    "catalog_page": "https://catalog.perseus.org/catalog/urn:cts:greekLit:tlg0013.tlg002",
+    "exact_source_file": "https://github.com/PerseusDL/canonical-greekLit/blob/master/data/tlg0013/tlg002/tlg0013.tlg002.perseus-grc2.xml",
+    "exact_source_file_raw": "https://raw.githubusercontent.com/PerseusDL/canonical-greekLit/master/data/tlg0013/tlg002/tlg0013.tlg002.perseus-grc2.xml",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source_header_terms": [
+      "Reuse must credit the Perseus Digital Library in a standard bibliographic format, including a link to https://www.perseus.tufts.edu/.",
+      "Each text reused should be individually identified and linked to its source GitHub repository whenever possible.",
+      "All corrections must be offered to the Perseus Digital Library."
+    ],
+    "correction_note": "No corrections were made to the Greek source text; a new Russian translation was created. Therefore no correction submission is being represented as completed."
+  },
+  "visible_attribution_to_include_with_book": "Источник греческого текста: Perseus Digital Library, «Hymn 2 To Demeter» (анонимный автор), редакция Hugh G. Evelyn-White, 1914. Проект Perseus: https://www.perseus.tufts.edu/ . Точный файл источника: https://github.com/PerseusDL/canonical-greekLit/blob/master/data/tlg0013/tlg002/tlg0013.tlg002.perseus-grc2.xml . Лицензия исходного текста и русского перевода: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Изменение: новый перевод с древнегреческого на русский для BookCheef, 2026.",
+  "note": "При последующей публикации включить эту атрибуцию в видимое описание книги или отдельный блок сведений об издании. До этого книга остаётся prepared_not_published."
+}
