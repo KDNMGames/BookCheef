@@ -152,18 +152,31 @@ export function useReadingScroll({active,identity,position,save}) {
    timer=setTimeout(flush,450);
   };
   const release=()=>{working=true;scrollOverride=performance.now()+200;};
-  const start=performance.now();
-  let firstApplied;
+  let firstApplied,loadingObserver,restoreAnchor,nextAnchor;
+  const observeLoad=()=>{
+   if(loadingObserver)return;
+   loadingObserver=new MutationObserver(()=>{
+    if(article.querySelector('[data-reader-pending]'))return;
+    loadingObserver.disconnect();loadingObserver=null;
+    if(!working)frame=requestAnimationFrame(restore);
+   });
+   loadingObserver.observe(article,{childList:true,subtree:true});
+  };
   function restore(){
    if(working)return;
    const pending=article.querySelector('[data-reader-pending]');
    const now=performance.now();
-   if((pending||!article.getBoundingClientRect().height)&&now-start<5000){frame=requestAnimationFrame(restore);return;}
+   if(pending){observeLoad();return;}
+   if(article.querySelector('[data-reader-incomplete]')){release();return;}
    const content=area();
    const anchor=position?.anchorId&&content!==article?content.querySelector('#'+position.anchorId):null;
    if(Number.isFinite(position?.scrollOffset)&&(!position.anchorId||anchor)){
     const r=(anchor||content).getBoundingClientRect();
-    const offset=Math.min(Math.max(0,r.height-1),position.scrollOffset||0);
+    if(anchor&&restoreAnchor!==anchor){
+     restoreAnchor=anchor;const items=[...content.querySelectorAll('h2[id],p[id]')];nextAnchor=items[items.indexOf(anchor)+1];
+    }
+    const span=anchor&&nextAnchor?Math.max(r.height,nextAnchor.getBoundingClientRect().top-r.top):r.height;
+    const offset=Math.min(Math.max(0,Math.round(span)-1),position.scrollOffset||0);
     const delta=r.top+offset-16;
     if(Math.abs(delta)>1)window.scrollBy({top:delta,behavior:'instant'});
    }else if(Number.isFinite(position?.scrollY))window.scrollTo({top:position.scrollY,behavior:'instant'});
@@ -187,7 +200,7 @@ export function useReadingScroll({active,identity,position,save}) {
   const reset=()=>{if(timer)clearTimeout(timer);timer=null;pendingPosition=undefined;cancelAnimationFrame(frame);working=true;scrollOverride=performance.now()+330;};
   record.current={reset,flush};
   return()=>{
-   cancelAnimationFrame(frame);flush();record.current=null;
+   cancelAnimationFrame(frame);loadingObserver?.disconnect();flush();record.current=null;
    window.removeEventListener('scroll',scroll);window.removeEventListener('pagehide',flush);
    window.removeEventListener('pointerdown',cancelRestore);window.removeEventListener('keydown',cancelRestore);
    window.removeEventListener('wheel',cancelRestore);window.removeEventListener('touchstart',cancelRestore);
