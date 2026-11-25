@@ -1,0 +1,138 @@
+{
+  "record_version": 1,
+  "checked_at": "2026-11-25",
+  "status": "prepared_not_published",
+  "rights_status": "rights_documented_for_Russia_US_EU_EEA_Germany_and_Netherlands; worldwide_country_by_country_opinion_not_exhaustive",
+  "work": {
+    "title": "Хамелеон",
+    "original_title": "Хамелеон : Сценка",
+    "author": "Антон Павлович Чехов",
+    "publication_signature": "А. Чехонте",
+    "author_identity": "Known; the pseudonym is attributed to Anton Pavlovich Chekhov",
+    "birth_year": 1860,
+    "death_date": "1904-07-15",
+    "coauthors": [],
+    "original_language": "Russian",
+    "country_of_origin": "Russian Empire (present-day Russia)",
+    "first_publication": {
+      "title": "Осколки",
+      "issue": "1884, № 36",
+      "date": "1884-09-08",
+      "page": "4",
+      "subtitle": "Сценка",
+      "source_record": "The Wikisource page cites the first publication and issue; the Commons scan record independently identifies the 1884 issue."
+    },
+    "format": "short_story",
+    "chapters": 1,
+    "word_count": 966,
+    "pages": 0,
+    "interior_images": 0,
+    "questions": 4
+  },
+  "text_rights": {
+    "included_element": "Complete Russian story text only; no modern commentary, editorial notes, translation, or scan image is included.",
+    "source_page": "https://ru.wikisource.org/wiki/Хамелеон_(Чехов)/Вариант_журнала_«Осколки»",
+    "permanent_revision": "https://ru.wikisource.org/w/index.php?title=Хамелеон_(Чехов)/Вариант_журнала_«Осколки»&oldid=5321506",
+    "revision_history": "https://ru.wikisource.org/w/index.php?title=Хамелеон_(Чехов)/Вариант_журнала_«Осколки»&action=history",
+    "page_revision_date": "2025-02-26",
+    "exact_page_license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "commercial_permission": "CC BY-SA 4.0 expressly permits copying, redistribution, adaptation, and commercial use, subject to attribution, license-link, change notice, ShareAlike, and no additional restrictions.",
+    "attribution": "Антон Павлович Чехов (подпись первой публикации — А. Чехонте), «Хамелеон» (1884); цифровая транскрипция — участники Викитеки, постоянная версия страницы 5321506. Источник: https://ru.wikisource.org/w/index.php?title=Хамелеон_(Чехов)/Вариант_журнала_«Осколки»&oldid=5321506. Лицензия транскрипции: CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/. Изменения в BookCheef: нормализовано форматирование и разбиение на абзацы/главу; текст не переведён, не пересказан и не сокращён.",
+    "share_alike_plan": "The reproduced/adapted transcription is marked CC BY-SA 4.0. BookCheef must not apply DRM or additional legal/technical restrictions that prevent exercise of CC BY-SA permissions for this text.",
+    "source_edition_note": "The Wikisource page identifies the textual source as A. P. Chekhov, collected works, Nauka, Moscow, 1975, vol. 3, pp. 52–55 and 487. Only the story text is used; the 1975 edition's commentary, notes, introduction, layout, and scans are not copied. Any German scientific-edition related right under UrhG §70 would expire 25 years after the 1975 edition (by 2000), if that edition qualifies; the original story itself is not protected by copyright.",
+    "translation": "None. The source and BookCheef text are Russian.",
+    "restrictions": "Attribution, license link, indication of formatting changes, ShareAlike CC BY-SA 4.0, and no additional restrictions. No NC or ND term applies."
+  },
+  "jurisdiction_review": [
+    {
+      "jurisdiction": "European Union / EEA",
+      "basis": "Directive 2006/116/EC, Article 1(1) and calculation from 1 January following the relevant event (recital 15). Known individual author; no coauthors; first published during author's lifetime.",
+      "calculation": "Chekhov died 15 July 1904. Life plus 70 years ran through 31 December 1974; public domain from 1 January 1975.",
+      "source": "https://eur-lex.europa.eu/eli/dir/2006/116/oj/eng",
+      "result": "Underlying story is public domain; the Wikisource transcription is additionally licensed CC BY-SA 4.0."
+    },
+    {
+      "jurisdiction": "Germany",
+      "basis": "EU term plus German UrhG §64. The 1975 collected edition is not reproduced as a facsimile or with its apparatus. If the edition qualifies for the related right in §70, that right expires 25 years after publication.",
+      "calculation": "Any §70 right tied to the 1975 edition expired no later than 2000. The story's authorial term expired in 1974.",
+      "source": "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html",
+      "result": "Underlying story and text used are cleared for commercial reuse subject to CC BY-SA attribution."
+    },
+    {
+      "jurisdiction": "Netherlands",
+      "basis": "Government.nl / Business.gov.nl guidance: copyright lasts 70 years after the creator's death, counted from 1 January of the following year.",
+      "calculation": "Term ended 31 December 1974.",
+      "source": "https://business.gov.nl/regulations/copyright/",
+      "result": "Underlying story is public domain; CC BY-SA 4.0 conditions for the digital transcription are retained."
+    },
+    {
+      "jurisdiction": "Russia",
+      "basis": "Civil Code Part IV, Articles 1281 and 1282; Federal Law No. 231-FZ, Article 6 transitional rule.",
+      "calculation": "Chekhov's old 50-year term expired decades before 1 January 1993, so the 2006 transitional provision extending terms to 70 years does not revive it. Even the conservative life-plus-70 calculation would have ended on 31 December 1974.",
+      "sources": [
+        "https://rospatent.gov.ru/content/uploadfiles/1/Civil%20Code%20of%20the%20RussianFederation_current%20wording%2021-04-2025.pdf",
+        "https://pravo.ppt.ru/fz/231-fz-103590"
+      ],
+      "result": "Underlying story is public domain; author name and integrity must still be respected."
+    },
+    {
+      "jurisdiction": "United States",
+      "basis": "The exact 1884 issue was published before 1 January 1931; the Commons file record marks the issue public domain in the United States.",
+      "source": "https://commons.wikimedia.org/wiki/File:Осколки_1884_36.pdf",
+      "result": "Underlying story is public domain in the United States."
+    },
+    {
+      "jurisdiction": "Other territories",
+      "basis": "The Wikisource transcription is under a worldwide CC BY-SA 4.0 license from contributors, but this record does not constitute a country-by-country legal opinion for every jurisdiction. The Commons PD template lists some longer-term jurisdictions generically; those listed terms (up to 100 years) would also have expired for an author who died in 1904, but no exhaustive global survey was completed.",
+      "result": "Do not represent this record as a legal opinion for every country. If BookCheef requires exhaustive worldwide certification, obtain manual legal review before global distribution."
+    }
+  ],
+  "edition_and_scan_review": {
+    "original_issue_record": "https://commons.wikimedia.org/wiki/File:Осколки_1884_36.pdf",
+    "original_issue_source": "https://rusneb.ru/catalog/000199_000009_011287942/",
+    "original_issue_metadata": "1884, issue 36, Russian-language humor magazine Осколки; 8-page scan; Commons page identifies source as the National Electronic Library and displays Public Domain Mark 1.0, PD-Russia, and PD-US status.",
+    "included_in_book": false,
+    "reason": "The scan is used only as bibliographic corroboration; no page image, scan, cover, or facsimile is embedded or redistributed. The BookCheef text comes from the licensed Wikisource transcription.",
+    "limitation": "The National Electronic Library page itself could not be opened during this run; its record is cited only as the source named by the Commons file page. No scan file was downloaded or uploaded."
+  },
+  "asset_ledger": [
+    {
+      "element": "Cover illustration",
+      "file_path": "public/book-covers/hameleon.svg",
+      "planned_url": "https://kdnmgames.github.io/BookCheef/book-covers/hameleon.svg",
+      "creator": "Original vector artwork created specifically for BookCheef in this run",
+      "third_party_assets": [],
+      "text_on_image": false,
+      "license": "CC0 1.0 dedication by project for this original asset",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": "Permitted; original vector shapes only, no external photograph, illustration, font, logo, or film frame used.",
+      "changes": "No text overlay; title and author are supplied separately by catalog metadata."
+    },
+    {
+      "element": "Interior illustrations",
+      "count": 0,
+      "reason": "No third-party interior illustration was included; no image with individually verified commercial rights was necessary for this short story."
+    }
+  ],
+  "publication": {
+    "publication_key": "bookcheef-2026-11-25-hameleon",
+    "supabase_id": null,
+    "public_books_inserted": false,
+    "book_catalog_verified": false,
+    "site_display_verified": false,
+    "status": "prepared_not_published",
+    "blockers": [
+      "Supabase skill listing returned no available skills; the required Supabase skill could not be read.",
+      "Per project rules, no Supabase SQL was run without the required skill.",
+      "No database duplicate check was possible; do not insert until title/author/language/edition duplicates are checked in public.books and book_catalog."
+    ]
+  },
+  "free_only_compliance": {
+    "paid_apis_used": false,
+    "paid_models_used": false,
+    "paid_image_generators_used": false,
+    "credits_purchased": false,
+    "billing_changed": false
+  }
+}
