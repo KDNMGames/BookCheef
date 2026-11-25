@@ -2,6 +2,7 @@
 name: Deploy BookCheef
 # Audiobook workflow activation trigger
 # Audio generation dispatch follow-up
+# Trigger source-text diagnostic run for the five main audiobook files.
 
 on:
   push:
