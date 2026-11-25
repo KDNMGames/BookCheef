@@ -8,6 +8,7 @@ import hashlib, json, os, subprocess, sys, tempfile, time, urllib.error, urllib.
 from pathlib import Path
 
 TAG = os.environ.get("CONTENT_RELEASE_TAG", "bookcheef-content-archive-2026-11-25")
+REPO = os.environ.get("CONTENT_REPO", "KDNMGames/BookCheef_DataBase")
 BUCKETS = ("book-files", "gallery", "book-audio")
 PAGE_SIZE = 100
 ROOT = Path(tempfile.mkdtemp(prefix="bookcheef-content-export-"))
@@ -42,15 +43,15 @@ def request(url, method="GET", payload=None, binary=False):
     raise RuntimeError("Retries exhausted")
 
 def ensure_release():
-    if subprocess.run(["gh","release","view",TAG],capture_output=True).returncode:
-        subprocess.run(["gh","release","create",TAG,"--title","BookCheef content archive — 2026-11-25",
+    if subprocess.run(["gh","release","view",TAG,"--repo",REPO],capture_output=True).returncode:
+        subprocess.run(["gh","release","create",TAG,"--repo",REPO,"--title","BookCheef content archive — 2026-11-25",
           "--notes","Copy-only export. Supabase originals are retained until cutover and integrity verification.",
           "--latest=false"],check=True)
 
 def upload(path, asset):
     target = path.with_name(asset)
     if path != target: path.rename(target)
-    subprocess.run(["gh","release","upload",TAG,str(target),"--clobber"],check=True)
+    subprocess.run(["gh","release","upload",TAG,str(target),"--repo",REPO,"--clobber"],check=True)
     target.unlink(missing_ok=True)
 
 def export_json(endpoint, filename, select):
