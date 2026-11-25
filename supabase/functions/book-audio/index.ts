@@ -305,7 +305,14 @@ ${text}
     if (candidate.status === 429) throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
     if (![500, 502, 503, 504].includes(candidate.status)) throw new Error(`Анализ голосов Gemini ${model}: ${lastAnalysisError}`);
   }
-  if (!response || !response.ok) throw new Error(`Анализ голосов Gemini: обе модели временно недоступны. ${lastAnalysisError}`);
+  if (!response || !response.ok) {
+    // Preserve the complete chapter and continue TTS when analysis models are temporarily overloaded.
+    return {
+      speakers: [{ id: "NARRATOR", name: "Рассказчик", voice: settings.narrator_voice, style: "естественное литературное повествование" }],
+      segments: [{ speaker: "NARRATOR", text }],
+      usedSafeFallback: true,
+    };
+  }
   const output = result?.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((part: any) => part?.text ?? "").join("") ?? "";
   const parsed = extractJson(output);
   if (!Array.isArray(parsed?.segments) || !Array.isArray(parsed?.speakers)) {
