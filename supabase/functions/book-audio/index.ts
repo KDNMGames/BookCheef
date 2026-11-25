@@ -55,6 +55,33 @@ function splitBook(markdown: string, bookTitle: string, interactiveContent?: any
   return chapters;
 }
 
+
+const SERIES_BOOK_IDS = new Set(["1c202832-95ff-4a94-bd5b-d05593f663f7","f176810c-ec87-4a9d-9d50-734f12fded2c","5e9c2a0f-3428-46f3-a741-e920cb5a28c7","6815397d-f2a2-47d1-b1b2-8b5f63bbd890","d1255b41-aa02-4245-ba3b-67557a7d70cc","98da4931-33a7-4e40-bf74-268960037ca2","21f0a8ba-99ae-4601-960c-60350c71e152","9d30236e-2c8c-4910-a894-e1cfca441cc5"]);
+function decodeHtmlEntities(value: string) {
+  return value.replace(/&nbsp;|&#160;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n))).replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
+}
+function htmlBookToText(html: string) {
+  let value = html.replace(/^\uFEFF/, "");
+  value = value.replace(/<!--[\s\S]*?-->/g, " ").replace(/<(script|style|noscript|svg|head)\b[^>]*>[\s\S]*?<\/\1>/gi, " ").replace(/<(h[1-6])\b[^>]*>/gi, "\n\n## ").replace(/<\/(h[1-6])\s*>/gi, "\n\n").replace(/<br\s*\/?\s*>/gi, "\n").replace(/<\/(p|div|section|article|li|blockquote|tr)\s*>/gi, "\n\n").replace(/<li\b[^>]*>/gi, "• ").replace(/<[^>]+>/g, " ");
+  value = decodeHtmlEntities(value).replace(/[\t\u00a0 ]+/g, " ");
+  value = value.replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return value.length > 500 ? value : "";
+}
+async function loadBookText(adminDb: any, book: any) {
+  const inlineText = String(book?.book_content ?? "").trim();
+  if (inlineText.length > 0) return inlineText;
+  const { data: objects, error: listError } = await adminDb.storage.from("book-files").list(String(book.id), { limit: 100 });
+  if (listError) throw new Error("Не удалось прочитать список файлов книги из book-files");
+  const htmlFile = (objects ?? []).find((item: any) => /^original-.*\.bookcheef\.html$/i.test(String(item.name ?? "")));
+  if (!htmlFile) throw new Error("В book-files не найден исходный HTML-файл книги");
+  const path = String(book.id) + "/" + String(htmlFile.name);
+  const { data: file, error: downloadError } = await adminDb.storage.from("book-files").download(path);
+  if (downloadError || !file) throw new Error("Не удалось скачать исходный HTML-файл книги");
+  const extracted = htmlBookToText(await file.text());
+  if (!extracted) throw new Error("Из HTML-файла не удалось извлечь текст книги");
+  return extracted;
+}
+
 function cleanForSpeech(markdown: string) {
   return markdown
     .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
@@ -397,6 +424,7 @@ Deno.serve(async (req: Request) => {
     if (!internalCall) return json({ error: "Недостаточно прав для фоновой обработки" }, 403);
     const { data: books, error: booksError } = await adminDb.from("books")
       .select("id,title,book_content,interactive_content,is_interactive,created_at,genre,age,description")
+      .in("id", [...SERIES_BOOK_IDS])
       .order("created_at", { ascending: true })
       .limit(1000);
     if (booksError) return json({ error: "Не удалось получить список книг для озвучки" }, 500);
@@ -415,7 +443,9 @@ Deno.serve(async (req: Request) => {
     }
     const candidates: any[] = [];
     for (const book of books ?? []) {
-      const chapters = splitBook(book.book_content, book.title, book.interactive_content);
+      let sourceText = "";
+      try { sourceText = await loadBookText(adminDb, book); } catch { continue; }
+      const chapters = splitBook(sourceText, book.title, book.interactive_content);
       if (!chapters.length) continue;
       const existingRows = rowsByBook.get(book.id) ?? [];
       let pendingIndex = -1;
@@ -450,8 +480,11 @@ Deno.serve(async (req: Request) => {
   const { data: book, error: bookError } = await adminDb
     .from("books").select("id,title,book_content,interactive_content,is_interactive,is_free,genre,age,description").eq("id", bookId).single();
   if (bookError || !book) return json({ error: "Книга не найдена" }, 404);
-  const chapters = splitBook(book.book_content, book.title, book.interactive_content);
-  if (!chapters.length) return json({ error: "Для озвучки нужен текст книги или заполненные сцены интерактивной книги; вложенные PDF/DOCX пока не поддерживаются" }, 400);
+  let sourceText = "";
+  try { sourceText = await loadBookText(adminDb, book); }
+  catch (sourceError) { return json({ error: String(sourceError instanceof Error ? sourceError.message : sourceError).slice(0, 500) }, 400); }
+  const chapters = splitBook(sourceText, book.title, book.interactive_content);
+  if (!chapters.length) return json({ error: "В книге не найдены главы или текст для озвучки" }, 400);
   const chapter = chapters[chapterIndex - 1];
   if (!chapter) return json({ error: "Глава с таким номером не найдена" }, 404);
 
