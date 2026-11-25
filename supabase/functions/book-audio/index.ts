@@ -286,7 +286,7 @@ ${text}
   let response: Response | null = null;
   let result: any = null;
   let lastAnalysisError = "";
-  for (const model of ["gemini-3.8-flash", "gemini-2.5-flash"]) {
+  for (const model of ["gemini-3.8-flash"]) {
     const candidate = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
@@ -303,7 +303,7 @@ ${text}
     }
     lastAnalysisError = String(candidateResult?.error?.message ?? `HTTP ${candidate.status}`).slice(0, 350);
     if (candidate.status === 429) throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
-    if (![500, 502, 503, 504].includes(candidate.status)) throw new Error(`Анализ голосов Gemini ${model}: ${lastAnalysisError}`);
+    if (![500, 502, 503, 504].includes(candidate.status)) break;
   }
   if (!response || !response.ok) {
     // Preserve the complete chapter and continue TTS when analysis models are temporarily overloaded.
@@ -442,7 +442,7 @@ function makeWav(pcm: Uint8Array) {
 }
 
 async function callTts(model: string, text: string, apiKey: string, voiceName = "Charon", style = "") {
-  const isNew = model === "gemini-3.8-flash-tts";
+  const isNew = model.startsWith("gemini-3.8-flash");
   const delivery = style || "Русская художественная аудиокнига. Естественная, выразительная и уверенная подача; ясная артикуляция, плавный темп, точные паузы, деликатная эмоциональная окраска без театрального переигрывания.";
   const part: Record<string, unknown> = {
     text,
@@ -479,7 +479,7 @@ async function generateChunk(text: string, apiKey: string, voiceName = "Charon",
   } catch (primaryError) {
     // Free-tier fallback only. No paid provider, paid model, or billing upgrade is attempted.
     try {
-      return { bytes: await callTts("gemini-2.5-flash-preview-tts", text, apiKey, voiceName, style), model: "gemini-2.5-flash-preview-tts" };
+      return { bytes: await callTts("gemini-3.8-flash-lite-tts", text, apiKey, voiceName, style), model: "gemini-3.8-flash-lite-tts" };
     } catch (fallbackError) {
       throw new Error(`Не удалось создать аудио ни основной, ни резервной бесплатной моделью. ${String(primaryError).slice(0, 180)}; ${String(fallbackError).slice(0, 180)}`);
     }
