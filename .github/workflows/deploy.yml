@@ -1,6 +1,7 @@
 
 name: Deploy BookCheef
 # Audiobook workflow activation trigger
+# Audio generation dispatch follow-up
 
 on:
   push:
