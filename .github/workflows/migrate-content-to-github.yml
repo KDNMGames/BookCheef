@@ -37,4 +37,5 @@ jobs:
           GH_TOKEN: ${{ secrets.CONTENT_MIGRATION_TOKEN }}
           CONTENT_REPO: KDNMGames/BookCheef_DataBase
           RELEASE_TAG: ${{ inputs.release_tag }}
-        run: gh release view "$RELEASE_TAG" --repo "$CONTENT_REPO" --json tagName,assets --jq '{tag: .tagName, assets: [.assets[] | {name: .name, size: .size}]}'
+        run: |
+          gh release view "$RELEASE_TAG" --repo "$CONTENT_REPO" --json tagName,assets --jq '{tag: .tagName, assets: [.assets[] | {name: .name, size: .size}]}'
