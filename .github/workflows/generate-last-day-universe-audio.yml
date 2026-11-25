@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: last-day-universe-audiobook-generation
+  group: last-day-universe-audio-inspection
   cancel-in-progress: false
 
 jobs:
