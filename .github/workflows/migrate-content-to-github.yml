@@ -1,0 +1,38 @@
+name: Migrate BookCheef content to GitHub
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: GitHub Release tag for the copied content
+        required: true
+        default: bookcheef-content-archive-2026-11-25
+permissions:
+  contents: write
+concurrency:
+  group: bookcheef-content-migration
+  cancel-in-progress: false
+jobs:
+  copy-content:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: gh auth status
+      - name: Copy public catalogue and Storage objects to GitHub Release
+        env:
+          GH_TOKEN: \${{ github.token }}
+          SUPABASE_URL: \${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: \${{ secrets.SUPABASE_SECRET_KEY }}
+          CONTENT_RELEASE_TAG: \${{ inputs.release_tag }}
+        run: python scripts/migrate-supabase-content-to-github.py
+      - name: Verify release asset inventory
+        env:
+          GH_TOKEN: \${{ github.token }}
+          RELEASE_TAG: \${{ inputs.release_tag }}
+        run: gh release view "$RELEASE_TAG" --json tagName,assets --jq '{tag: .tagName, assets: [.assets[] | {name: .name, size: .size}]}'
