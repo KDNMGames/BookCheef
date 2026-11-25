@@ -38,11 +38,12 @@
     "exact_page_license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)",
     "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
     "commercial_permission": "CC BY-SA 4.0 expressly permits copying, redistribution, adaptation, and commercial use, subject to attribution, license-link, change notice, ShareAlike, and no additional restrictions.",
-    "attribution": "Антон Павлович Чехов (подпись первой публикации — А. Чехонте), «Хамелеон» (1884); цифровая транскрипция — участники Викитеки, постоянная версия страницы 5321506. Источник: https://ru.wikisource.org/w/index.php?title=Хамелеон_(Чехов)/Вариант_журнала_«Осколки»&oldid=5321506. Лицензия транскрипции: CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/. Изменения в BookCheef: нормализовано форматирование и разбиение на абзацы/главу; текст не переведён, не пересказан и не сокращён.",
+    "attribution": "Антон Павлович Чехов (подпись первой публикации — А. Чехонте), «Хамелеон» (1884); цифровая транскрипция — участники Викитеки, постоянная версия страницы 5321506. Источник: https://ru.wikisource.org/w/index.php?title=Хамелеон_(Чехов)/Вариант_журнала_«Осколки»&oldid=5321506. Лицензия транскрипции: CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/. Изменения в BookCheef: форматирование, абзацная разбивка, единообразное написание «ё» и нормализация пробелов вокруг тире; текст не переведён, не пересказан и не сокращён.",
     "share_alike_plan": "The reproduced/adapted transcription is marked CC BY-SA 4.0. BookCheef must not apply DRM or additional legal/technical restrictions that prevent exercise of CC BY-SA permissions for this text.",
     "source_edition_note": "The Wikisource page identifies the textual source as A. P. Chekhov, collected works, Nauka, Moscow, 1975, vol. 3, pp. 52–55 and 487. Only the story text is used; the 1975 edition's commentary, notes, introduction, layout, and scans are not copied. Any German scientific-edition related right under UrhG §70 would expire 25 years after the 1975 edition (by 2000), if that edition qualifies; the original story itself is not protected by copyright.",
     "translation": "None. The source and BookCheef text are Russian.",
-    "restrictions": "Attribution, license link, indication of formatting changes, ShareAlike CC BY-SA 4.0, and no additional restrictions. No NC or ND term applies."
+    "restrictions": "Attribution, license link, indication of formatting changes, ShareAlike CC BY-SA 4.0, and no additional restrictions. No NC or ND term applies.",
+    "changes": "Форматирование, абзацная разбивка, единообразное написание «ё», нормализация пробелов вокруг тире; лексический состав и последовательность текста сохранены."
   },
   "jurisdiction_review": [
     {
