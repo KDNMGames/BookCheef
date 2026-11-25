@@ -7,16 +7,12 @@ on:
   schedule:
     - cron: "15 * * * *"
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/generate-last-day-universe-audio.yml"
-      - "supabase/functions/book-audio/index.ts"
 
 permissions:
   contents: read
 
 concurrency:
-  group: last-day-universe-audio-inspection
+  group: last-day-universe-audiobook-generation
   cancel-in-progress: false
 
 jobs:
@@ -38,7 +34,7 @@ jobs:
           fi
 
           completed=0
-          max_chapters=1
+          max_chapters=8
           for ((i=1; i<=max_chapters; i++)); do
             success=false
             for attempt in 1 2 3; do
@@ -46,7 +42,7 @@ jobs:
                 --request POST "${AUDIO_URL}" \
                 --header "Content-Type: application/json" \
                 --header "x-book-audio-publisher-token: ${AUDIO_TOKEN}" \
-                --data '{"action":"inspect_series"}')"
+                --data '{"action":"process_next"}')"
               body="$(cat response.json)"
               if [ "${status}" -ge 200 ] && [ "${status}" -lt 300 ] && echo "${body}" | jq -e '.ok == true' >/dev/null 2>&1; then
                 success=true
@@ -76,12 +72,13 @@ jobs:
               echo "No pending chapters remain for the series."
               break
             fi
-
-            echo "Inspection response: ${body}"
           title="$(echo "${body}" | jq -r '.chapter_title // "Глава"')"
             chapter="$(echo "${body}" | jq -r '.chapter_index // 0')"
             model="$(echo "${body}" | jq -r '.model // "Gemini TTS"')"
-            echo "Ready: ${title} (chapter ${chapter}), model: ${model}"
+            voices="$(echo "${body}" | jq -r '.voice_name // "не указаны"')"
+            speaker_count="$(echo "${body}" | jq -r '.speakers | length' 2>/dev/null || echo 0)"
+            safe_fallback="$(echo "${body}" | jq -r '.safe_fallback // false')"
+            echo "Ready: ${title} (chapter ${chapter}), model: ${model}; voices: ${voices}; speakers: ${speaker_count}; safe_fallback: ${safe_fallback}"
             completed=$((completed + 1))
             if [ "${i}" -lt "${max_chapters}" ]; then sleep 5; fi
           done

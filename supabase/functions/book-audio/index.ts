@@ -52,11 +52,11 @@ function splitBook(markdown: string, bookTitle: string, interactiveContent?: any
     const text = source.slice(start, end).trim();
     if (text) chapters.push({ title: heading[1].trim(), text });
   }
-  return chapters;
+  return chapters.filter((chapter) => !/^(?:оглавление|содержание|contents)$/iu.test(String(chapter.title ?? "").trim()));
 }
 
 
-const SERIES_BOOK_IDS = new Set(["1c202832-95ff-4a94-bd5b-d05593f663f7","f176810c-ec87-4a9d-9d50-734f12fded2c","5e9c2a0f-3428-46f3-a741-e920cb5a28c7","6815397d-f2a2-47d1-b1b2-8b5f63bbd890","d1255b41-aa02-4245-ba3b-67557a7d70cc","98da4931-33a7-4e40-bf74-268960037ca2","21f0a8ba-99ae-4601-960c-60350c71e152","9d30236e-2c8c-4910-a894-e1cfca441cc5"]);
+const SERIES_BOOK_IDS = new Set(["1c202832-95ff-4a94-bd5b-d05593f663f7","f176810c-ec87-4a9d-9d50-734f12fded2c","5e9c2a0f-3428-46f3-a741-e920cb5a28c7","6815397d-f2a2-47d1-b1b2-8b5f63bbd890","d1255b41-aa02-4245-ba3b-67557a7d70cc"]);
 function decodeHtmlEntities(value: string) {
   return value.replace(/&nbsp;|&#160;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n))).replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
 }
@@ -149,20 +149,6 @@ async function htmlBlobToText(file: Blob) {
   if (carry) consume(carry);
   const text = chunks.join("").replace(/[\t\u00a0 ]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
   return text.length > 500 ? text : "";
-}
-
-async function inspectBookHtml(adminDb: any, book: any) {
-  const { data: objects, error } = await adminDb.storage.from("book-files").list(String(book.id), { limit: 100 });
-  if (error) return { error: "list_failed" };
-  const item=(objects??[]).find((x:any)=>/^original-.*\.bookcheef\.html$/i.test(String(x.name??"")));
-  if(!item) return { error:"html_missing" };
-  const {data:file,error:downloadError}=await adminDb.storage.from("book-files").download(String(book.id)+"/"+String(item.name));
-  if(downloadError||!file) return {error:"download_failed"};
-  const raw=await file.text();
-  const scripts=[...raw.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].slice(0,12).map((m:any)=>({attrs:String(m[1]).slice(0,180),chars:String(m[2]).length,sample:String(m[2]).trim().slice(0,360)}));
-  const extracted=await htmlBlobToText(new Blob([raw],{type:"text/html"}));
-  const headings=[...extracted.matchAll(/^##\s+(.+)$/gm)].map((m:any)=>m[1]).slice(0,35);
-  return {file:item.name,bytes:raw.length,htmlStart:raw.slice(0,1100),scripts,extractedChars:extracted.length,headings,extractedPreview:extracted.slice(0,1800)};
 }
 
 async function loadBookText(adminDb: any, book: any) {
@@ -302,31 +288,30 @@ ${text}
   let result: any = null;
   let lastAnalysisError = "";
   for (const model of ["gemini-3.8-flash"]) {
-    const candidate = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: "POST",
-      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 20000 },
-      }),
-    });
-    const candidateResult = await candidate.json().catch(() => null);
-    if (candidate.ok) {
-      response = candidate;
-      result = candidateResult;
-      break;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const candidate = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 20000 },
+        }),
+      });
+      const candidateResult = await candidate.json().catch(() => null);
+      if (candidate.ok) {
+        response = candidate;
+        result = candidateResult;
+        break;
+      }
+      lastAnalysisError = String(candidateResult?.error?.message ?? `HTTP ${candidate.status}`).slice(0, 350);
+      if (candidate.status === 429) throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
+      if (![500, 502, 503, 504].includes(candidate.status)) break;
+      if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
     }
-    lastAnalysisError = String(candidateResult?.error?.message ?? `HTTP ${candidate.status}`).slice(0, 350);
-    if (candidate.status === 429) throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
-    if (![500, 502, 503, 504].includes(candidate.status)) break;
+    if (response?.ok) break;
   }
   if (!response || !response.ok) {
-    // Preserve the complete chapter and continue TTS when analysis models are temporarily overloaded.
-    return {
-      speakers: [{ id: "NARRATOR", name: "Рассказчик", voice: settings.narrator_voice, style: "естественное литературное повествование" }],
-      segments: [{ speaker: "NARRATOR", text }],
-      usedSafeFallback: true,
-    };
+    throw new Error(`Анализ голосов Gemini временно недоступен: ${lastAnalysisError || "нет ответа"}`);
   }
   const output = result?.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((part: any) => part?.text ?? "").join("") ?? "";
   const parsed = extractJson(output);
@@ -535,20 +520,6 @@ Deno.serve(async (req: Request) => {
     if (adminError || !adminRecord) return json({ error: "Создавать аудиокниги может только администратор BookCheef" }, 403);
   }
 
-
-  if (payload.action === "inspect_series") {
-    if (!internalCall) return json({ error: "Недостаточно прав" }, 403);
-    const { data: books, error } = await adminDb.from("books").select("id,title,book_content,interactive_content,is_interactive").in("id", [...SERIES_BOOK_IDS]);
-    if (error) return json({error:"Не удалось получить книги"},500);
-    const result=[];
-    for (const book of books??[]) {
-      if (String(book.book_content??"").trim()) {
-        const chapters=splitBook(book.book_content,book.title,book.interactive_content);
-        result.push({title:book.title,source:"book_content",chars:book.book_content.length,chapters:chapters.slice(0,30).map((c:any)=>({title:c.title,chars:c.text.length,preview:c.text.slice(0,180)}))});
-      } else result.push({title:book.title,source:await inspectBookHtml(adminDb,book)});
-    }
-    return json({ok:true,books:result});
-  }
 
   if (payload.action === "process_next") {
     if (!internalCall) return json({ error: "Недостаточно прав для фоновой обработки" }, 403);
