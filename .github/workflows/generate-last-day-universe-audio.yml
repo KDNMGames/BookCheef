@@ -48,13 +48,18 @@ jobs:
                 success=true
                 break
               fi
-              if [ "${status}" = "429" ] || echo "${body}" | jq -e '.rate_limited == true or .retry_later == true' >/dev/null 2>&1; then
-                echo "Gemini quota/rate limit or temporary overload. Stop safely; remaining chapters will retry on the next run."
+              if [ "${status}" = "429" ] || echo "${body}" | jq -e '.rate_limited == true' >/dev/null 2>&1; then
+                echo "Gemini free quota/rate limit reached. Stop safely; remaining chapters will retry on the next run."
                 break 2
               fi
               if [ "${status}" -ge 500 ] && [ "${attempt}" -lt 3 ]; then
-                sleep $((attempt * 15))
+                echo "Temporary Gemini/worker error on attempt ${attempt}: ${body}"
+                sleep $((attempt * 20))
                 continue
+              fi
+              if echo "${body}" | jq -e '.retry_later == true' >/dev/null 2>&1; then
+                echo "Temporary Gemini overload persists. Stop safely; remaining chapters will retry on the next scheduled run. Response: ${body}"
+                break 2
               fi
               echo "::error::Audiobook worker returned HTTP ${status}: ${body}"
               exit 1
