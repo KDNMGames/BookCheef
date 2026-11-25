@@ -77,7 +77,8 @@ jobs:
               break
             fi
 
-            title="$(echo "${body}" | jq -r '.chapter_title // "Глава"')"
+            echo "Inspection response: ${body}"
+          title="$(echo "${body}" | jq -r '.chapter_title // "Глава"')"
             chapter="$(echo "${body}" | jq -r '.chapter_index // 0')"
             model="$(echo "${body}" | jq -r '.model // "Gemini TTS"')"
             echo "Ready: ${title} (chapter ${chapter}), model: ${model}"
