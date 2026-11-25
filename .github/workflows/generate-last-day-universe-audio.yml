@@ -38,7 +38,7 @@ jobs:
           fi
 
           completed=0
-          max_chapters=8
+          max_chapters=1
           for ((i=1; i<=max_chapters; i++)); do
             success=false
             for attempt in 1 2 3; do
@@ -46,7 +46,7 @@ jobs:
                 --request POST "${AUDIO_URL}" \
                 --header "Content-Type: application/json" \
                 --header "x-book-audio-publisher-token: ${AUDIO_TOKEN}" \
-                --data '{"action":"process_next"}')"
+                --data '{"action":"inspect_series"}')"
               body="$(cat response.json)"
               if [ "${status}" -ge 200 ] && [ "${status}" -lt 300 ] && echo "${body}" | jq -e '.ok == true' >/dev/null 2>&1; then
                 success=true
