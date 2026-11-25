@@ -200,18 +200,34 @@ ${voiceList}
 ${text}
 </BOOK_TEXT>`;
 
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent", {
-    method: "POST",
-    headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 20000 },
-    }),
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok) {
-    const message = String(result?.error?.message ?? `HTTP ${response.status}`).slice(0, 350);
-    throw new Error(`Анализ голосов Gemini 3.8 Flash: ${message}`);
+  let response: Response | null = null;
+  let result: any = null;
+  let lastAnalysisError = "";
+  for (const model of ["gemini-3.8-flash", "gemini-2.5-flash"]) {
+    const candidate = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST",
+      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 20000 },
+      }),
+    });
+    const candidateResult = await candidate.json().catch(() => null);
+    if (candidate.ok) {
+      response = candidate;
+      result = candidateResult;
+      break;
+    }
+    lastAnalysisError = String(candidateResult?.error?.message ?? `HTTP ${candidate.status}`).slice(0, 350);
+    if (candidate.status === 429) {
+      throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
+    }
+    if (![500, 502, 503, 504].includes(candidate.status)) {
+      throw new Error(`Анализ голосов Gemini ${model}: ${lastAnalysisError}`);
+    }
+  }
+  if (!response || !response.ok) {
+    throw new Error(`Анализ голосов Gemini: обе модели временно недоступны. ${lastAnalysisError}`);
   }
   const output = result?.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((part: any) => part?.text ?? "").join("") ?? "";
   const parsed = extractJson(output);
