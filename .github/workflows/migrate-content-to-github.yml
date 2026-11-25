@@ -22,17 +22,19 @@ jobs:
           python-version: "3.12"
       - name: Authenticate GitHub CLI
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CONTENT_MIGRATION_TOKEN }}
         run: gh auth status
       - name: Copy public catalogue and Storage objects to GitHub Release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CONTENT_MIGRATION_TOKEN }}
+          CONTENT_REPO: KDNMGames/BookCheef_DataBase
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           CONTENT_RELEASE_TAG: ${{ inputs.release_tag }}
         run: python scripts/migrate-supabase-content-to-github.py
       - name: Verify release asset inventory
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CONTENT_MIGRATION_TOKEN }}
+          CONTENT_REPO: KDNMGames/BookCheef_DataBase
           RELEASE_TAG: ${{ inputs.release_tag }}
-        run: gh release view "$RELEASE_TAG" --json tagName,assets --jq '{tag: .tagName, assets: [.assets[] | {name: .name, size: .size}]}'
+        run: gh release view "$RELEASE_TAG" --repo "$CONTENT_REPO" --json tagName,assets --jq '{tag: .tagName, assets: [.assets[] | {name: .name, size: .size}]}'
