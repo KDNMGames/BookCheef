@@ -150,6 +150,21 @@ async function htmlBlobToText(file: Blob) {
   const text = chunks.join("").replace(/[\t\u00a0 ]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
   return text.length > 500 ? text : "";
 }
+
+async function inspectBookHtml(adminDb: any, book: any) {
+  const { data: objects, error } = await adminDb.storage.from("book-files").list(String(book.id), { limit: 100 });
+  if (error) return { error: "list_failed" };
+  const item=(objects??[]).find((x:any)=>/^original-.*\.bookcheef\.html$/i.test(String(x.name??"")));
+  if(!item) return { error:"html_missing" };
+  const {data:file,error:downloadError}=await adminDb.storage.from("book-files").download(String(book.id)+"/"+String(item.name));
+  if(downloadError||!file) return {error:"download_failed"};
+  const raw=await file.text();
+  const scripts=[...raw.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].slice(0,12).map((m:any)=>({attrs:String(m[1]).slice(0,180),chars:String(m[2]).length,sample:String(m[2]).trim().slice(0,360)}));
+  const extracted=await htmlBlobToText(new Blob([raw],{type:"text/html"}));
+  const headings=[...extracted.matchAll(/^##\s+(.+)$/gm)].map((m:any)=>m[1]).slice(0,35);
+  return {file:item.name,bytes:raw.length,htmlStart:raw.slice(0,1100),scripts,extractedChars:extracted.length,headings,extractedPreview:extracted.slice(0,1800)};
+}
+
 async function loadBookText(adminDb: any, book: any) {
   const inlineText = String(book?.book_content ?? "").trim();
   if (inlineText.length > 0) return inlineText;
@@ -518,6 +533,21 @@ Deno.serve(async (req: Request) => {
     const { data: adminRecord, error: adminError } = await adminDb
       .from("admins").select("user_id").eq("user_id", userResult.user.id).maybeSingle();
     if (adminError || !adminRecord) return json({ error: "Создавать аудиокниги может только администратор BookCheef" }, 403);
+  }
+
+
+  if (payload.action === "inspect_series") {
+    if (!internalCall) return json({ error: "Недостаточно прав" }, 403);
+    const { data: books, error } = await adminDb.from("books").select("id,title,book_content,interactive_content,is_interactive").in("id", [...SERIES_BOOK_IDS]);
+    if (error) return json({error:"Не удалось получить книги"},500);
+    const result=[];
+    for (const book of books??[]) {
+      if (String(book.book_content??"").trim()) {
+        const chapters=splitBook(book.book_content,book.title,book.interactive_content);
+        result.push({title:book.title,source:"book_content",chars:book.book_content.length,chapters:chapters.slice(0,30).map((c:any)=>({title:c.title,chars:c.text.length,preview:c.text.slice(0,180)}))});
+      } else result.push({title:book.title,source:await inspectBookHtml(adminDb,book)});
+    }
+    return json({ok:true,books:result});
   }
 
   if (payload.action === "process_next") {
