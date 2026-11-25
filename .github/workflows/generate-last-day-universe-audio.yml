@@ -7,6 +7,10 @@ on:
   schedule:
     - cron: "15 * * * *"
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/generate-last-day-universe-audio.yml"
+      - "supabase/functions/book-audio/index.ts"
 
 permissions:
   contents: read
