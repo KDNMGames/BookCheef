@@ -60,12 +60,95 @@ const SERIES_BOOK_IDS = new Set(["1c202832-95ff-4a94-bd5b-d05593f663f7","f176810
 function decodeHtmlEntities(value: string) {
   return value.replace(/&nbsp;|&#160;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n))).replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
 }
-function htmlBookToText(html: string) {
-  let value = html.replace(/^\uFEFF/, "");
-  value = value.replace(/<!--[\s\S]*?-->/g, " ").replace(/<(script|style|noscript|svg|head)\b[^>]*>[\s\S]*?<\/\1>/gi, " ").replace(/<(h[1-6])\b[^>]*>/gi, "\n\n## ").replace(/<\/(h[1-6])\s*>/gi, "\n\n").replace(/<br\s*\/?\s*>/gi, "\n").replace(/<\/(p|div|section|article|li|blockquote|tr)\s*>/gi, "\n\n").replace(/<li\b[^>]*>/gi, "• ").replace(/<[^>]+>/g, " ");
-  value = decodeHtmlEntities(value).replace(/[\t\u00a0 ]+/g, " ");
-  value = value.replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-  return value.length > 500 ? value : "";
+async function htmlBlobToText(file: Blob) {
+  const reader = file.stream().getReader();
+  const decoder = new TextDecoder();
+  const chunks: string[] = [];
+  let carry = "";
+  let skipTag = "";
+  let inComment = false;
+
+  const consume = (input: string) => {
+    let pos = 0;
+    while (pos < input.length) {
+      if (inComment) {
+        const close = input.indexOf("-->", pos);
+        if (close < 0) return;
+        pos = close + 3;
+        inComment = false;
+        continue;
+      }
+      if (skipTag) {
+        const closePattern = new RegExp("</" + skipTag + "\\s*>", "i");
+        const rest = input.slice(pos);
+        const match = closePattern.exec(rest);
+        if (!match || match.index === undefined) return;
+        pos += match.index + match[0].length;
+        skipTag = "";
+        continue;
+      }
+
+      const lt = input.indexOf("<", pos);
+      if (lt < 0) {
+        chunks.push(decodeHtmlEntities(input.slice(pos)));
+        return;
+      }
+      if (lt > pos) chunks.push(decodeHtmlEntities(input.slice(pos, lt)));
+      if (input.startsWith("<!--", lt)) {
+        const close = input.indexOf("-->", lt + 4);
+        if (close < 0) {
+          inComment = true;
+          return;
+        }
+        pos = close + 3;
+        continue;
+      }
+      const gt = input.indexOf(">", lt + 1);
+      if (gt < 0) return;
+      const tag = input.slice(lt + 1, gt);
+      const parsed = tag.match(/^\s*(\/?)\s*([a-z0-9]+)/i);
+      if (parsed) {
+        const closing = parsed[1] === "/";
+        const name = parsed[2].toLowerCase();
+        if (!closing && ["script", "style", "noscript", "svg", "head"].includes(name)) {
+          skipTag = name;
+        } else if (!closing && /^h[1-6]$/.test(name)) {
+          chunks.push("\n\n## ");
+        } else if (closing && /^h[1-6]$/.test(name)) {
+          chunks.push("\n\n");
+        } else if (name === "br" && !closing) {
+          chunks.push("\n");
+        } else if (closing && ["p", "div", "section", "article", "li", "blockquote", "tr"].includes(name)) {
+          chunks.push("\n\n");
+        } else if (name === "li" && !closing) {
+          chunks.push("• ");
+        }
+      }
+      pos = gt + 1;
+    }
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    let input = carry + decoder.decode(value ?? new Uint8Array(), { stream: !done });
+    carry = "";
+    if (!done) {
+      const lastLt = input.lastIndexOf("<");
+      const lastGt = input.lastIndexOf(">");
+      let safeEnd = input.length;
+      if (lastLt > lastGt) safeEnd = Math.min(safeEnd, lastLt);
+      const lastAmp = input.lastIndexOf("&");
+      const lastSemi = input.lastIndexOf(";");
+      if (lastAmp > lastSemi) safeEnd = Math.min(safeEnd, lastAmp);
+      carry = input.slice(safeEnd);
+      input = input.slice(0, safeEnd);
+    }
+    consume(input);
+    if (done) break;
+  }
+  if (carry) consume(carry);
+  const text = chunks.join("").replace(/[\t\u00a0 ]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return text.length > 500 ? text : "";
 }
 async function loadBookText(adminDb: any, book: any) {
   const inlineText = String(book?.book_content ?? "").trim();
@@ -77,7 +160,7 @@ async function loadBookText(adminDb: any, book: any) {
   const path = String(book.id) + "/" + String(htmlFile.name);
   const { data: file, error: downloadError } = await adminDb.storage.from("book-files").download(path);
   if (downloadError || !file) throw new Error("Не удалось скачать исходный HTML-файл книги");
-  const extracted = htmlBookToText(await file.text());
+  const extracted = await htmlBlobToText(file);
   if (!extracted) throw new Error("Из HTML-файла не удалось извлечь текст книги");
   return extracted;
 }
@@ -219,16 +302,10 @@ ${text}
       break;
     }
     lastAnalysisError = String(candidateResult?.error?.message ?? `HTTP ${candidate.status}`).slice(0, 350);
-    if (candidate.status === 429) {
-      throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
-    }
-    if (![500, 502, 503, 504].includes(candidate.status)) {
-      throw new Error(`Анализ голосов Gemini ${model}: ${lastAnalysisError}`);
-    }
+    if (candidate.status === 429) throw new Error(`Анализ голосов Gemini: ${lastAnalysisError}`);
+    if (![500, 502, 503, 504].includes(candidate.status)) throw new Error(`Анализ голосов Gemini ${model}: ${lastAnalysisError}`);
   }
-  if (!response || !response.ok) {
-    throw new Error(`Анализ голосов Gemini: обе модели временно недоступны. ${lastAnalysisError}`);
-  }
+  if (!response || !response.ok) throw new Error(`Анализ голосов Gemini: обе модели временно недоступны. ${lastAnalysisError}`);
   const output = result?.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((part: any) => part?.text ?? "").join("") ?? "";
   const parsed = extractJson(output);
   if (!Array.isArray(parsed?.segments) || !Array.isArray(parsed?.speakers)) {
