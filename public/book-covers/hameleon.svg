@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1e6cc"/>
+      <stop offset="1" stop-color="#d5c19b"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9d0bd"/>
+      <stop offset="1" stop-color="#e9d9b8"/>
+    </linearGradient>
+    <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#33433e"/>
+      <stop offset="1" stop-color="#172a2b"/>
+    </linearGradient>
+    <linearGradient id="lizard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9d9b4d"/>
+      <stop offset=".42" stop-color="#4c8062"/>
+      <stop offset="1" stop-color="#24545a"/>
+    </linearGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9b66f"/>
+      <stop offset="1" stop-color="#8f8550"/>
+    </linearGradient>
+    <pattern id="grain" width="38" height="38" patternUnits="userSpaceOnUse">
+      <circle cx="5" cy="7" r="1.2" fill="#6f5d42" opacity=".16"/>
+      <circle cx="27" cy="21" r=".9" fill="#6f5d42" opacity=".12"/>
+      <path d="M2 31l8-2M23 5l6 1" stroke="#fff7e7" stroke-width="1" opacity=".25"/>
+    </pattern>
+    <pattern id="cobble" width="112" height="58" patternUnits="userSpaceOnUse">
+      <path d="M5 8Q28 1 51 8L57 27Q35 37 9 28Z" fill="#8e8068" stroke="#655b4b" stroke-width="2"/>
+      <path d="M64 7Q87 0 108 9L103 29Q82 37 61 27Z" fill="#a39478" stroke="#655b4b" stroke-width="2"/>
+      <path d="M27 37Q50 30 73 38L77 54Q52 61 25 53Z" fill="#9b8b70" stroke="#655b4b" stroke-width="2"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="1600" fill="url(#paper)"/>
+  <rect x="34" y="34" width="1132" height="1532" rx="18" fill="none" stroke="#594a39" stroke-width="10"/>
+  <rect x="55" y="55" width="1090" height="1490" rx="12" fill="none" stroke="#9a805b" stroke-width="3"/>
+  <path d="M80 80H1120V1520H80Z" fill="url(#sky)" opacity=".9"/>
+
+  <!-- Late nineteenth-century market square -->
+  <circle cx="880" cy="285" r="118" fill="#e7c98a" opacity=".55"/>
+  <path d="M80 665L80 430 245 300 410 430 410 665Z" fill="#9d8061" stroke="#5e5142" stroke-width="8"/>
+  <path d="M56 433L245 270 434 433" fill="#6d5547" stroke="#51463c" stroke-width="10"/>
+  <path d="M108 468H382V665H108Z" fill="#d8c49e"/>
+  <path d="M140 492H215V592H140Z M260 492H335V592H260Z" fill="#5d6960" stroke="#6b5845" stroke-width="8"/>
+  <path d="M128 608H362" stroke="#6b5845" stroke-width="8"/>
+  <path d="M455 665V415L610 300 765 415V665Z" fill="#b69a72" stroke="#6b5845" stroke-width="8"/>
+  <path d="M430 420L610 270 790 420" fill="#7b5a45" stroke="#51463c" stroke-width="10"/>
+  <path d="M505 468H570V560H505Z M650 468H715V560H650Z" fill="#52635e" stroke="#6b5845" stroke-width="8"/>
+  <path d="M578 570H642V665H578Z" fill="#6d5847"/>
+  <path d="M790 665V455L940 340 1090 455V665Z" fill="#a88e6b" stroke="#6b5845" stroke-width="8"/>
+  <path d="M770 460L940 320 1110 460" fill="#6d5547" stroke="#51463c" stroke-width="10"/>
+  <path d="M838 492H900V580H838Z M965 492H1027V580H965Z" fill="#596960" stroke="#6b5845" stroke-width="8"/>
+  <path d="M810 612H1070" stroke="#6b5845" stroke-width="8"/>
+  <path d="M80 665H1120V1520H80Z" fill="#b8a27e"/>
+  <path d="M80 665H1120V1520H80Z" fill="url(#cobble)" opacity=".62"/>
+
+  <!-- Small crowd and the officer in the distance -->
+  <g opacity=".9">
+    <path d="M560 745Q565 700 594 700Q624 700 630 745L642 850H550Z" fill="#4d5048"/>
+    <circle cx="595" cy="682" r="24" fill="#c69a72"/>
+    <path d="M555 720L535 790M630 720L654 790" stroke="#3e443f" stroke-width="17" stroke-linecap="round"/>
+    <path d="M700 760Q704 720 730 720Q757 720 761 760L770 846H691Z" fill="#75604c"/>
+    <circle cx="731" cy="702" r="22" fill="#c69a72"/>
+    <path d="M686 744L671 808M764 744L782 805" stroke="#64533f" stroke-width="15" stroke-linecap="round"/>
+    <path d="M816 795Q823 770 849 770Q875 770 880 795L884 858H808Z" fill="#59645a"/>
+    <circle cx="849" cy="753" r="20" fill="#bd916b"/>
+    <path d="M807 814L795 859M879 814L895 859" stroke="#59645a" stroke-width="14" stroke-linecap="round"/>
+    <path d="M610 865Q616 825 646 825Q675 825 680 865L688 936H600Z" fill="url(#coat)"/>
+    <circle cx="645" cy="805" r="25" fill="#c38e68"/>
+    <path d="M614 788Q612 755 645 755Q678 755 676 790L668 798H620Z" fill="#39443e"/>
+    <path d="M623 936L612 1030M666 936L678 1030" stroke="#253332" stroke-width="22" stroke-linecap="round"/>
+    <path d="M603 865L575 930M681 865L705 922" stroke="#253332" stroke-width="18" stroke-linecap="round"/>
+    <path d="M716 935Q738 905 765 927Q790 949 769 973Q745 989 718 968Z" fill="#efe3ca" stroke="#6c5843" stroke-width="5"/>
+    <path d="M727 944L711 923M765 945L782 927" stroke="#6c5843" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Foreground stone ledge -->
+  <path d="M80 1185Q330 1135 550 1185T1120 1180V1520H80Z" fill="#756a58"/>
+  <path d="M80 1205Q330 1155 550 1205T1120 1200" fill="none" stroke="#d2bd93" stroke-width="14" opacity=".75"/>
+  <path d="M95 1250Q360 1200 580 1250T1105 1240" fill="none" stroke="#514a40" stroke-width="5" opacity=".7"/>
+
+  <!-- Chameleon: original vector illustration -->
+  <g stroke="#203f3b" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M275 1290C160 1240 167 1125 265 1117C352 1110 385 1190 325 1224C284 1247 244 1212 270 1182C289 1160 318 1177 309 1194"
+          fill="none" stroke="#315d52" stroke-width="45"/>
+    <path d="M275 1290C160 1240 167 1125 265 1117C352 1110 385 1190 325 1224C284 1247 244 1212 270 1182C289 1160 318 1177 309 1194"
+          fill="none" stroke="#a4a05b" stroke-width="7" opacity=".8"/>
+    <path d="M300 1242C340 1170 422 1120 525 1120C640 1120 718 1185 780 1210C839 1233 898 1205 930 1160C954 1126 1000 1115 1038 1135C1078 1155 1083 1202 1050 1230C1016 1260 966 1245 958 1213"
+          fill="none" stroke="#203f3b" stroke-width="7" opacity=".55"/>
+    <path d="M315 1250C355 1170 434 1125 535 1128C646 1130 724 1195 786 1215C845 1235 900 1205 932 1163C957 1128 1000 1120 1035 1140C1070 1160 1077 1198 1049 1224C1022 1248 982 1238 967 1212"
+          fill="none" stroke="url(#lizard)" stroke-width="84"/>
+    <path d="M390 1195Q470 1154 550 1170Q642 1186 705 1232Q753 1265 807 1260Q852 1257 884 1224"
+          fill="none" stroke="url(#belly)" stroke-width="29" opacity=".95"/>
+    <path d="M440 1158Q493 1138 550 1150M580 1161Q640 1177 684 1207M744 1243Q780 1260 820 1245"
+          fill="none" stroke="#d2bd78" stroke-width="9" opacity=".75"/>
+    <path d="M480 1150L460 1095Q445 1073 421 1084Q397 1097 413 1120L442 1168" fill="url(#lizard)" stroke-width="8"/>
+    <path d="M684 1196L710 1136Q730 1116 750 1132Q766 1146 747 1168L724 1220" fill="url(#lizard)" stroke-width="8"/>
+    <path d="M860 1225L882 1280Q903 1300 925 1280Q939 1264 918 1244L895 1210" fill="url(#lizard)" stroke-width="8"/>
+    <path d="M545 1175L530 1244Q535 1270 560 1272Q585 1273 584 1246L584 1180" fill="url(#lizard)" stroke-width="8"/>
+    <path d="M978 1144Q1008 1090 1056 1099Q1104 1107 1114 1145Q1120 1178 1089 1195Q1060 1210 1025 1186Q1005 1170 978 1174Z"
+          fill="url(#lizard)" stroke-width="8"/>
+    <path d="M1017 1132Q1035 1081 1071 1088Q1106 1095 1102 1127Q1099 1152 1067 1158"
+          fill="none" stroke="#a5a05d" stroke-width="12"/>
+    <circle cx="1068" cy="1133" r="24" fill="#d8c27d" stroke-width="7"/>
+    <circle cx="1074" cy="1133" r="10" fill="#172c2a" stroke="none"/>
+    <circle cx="1077" cy="1128" r="4" fill="#fff1c9" stroke="none"/>
+    <path d="M1090 1170Q1110 1180 1120 1170" fill="none" stroke="#203f3b" stroke-width="7"/>
+    <path d="M1010 1190Q1038 1210 1060 1194" fill="none" stroke="#d7c47f" stroke-width="7"/>
+    <path d="M445 1176Q455 1200 476 1203M510 1168Q524 1192 545 1198M620 1188Q635 1210 654 1218M750 1233Q768 1248 788 1248"
+          fill="none" stroke="#264a43" stroke-width="5" opacity=".7"/>
+  </g>
+
+  <!-- Decorative botanical sprigs and paper grain -->
+  <g fill="none" stroke="#66735c" stroke-width="7" opacity=".65">
+    <path d="M140 1370Q180 1305 208 1275M170 1342Q130 1324 119 1293M185 1323Q223 1314 238 1280"/>
+    <path d="M1000 1390Q1030 1320 1085 1290M1035 1350Q1000 1325 990 1295M1058 1325Q1094 1320 1110 1290"/>
+  </g>
+  <rect x="80" y="80" width="1040" height="1440" fill="url(#grain)" opacity=".55"/>
+  <rect x="98" y="98" width="1004" height="1404" rx="8" fill="none" stroke="#6e5941" stroke-width="3" opacity=".8"/>
+</svg>
