@@ -1053,3 +1053,5 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 .bookcheef-native-text figure img{display:block;max-width:100%;height:auto;margin-inline:auto}
 .bookcheef-native-text :is(h2,h3){scroll-margin-top:2rem}
 .reader:has([data-reader-incomplete]) .reader-end-marker{display:none}
+
+.book-visibility-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.book-visibility-tabs button{border:1px solid var(--border,rgba(255,255,255,.14));border-radius:999px;background:transparent;color:inherit;padding:8px 13px;cursor:pointer;font:inherit;font-size:.86rem}.book-visibility-tabs button.active{background:rgba(198,163,106,.16);border-color:#c6a36a;color:#e5c58f}.manage-item.is-hidden-book{opacity:.72}.manage-item.is-hidden-book .manage-info b:after{content:' · СКРЫТА';font-size:.68em;letter-spacing:.04em;color:#d6a76d}
