@@ -1,0 +1,171 @@
+{
+  "record_type": "bookcheef-rights-ledger",
+  "version": 1,
+  "prepared_at": "2026-11-26T08:53:39+01:00",
+  "status": "prepared_not_published",
+  "publication_key": "bookcheef-2026-11-26-lermontov-four-poems",
+  "title": "Четыре стихотворения Михаила Лермонтова",
+  "author": {
+    "name": "Михаил Юрьевич Лермонтов",
+    "birth_year": 1814,
+    "death_date": "1841-07-27",
+    "country_at_publication": "Российская империя",
+    "coauthors": [],
+    "anonymous_or_pseudonymous": false,
+    "source": "https://www.prlib.ru/node/619629"
+  },
+  "materials": [
+    {
+      "title": "Парус",
+      "creation_year": 1832,
+      "first_publication_year": 1841,
+      "source_edition": "Сочинения М. Ю. Лермонтова. Полное собрание в одном томе; редакция и биография П. Смирновского; издатель А. Я. Панафидин; Москва, 1901.",
+      "transcription_page": "https://ru.wikisource.org/w/index.php?title=Парус_(Лермонтов)/ДО&oldid=4800982",
+      "page_revision": 4800982,
+      "transcription_license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Михаил Юрьевич Лермонтов, «Парус»; текстовая транскрипция участников Викитеки; источник — издание А. Я. Панафидина, Москва, 1901; CC BY-SA 4.0.",
+      "changes": "Модернизирована дореформенная орфография; нормализованы «ё», пробелы и форматирование строф; текст не сокращён и не пересказан.",
+      "scan_used": false,
+      "scan_note": "Скан не включён и не воспроизводится; страница транскрипции указывает конкретное издание 1901 года. Коммерческое использование текста основано на CC BY-SA 4.0 для транскрипции и общественном достоянии оригинального стихотворения в проверенных юрисдикциях."
+    },
+    {
+      "title": "Тучи",
+      "creation_year": 1840,
+      "first_publication": "Стихотворения М. Лермонтова, Санкт-Петербург, 1840, с. 167–168.",
+      "source_edition": "Сочинения М. Ю. Лермонтова. Полное собрание в одном томе; редакция П. Смирновского; издатель А. Я. Панафидин; Москва, 1901.",
+      "transcription_page": "https://ru.wikisource.org/w/index.php?title=Тучи_(Лермонтов)/ПСС_1901_(ВТ)&oldid=4806059",
+      "page_revision": 4806059,
+      "transcription_license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Михаил Юрьевич Лермонтов, «Тучи»; текстовая транскрипция участников Викитеки; источник — издание П. Смирновского / А. Я. Панафидина, Москва, 1901; CC BY-SA 4.0.",
+      "changes": "Нормализованы пробелы и форматирование строф; словесный состав не изменён.",
+      "scan_used": false,
+      "scan_note": "Скан не включён и не воспроизводится; транскрипция указывает издание 1901 года. Первое опубликование 1840 года подтверждено библиографическим примечанием на странице Викитеки."
+    },
+    {
+      "title": "Утёс",
+      "creation_year": 1841,
+      "first_publication": "Отечественные записки, 1843, том XXVII, № 4, отдел I, с. 331.",
+      "transcription_page": "https://ru.wikisource.org/w/index.php?title=Утес_(Лермонтов)&oldid=1877073",
+      "page_revision": 1877073,
+      "transcription_source_edition": "Лермонтов М. Ю. Полное собрание стихотворений в двух томах. Ленинград: Советский писатель, Ленинградское отделение, 1989, том 2.",
+      "transcription_license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original_first_edition_reference": "https://ru.wikisource.org/wiki/Утес_(Лермонтов)/ОЗ_1843_(ДО)",
+      "original_scan_reference": "https://commons.wikimedia.org/wiki/File:Лермонтов_-_Утёс_-_первое_издание_в_Отечественных_записках_1843.jpg",
+      "attribution": "Михаил Юрьевич Лермонтов, «Утёс»; текстовая транскрипция участников Викитеки; первая публикация — «Отечественные записки», 1843, том XXVII, № 4, с. 331; CC BY-SA 4.0.",
+      "changes": "Использован только текст стихотворения; редакторские примечания и комментарии из издания 1989 года не включены. Нормализованы переносы и пробелы.",
+      "scan_used": false,
+      "scan_note": "Скан первого издания приведён только как библиографическая ссылка и не включён в книгу. Для текста использована CC BY-SA транскрипция Викитеки; издание 1989 года не воспроизводится целиком."
+    },
+    {
+      "title": "Выхожу один я на дорогу",
+      "creation_year": 1841,
+      "first_publication": "Отечественные записки, 1843, том XXVII, № 4, отдел I, с. 332.",
+      "transcription_page": "https://ru.wikisource.org/w/index.php?title=Выхожу_один_я_на_дорогу_(Лермонтов)/ОЗ_1843_(ВТ)&oldid=5619609",
+      "page_revision": 5619609,
+      "transcription_license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Михаил Юрьевич Лермонтов, «Выхожу один я на дорогу»; текстовая транскрипция участников Викитеки по первому журнальному опубликованию; «Отечественные записки», 1843, том XXVII, № 4, с. 332; CC BY-SA 4.0.",
+      "changes": "Нормализованы «навеки», «тёмный», знак ударения в «что же», пробелы и форматирование строф; содержание и последовательность строк сохранены.",
+      "scan_used": false,
+      "scan_note": "Скан не включён и не воспроизводится; точный выпуск и страница первого опубликования указаны на странице транскрипции."
+    }
+  ],
+  "cover": {
+    "file": "book-publications/assets/2026-11-26-lermontov-four-poems-cover.svg",
+    "url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/book-publications/assets/2026-11-26-lermontov-four-poems-cover.svg",
+    "author": "Оригинальная векторная иллюстрация, созданная специально для BookCheef",
+    "license": "CC0 1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "third_party_assets": [],
+    "text_embedded_in_image": false,
+    "note": "Только оригинальные векторные формы; внешние изображения, шрифты и фотографии не использованы. Название и автор находятся в метаданных интерфейса, а не на иллюстрации."
+  },
+  "compilation": {
+    "selector": "BookCheef editorial selection",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "note": "Подбор и порядок четырёх стихотворений составлены для этой подборки; адаптированная транскрипция распространяется по CC BY-SA 4.0."
+  },
+  "legal_review": {
+    "checked_on": "2026-11-26",
+    "checked_jurisdictions": {
+      "EU/EEA": {
+        "result": "public_domain",
+        "basis": "Directive 2006/116/EC, Article 1(1), (2), (8): life plus 70 years, term calculated from 1 January following the relevant event. Lermontov died in 1841; the ordinary term ended 31 December 1911 and the poems entered the public domain on 1 January 1912.",
+        "posthumous_publication": "«Утёс» and «Выхожу один я на дорогу» were first published in 1843, only two years after the author's death, during the ordinary copyright term; the 25-year right for first publication of previously unpublished works after copyright expiry (Article 4) does not apply.",
+        "transition": "Article 10(2) applies the Directive's terms to works protected in at least one Member State on 1 July 1995; these works were already out of copyright long before that date.",
+        "sources": [
+          "https://eur-lex.europa.eu/eli/dir/2006/116/oj/eng",
+          "https://www.prlib.ru/node/619629"
+        ]
+      },
+      "Germany": {
+        "result": "public_domain",
+        "basis": "UrhG Section 64: 70 years after author's death. Section 70: any qualifying scientific edition has a 25-year related-right term. The 1901 editions are long outside that term; even if the 1989 source edition for «Утёс» qualifies, its Section 70 term expired by the end of 2014. No editorial apparatus is reproduced.",
+        "sources": [
+          "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html"
+        ]
+      },
+      "Netherlands": {
+        "result": "public_domain",
+        "basis": "Official Business.gov.nl guidance: copyright lasts 70 years after the creator's death, counted from 1 January of the following year. The author's term ended 31 December 1911. The poems were lawfully published during the term; no previously-unpublished posthumous first-publication right is relied upon.",
+        "sources": [
+          "https://business.gov.nl/regulations/copyright/"
+        ]
+      },
+      "Russia": {
+        "result": "public_domain",
+        "basis": "Civil Code Article 1281 sets life plus 70 years. Federal Law No. 231-FZ Article 6 applies the new 70-year terms only when the prior 50-year term had not expired by 1 January 1993. For an author who died in 1841, the earlier 50-year term had expired in 1891, so the transition does not revive protection.",
+        "sources": [
+          "https://sudact.ru/law/gk-rf-chast4/razdel-vii/glava-70/statia-1281/",
+          "https://rospatent.gov.ru/ru/documents/231-federalnyy-zakon-ot-18-dekabrya-2006-g-231"
+        ]
+      },
+      "United States": {
+        "result": "not_fully_certified",
+        "basis": "17 U.S.C. §104A requires a restored foreign work not to be in the public domain in its source country through expiration of term. The source country is the Russian Empire / successor Russian jurisdiction and the author's term had expired there long before 1996; however, the historical source-country/succession analysis has not been independently certified by U.S. counsel.",
+        "sources": [
+          "https://uscode.house.gov/us/usc/t17/s104A/",
+          "https://www.copyright.gov/circs/circ38b.pdf"
+        ]
+      }
+    },
+    "global_clearance": false,
+    "global_clearance_note": "No exhaustive country-by-country legal opinion was obtained for every jurisdiction where BookCheef may be accessible. The work is extremely old and the checked jurisdictions are clear, but the strict global publication threshold is not certified in this run. Manual legal review remains required before public catalog publication.",
+    "rights_basis": [
+      "Public domain status of the original poems in checked jurisdictions",
+      "CC BY-SA 4.0 permission for each exact Wikisource transcription, including commercial reuse and adaptation subject to attribution, change notice and ShareAlike",
+      "CC0 1.0 original cover illustration"
+    ],
+    "license_compliance": {
+      "attribution_in_description": true,
+      "license_link_in_description": true,
+      "changes_indicated": true,
+      "sharealike_applied_to_adaptation": true,
+      "no_nc_materials": true,
+      "no_nd_materials": true
+    }
+  },
+  "duplicate_check": {
+    "github_repository_search": "No matching Lermontov title or author string found in GitHub code search; search response marked incomplete.",
+    "database": "not_checked",
+    "reason_database_not_checked": "Supabase skill read was unavailable in this run; no Supabase SQL was executed."
+  },
+  "publication": {
+    "status": "prepared_not_published",
+    "supabase_id": null,
+    "publication_key": "bookcheef-2026-11-26-lermontov-four-poems",
+    "database_inserted": false,
+    "book_catalog_verified": false,
+    "website_visual_check": false,
+    "reason": "Supabase skill unavailable and global legal clearance not certified. No RLS bypass, SQL, Storage upload or site publication performed."
+  },
+  "source_and_license_notes": [
+    "The exact Wikisource transcription pages are individually marked CC BY-SA 4.0. The license permits commercial sharing and adaptation if attribution, a license link, change indication and ShareAlike are observed.",
+    "The original poems are not translations; no modern third-party translation, editorial commentary, modern illustration or film material is included.",
+    "No scanned page images are included in the BookCheef package. The first-publication references and bibliographic details are recorded separately."
+  ]
+}
