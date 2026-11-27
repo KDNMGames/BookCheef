@@ -1,0 +1,111 @@
+{
+  "record_type": "bookcheef-rights-ledger",
+  "version": 1,
+  "checked_at": "2026-11-27",
+  "status": "rights_verified_for_publication",
+  "publication_key": "bookcheef-2026-11-27-zolotoy-petushok",
+  "title": "Сказка о золотом петушке",
+  "language": "ru",
+  "format": "Отдельная книга; литературная сказка в стихах",
+  "audience_age": "10+",
+  "content_metrics": {
+    "chapters": 1,
+    "approximate_verse_lines": 224,
+    "images": 3,
+    "reader_questions": 4
+  },
+  "author": {
+    "name": "Александр Сергеевич Пушкин",
+    "birth_date": "1799-06-06",
+    "death_date": "1837-02-10 Gregorian / 1837-01-29 Julian",
+    "country": "Российская империя",
+    "creation_date": "1834-09-20",
+    "first_publication": "1835-04",
+    "coauthors": []
+  },
+  "materials": [
+    {
+      "element": "Оригинальный текст",
+      "author": "Александр Сергеевич Пушкин",
+      "source_edition": "Пушкин А. С. Полное собрание сочинений: в 10 т. Л.: Наука, 1977–1979. Т. 4. Поэмы. Сказки. 1977. С. 358–363.",
+      "source_page": "https://ru.wikisource.org/w/index.php?title=Сказка_о_золотом_петушке_(Пушкин)&oldid=5746378",
+      "license": "CC BY-SA 4.0 (транскрипция Викитеки) + public domain (оригинал)",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Александр Сергеевич Пушкин, «Сказка о золотом петушке»; транскрипция участников русской Викитеки, версия страницы от 10 сентября 2026 года; CC BY-SA 4.0.",
+      "changes": "Словесный текст не сокращён и не пересказан. Сохранены авторские слова и последовательность; добавлены переносы строк для Markdown-ридера и две оригинальные иллюстрации BookCheef. Адаптация текста распространяется по CC BY-SA 4.0.",
+      "commercial_use_explanation": "Пушкин умер в 1837 году. Произведение создано и впервые опубликовано при его жизни в 1834–1835 годах; обычный срок жизни автора плюс 70 лет закончился 31 декабря 1907 года. Страница-транскрипция отдельно доступна по CC BY-SA 4.0, которая прямо разрешает коммерческое повторное использование и адаптацию при атрибуции и ShareAlike.",
+      "scan_used": false
+    },
+    {
+      "element": "Обложка",
+      "creator": "BookCheef editorial artwork; создано специально для этой публикации",
+      "country_of_creation": "Цифровой оригинал",
+      "creation_date": "2026-11-27",
+      "file_path": "public/book-covers/2026-11-27-zolotoy-petushok.svg",
+      "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/public/book-covers/2026-11-27-zolotoy-petushok.svg",
+      "license": "CC0 1.0 Universal Public Domain Dedication",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "Оригинальная векторная обложка BookCheef, CC0 1.0",
+      "restrictions": "Нет сторонних ресурсов, шрифтов, фотографий или встроенных текстовых надписей; разрешено коммерческое использование и изменение.",
+      "commercial_use_explanation": "SVG-композиции созданы специально для BookCheef и посвящены в общественное достояние по CC0 1.0."
+    },
+    {
+      "element": "Иллюстрация 1",
+      "creator": "BookCheef editorial artwork; создано специально для этой публикации",
+      "country_of_creation": "Цифровой оригинал",
+      "creation_date": "2026-11-27",
+      "file_path": "public/book-illustrations/2026-11-27-petushok-spire.svg",
+      "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/public/book-illustrations/2026-11-27-petushok-spire.svg",
+      "license": "CC0 1.0 Universal Public Domain Dedication",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "Оригинальная векторная иллюстрация BookCheef: петушок на спице, CC0 1.0",
+      "restrictions": "Нет сторонних ресурсов, шрифтов, фотографий или встроенных текстовых надписей; разрешено коммерческое использование и изменение.",
+      "commercial_use_explanation": "SVG-композиции созданы специально для BookCheef и посвящены в общественное достояние по CC0 1.0."
+    },
+    {
+      "element": "Иллюстрация 2",
+      "creator": "BookCheef editorial artwork; создано специально для этой публикации",
+      "country_of_creation": "Цифровой оригинал",
+      "creation_date": "2026-11-27",
+      "file_path": "public/book-illustrations/2026-11-27-petushok-dadon.svg",
+      "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/public/book-illustrations/2026-11-27-petushok-dadon.svg",
+      "license": "CC0 1.0 Universal Public Domain Dedication",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "Оригинальная векторная иллюстрация BookCheef: царь Дадон и петушок, CC0 1.0",
+      "restrictions": "Нет сторонних ресурсов, шрифтов, фотографий или встроенных текстовых надписей; разрешено коммерческое использование и изменение.",
+      "commercial_use_explanation": "SVG-композиции созданы специально для BookCheef и посвящены в общественное достояние по CC0 1.0."
+    }
+  ],
+  "legal_review": {
+    "checked_on": "2026-11-27",
+    "result": "rights_verified_for_publication",
+    "jurisdictions": {
+      "EU/EEA": "Public domain: Directive 2006/116/EC Article 1(1), life plus 70 years; term ended 31 December 1907. First publication occurred during author's lifetime, so the 25-year posthumous first-publication right does not apply. Any qualifying 1977 scientific/critical edition term of up to 30 years expired by 31 December 2007. https://eur-lex.europa.eu/eli/dir/2006/116/oj/eng",
+      "Germany": "Public domain: UrhG §§64, 69; 70-year term expired 31 December 1907. Any qualifying 1977 scientific edition term under §70 (25 years) expired by 2002. https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html",
+      "Netherlands": "Public domain: 70 years after death, counted from 1 January following death; expiry 31 December 1907. https://business.gov.nl/regulations/copyright/",
+      "Russia": "Public domain: Civil Code Art. 1281 and Federal Law 231-FZ Art. 6; former 50-year term expired before 1 January 1993 and the later extension does not revive it. https://rospatent.gov.ru/ru/documents/231-federalnyy-zakon-ot-18-dekabrya-2006-g-231",
+      "United States": "Public domain: first publication in 1835, long before 1 January 1931. https://www.copyright.gov/circs/circ22.pdf",
+      "International screening": "A conservative life-plus-100-year term expired by the end of 1937. The original SVG assets are CC0 1.0 worldwide; the text transcription carries CC BY-SA 4.0 worldwide. No active economic right identified in the jurisdictions screened."
+    },
+    "scope_note": "Кабинетная проверка основных юрисдикций, включая ЕС/ЕЭЗ, Германию, Нидерланды, Россию и США; не заменяет юридическое заключение по каждой стране."
+  },
+  "duplicate_check": {
+    "github_tree_checked": true,
+    "exact_database_match": false,
+    "author_title_match": false,
+    "publication_key": "bookcheef-2026-11-27-zolotoy-petushok"
+  },
+  "package": {
+    "json_path": "book-publications/inbox/2026-11-27-zolotoy-petushok.json",
+    "rights_record_path": "book-publications/license-records/2026-11-27-zolotoy-petushok.json",
+    "cover_path": "public/book-covers/2026-11-27-zolotoy-petushok.svg",
+    "illustrations": [
+      "public/book-illustrations/2026-11-27-petushok-spire.svg",
+      "public/book-illustrations/2026-11-27-petushok-dadon.svg"
+    ],
+    "validation": "JSON schema bookcheef-story v1; one non-empty complete chapter; unique chapter ID; 4 questions; 3 original CC0 SVG assets."
+  },
+  "publication": {
+    "status": "pending"
+  }
+}
