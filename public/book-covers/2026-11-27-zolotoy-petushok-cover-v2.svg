@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 900 1350">
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#03060d"/><stop offset=".52" stop-color="#101a2b"/><stop offset="1" stop-color="#020308"/></linearGradient>
+ <radialGradient id="moon"><stop stop-color="#fff7d9"/><stop offset=".35" stop-color="#e8d7a5"/><stop offset="1" stop-color="#8a7040" stop-opacity="0"/></radialGradient>
+ <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fff1ad"/><stop offset=".3" stop-color="#d79a31"/><stop offset=".65" stop-color="#70400e"/><stop offset="1" stop-color="#f4cf70"/></linearGradient>
+ <linearGradient id="feather" x2="1" y2="1"><stop stop-color="#fff0a3"/><stop offset=".5" stop-color="#b66b18"/><stop offset="1" stop-color="#42200b"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="900" height="1350" fill="url(#bg)"/>
+<circle cx="710" cy="465" r="145" fill="url(#moon)" opacity=".65"/>
+<g fill="#d6d5d0" opacity=".6"><circle cx="105" cy="370" r="2"/><circle cx="245" cy="430" r="2"/><circle cx="800" cy="280" r="3"/><circle cx="630" cy="230" r="2"/><circle cx="430" cy="390" r="2"/><circle cx="130" cy="580" r="2"/></g>
+<path d="M0 900L0 790 65 790 65 690 105 690 105 770 160 770 160 620 200 620 200 760 260 760 260 680 300 680 300 770 350 770 350 600 400 600 400 770 460 770 460 660 510 660 510 770 560 770 560 570 610 570 610 760 680 760 680 640 730 640 730 760 800 760 800 650 850 650 850 900Z" fill="#111522" stroke="#8d6834" stroke-width="3"/>
+<g fill="#e6a84d" opacity=".75"><path d="M83 720h12v26H83zM177 662h12v32h-12zM370 640h14v34h-14zM580 615h14v35h-14zM704 680h12v26h-12zM825 687h12v27h-12z"/></g>
+<path d="M0 900L900 900 900 1350H0Z" fill="#03050a"/>
+<path d="M170 1120L450 700 730 1120Z" fill="#101724" stroke="#b88742" stroke-width="5"/>
+<path d="M450 710L450 1118M170 1120L730 1120" stroke="#d6a04d" stroke-width="3" opacity=".8"/>
+<path d="M450 1120L450 700" stroke="#f8d88b" stroke-width="7" opacity=".6"/>
+<g transform="translate(0,-8)">
+ <ellipse cx="455" cy="640" rx="118" ry="23" fill="#ffcc55" opacity=".35" filter="url(#glow)"/>
+ <path d="M390 632Q320 560 355 485Q380 420 430 470Q470 510 485 560Q540 505 570 525Q605 545 575 600Q550 650 490 655Z" fill="url(#feather)" stroke="#f4cb6c" stroke-width="6"/>
+ <path d="M435 500Q360 420 390 350Q430 375 450 420Q455 330 500 300Q530 360 500 430Q575 380 610 415Q600 485 525 505" fill="url(#gold)" stroke="#ffdc80" stroke-width="7"/>
+ <path d="M420 470Q370 400 320 410Q340 470 400 510M460 465Q460 370 510 340Q530 410 490 485M500 490Q560 430 610 450Q580 510 515 525" fill="none" stroke="#5b2e0d" stroke-width="12"/>
+ <path d="M425 420Q390 365 410 330Q430 345 438 370Q455 325 480 318Q500 355 472 390Q510 365 530 385Q510 425 465 440Z" fill="#a52d19" stroke="#f4b94c" stroke-width="6"/>
+ <path d="M610 430L680 450L615 475Z" fill="#e7b54d" stroke="#fff0a5" stroke-width="4"/>
+ <circle cx="500" cy="445" r="10" fill="#08090b"/><circle cx="503" cy="442" r="3" fill="#fff"/>
+ <path d="M440 640L430 700M500 642L520 700" stroke="#d89a39" stroke-width="12" stroke-linecap="round"/>
+ <path d="M412 702h44M500 702h48" stroke="#f3c66c" stroke-width="9" stroke-linecap="round"/>
+</g>
+<text x="450" y="92" fill="#d8b16b" font-family="Georgia,serif" font-size="31" letter-spacing="7" text-anchor="middle">АЛЕКСАНДР СЕРГЕЕВИЧ ПУШКИН</text>
+<text x="450" y="205" fill="#fffaf0" font-family="Georgia,serif" font-size="88" font-weight="bold" text-anchor="middle">СКАЗКА</text>
+<text x="450" y="300" fill="#fffaf0" font-family="Georgia,serif" font-size="67" font-weight="bold" text-anchor="middle">О ЗОЛОТОМ ПЕТУШКЕ</text>
+<path d="M115 1190H785" stroke="#c99a50" stroke-width="2"/>
+<path d="M440 1190l10 -12 10 12 -10 12Z" fill="#e5bf73"/>
+<text x="450" y="1245" fill="#e1c18b" font-family="Georgia,serif" font-size="29" letter-spacing="4" text-anchor="middle">СКАЗКИ АЛЕКСАНДРА ПУШКИНА</text>
+<text x="450" y="1310" fill="#f1d49c" font-family="Georgia,serif" font-size="38" text-anchor="middle">10+</text>
+</svg>
