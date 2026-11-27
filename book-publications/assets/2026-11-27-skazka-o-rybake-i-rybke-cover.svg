@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original BookCheef cover illustration, created 2026-11-27.
+     No third-party assets, fonts, or embedded text. Dedicated to CC0 1.0. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600" role="img" aria-label="Сказочная сцена: старый рыбак у синего моря и золотая рыбка">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#102f4b"/>
+      <stop offset=".58" stop-color="#24617a"/>
+      <stop offset="1" stop-color="#8bb4ad"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d7890"/>
+      <stop offset=".5" stop-color="#0e526f"/>
+      <stop offset="1" stop-color="#092f4c"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0a1"/>
+      <stop offset=".35" stop-color="#f8c64d"/>
+      <stop offset=".72" stop-color="#d98a22"/>
+      <stop offset="1" stop-color="#9f531e"/>
+    </linearGradient>
+    <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#31566a"/>
+      <stop offset="1" stop-color="#122d43"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#ffe7a0" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#ffe7a0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="stars" width="160" height="150" patternUnits="userSpaceOnUse">
+      <circle cx="23" cy="31" r="2.5" fill="#f7e8c2" opacity=".8"/>
+      <circle cx="112" cy="83" r="1.8" fill="#f7e8c2" opacity=".6"/>
+      <path d="M75 15v12M69 21h12" stroke="#f7e8c2" stroke-width="2" opacity=".65"/>
+    </pattern>
+    <pattern id="scales" width="34" height="28" patternUnits="userSpaceOnUse">
+      <path d="M0 14Q17 -5 34 14Q17 33 0 14Z" fill="none" stroke="#fff0a1" stroke-width="2" opacity=".7"/>
+    </pattern>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="1600" fill="url(#sky)"/>
+  <rect width="1200" height="760" fill="url(#stars)" opacity=".72"/>
+  <circle cx="910" cy="300" r="210" fill="url(#glow)" filter="url(#soft)"/>
+  <circle cx="910" cy="300" r="88" fill="#f7e9c5" opacity=".92"/>
+  <circle cx="950" cy="270" r="83" fill="#2b6174"/>
+  <path d="M0 660Q170 580 330 645T650 635T980 620T1200 650V900H0Z" fill="#173f59" opacity=".62"/>
+  <path d="M0 760Q140 690 300 755T600 748T900 735T1200 760V1600H0Z" fill="url(#sea)"/>
+
+  <g fill="none" stroke-linecap="round">
+    <path d="M-40 835Q80 785 190 834T420 830T660 832T900 820T1240 830" stroke="#9bd1c5" stroke-width="12" opacity=".48"/>
+    <path d="M-30 930Q120 870 260 924T540 920T810 910T1080 920T1240 915" stroke="#d3e2cf" stroke-width="7" opacity=".32"/>
+    <path d="M-40 1050Q120 985 280 1040T600 1035T920 1028T1240 1038" stroke="#8ac4bc" stroke-width="11" opacity=".35"/>
+    <path d="M-20 1190Q160 1120 330 1180T660 1170T980 1174T1230 1160" stroke="#d3e2cf" stroke-width="6" opacity=".22"/>
+  </g>
+
+  <g transform="translate(0 10)">
+    <path d="M0 1270Q160 1150 330 1210Q430 1245 510 1330L580 1600H0Z" fill="#243f4b"/>
+    <path d="M0 1350Q150 1260 290 1305Q390 1335 470 1430" fill="none" stroke="#8c9b82" stroke-width="16" opacity=".7"/>
+    <path d="M0 1460Q160 1370 300 1430" fill="none" stroke="#b2b18c" stroke-width="8" opacity=".65"/>
+    <g fill="#c6b68d" opacity=".75">
+      <ellipse cx="92" cy="1375" rx="33" ry="15"/>
+      <ellipse cx="225" cy="1304" rx="25" ry="12"/>
+      <ellipse cx="344" cy="1402" rx="38" ry="16"/>
+      <ellipse cx="138" cy="1518" rx="42" ry="18"/>
+    </g>
+  </g>
+
+  <!-- Fisherman -->
+  <g transform="translate(150 650)">
+    <path d="M176 300Q145 344 133 430L95 740Q174 800 328 758L303 452Q296 346 254 299Z" fill="url(#coat)" stroke="#0c293e" stroke-width="12"/>
+    <path d="M173 313Q201 358 242 314L282 420Q235 472 144 421Z" fill="#53788a" opacity=".8"/>
+    <path d="M157 448Q205 482 272 450L288 724Q206 758 126 718Z" fill="#203f54"/>
+    <path d="M160 737L133 835Q128 866 165 872L216 865L234 758Z" fill="#152e43"/>
+    <path d="M243 750L252 850Q267 878 310 870L343 850L304 735Z" fill="#152e43"/>
+    <path d="M135 852Q115 878 89 890Q80 909 105 916L216 916Q240 904 220 876L201 860Z" fill="#0b2539"/>
+    <path d="M255 850Q250 881 239 900Q249 919 279 920L366 915Q382 901 353 884L309 858Z" fill="#0b2539"/>
+    <path d="M164 220Q143 160 185 115Q231 73 283 119Q314 147 291 220Q277 274 233 291Q180 273 164 220Z" fill="#d9c7a6" stroke="#172f43" stroke-width="10"/>
+    <path d="M168 194Q215 230 291 194Q285 268 230 292Q178 272 168 194Z" fill="#f0dfc1"/>
+    <path d="M189 177Q210 164 229 178M251 178Q270 164 286 178" stroke="#5b5146" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M230 184L220 215L239 216" stroke="#806d58" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M192 236Q229 257 271 234Q250 286 219 281Q196 268 192 236Z" fill="#f7ead1"/>
+    <path d="M150 150Q176 83 246 82Q303 89 319 143Q279 122 236 126Q190 127 150 150Z" fill="#9b7952" stroke="#172f43" stroke-width="10"/>
+    <path d="M144 145Q221 128 324 148L315 170Q227 156 151 174Z" fill="#c5a26c" stroke="#172f43" stroke-width="8"/>
+    <path d="M300 340Q385 302 432 244" fill="none" stroke="#d8c6a5" stroke-width="20" stroke-linecap="round"/>
+    <path d="M420 244Q500 146 580 68" fill="none" stroke="#704d35" stroke-width="12" stroke-linecap="round"/>
+    <path d="M572 70Q622 60 675 95" fill="none" stroke="#e9d8b8" stroke-width="4"/>
+    <path d="M432 244Q474 310 515 368Q547 414 580 430" fill="none" stroke="#d9c9a8" stroke-width="4" opacity=".8"/>
+  </g>
+
+  <!-- Golden fish -->
+  <g transform="translate(705 715) rotate(-8)">
+    <ellipse cx="220" cy="190" rx="240" ry="135" fill="#eab13b" opacity=".22" filter="url(#soft)"/>
+    <path d="M-8 178Q92 48 294 66Q420 78 500 174Q421 286 293 300Q91 318 -8 178Z" fill="url(#gold)" stroke="#7f4b20" stroke-width="12"/>
+    <path d="M45 174Q-30 90 -85 74Q-64 176 -90 278Q-15 253 45 174Z" fill="#e6a333" stroke="#7f4b20" stroke-width="10"/>
+    <path d="M180 77Q225 -20 295 8Q303 58 260 98Z" fill="#f4cb59" stroke="#7f4b20" stroke-width="9"/>
+    <path d="M183 291Q228 385 301 344Q310 302 262 282Z" fill="#d78b2a" stroke="#7f4b20" stroke-width="9"/>
+    <path d="M78 104Q190 52 335 100L407 176Q323 270 173 280Q87 248 45 177Z" fill="url(#scales)" opacity=".92"/>
+    <circle cx="388" cy="145" r="18" fill="#fff4d6"/>
+    <circle cx="394" cy="146" r="8" fill="#142f45"/>
+    <path d="M451 202Q478 220 496 201" fill="none" stroke="#8b4e21" stroke-width="7" stroke-linecap="round"/>
+    <path d="M119 118Q148 166 128 213" fill="none" stroke="#fff0a1" stroke-width="8" opacity=".72"/>
+    <path d="M250 104Q290 165 267 249" fill="none" stroke="#fff0a1" stroke-width="6" opacity=".65"/>
+  </g>
+
+  <g fill="none" stroke="#f2d89b" stroke-linecap="round" opacity=".8">
+    <path d="M630 620Q690 575 755 612" stroke-width="5"/>
+    <path d="M760 540Q800 515 838 544" stroke-width="4"/>
+    <path d="M100 560Q180 525 245 555" stroke-width="4"/>
+    <path d="M1000 1120Q1070 1080 1145 1115" stroke-width="5"/>
+  </g>
+
+  <path d="M45 45H1155V1555H45Z" fill="none" stroke="#e5c78c" stroke-width="5" opacity=".48"/>
+  <path d="M68 68H1132V1532H68Z" fill="none" stroke="#e5c78c" stroke-width="2" opacity=".28"/>
+</svg>
