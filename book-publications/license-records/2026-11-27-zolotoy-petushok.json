@@ -2,7 +2,7 @@
   "record_type": "bookcheef-rights-ledger",
   "version": 1,
   "checked_at": "2026-11-27",
-  "status": "rights_verified_for_publication",
+  "status": "published_in_supabase_and_public_catalog",
   "publication_key": "bookcheef-2026-11-27-zolotoy-petushok",
   "title": "Сказка о золотом петушке",
   "language": "ru",
@@ -106,6 +106,17 @@
     "validation": "JSON schema bookcheef-story v1; one non-empty complete chapter; unique chapter ID; 4 questions; 3 original CC0 SVG assets."
   },
   "publication": {
-    "status": "pending"
+    "status": "published_in_supabase_and_public_catalog",
+    "supabase_project_id": "wendffewxxmnaglfksfg",
+    "supabase_id": "4caa17ee-37eb-4feb-aa0d-382e9d8d78c6",
+    "publication_key": "bookcheef-2026-11-27-zolotoy-petushok",
+    "database_inserted": true,
+    "idempotent_insert": true,
+    "row_verified_by_separate_select": true,
+    "catalog_verified_by_separate_select": true,
+    "is_hidden": false,
+    "attribution_note": "Description identifies the author, Wikisource transcription version and CC BY-SA 4.0; the detailed source URL and license URL are in this public rights ledger. The reader-facing description does not currently expose clickable source/license URLs. Do not claim full in-reader attribution-link compliance; this limitation is recorded for manual review because the project rules prohibit UPDATE.",
+    "website_visual_check": "Not yet visually confirmed in a browser; database row and public catalog view are confirmed. GitHub Pages deployment status must be checked separately.",
+    "supabase_verified_at": "2026-11-27"
   }
 }
