@@ -1,0 +1,226 @@
+{
+  "record_type": "bookcheef-rights-ledger",
+  "version": 1,
+  "checked_at": "2026-11-27",
+  "status": "published_in_supabase_and_public_catalog",
+  "publication_key": "bookcheef-2026-11-27-skazka-o-rybake-i-rybke",
+  "title": "Сказка о рыбаке и рыбке",
+  "language": "ru",
+  "format": "Обычная книга; литературная сказка в стихах",
+  "audience_age": "6+",
+  "content_metrics": {
+    "chapters": 1,
+    "poem_lines": 206,
+    "approximate_words": 950,
+    "images": 1,
+    "reader_questions": 4,
+    "comic_pages": 0,
+    "visual_novel_scenes": 0
+  },
+  "author": {
+    "name": "Александр Сергеевич Пушкин",
+    "birth_date": "1799-06-06",
+    "death_date_gregorian": "1837-02-10",
+    "death_date_julian": "1837-01-29",
+    "country_at_creation_and_first_publication": "Российская империя",
+    "original_language": "Русский",
+    "coauthors": [],
+    "anonymous_or_pseudonymous": false,
+    "creation_date": "1833-10-14",
+    "creation_date_source": "https://ru.wikisource.org/w/index.php?title=Сказка_о_рыбаке_и_рыбке_(Пушкин)&oldid=5019506",
+    "death_date_source": "https://www.culture.ru/persons/8195/aleksandr-pushkin"
+  },
+  "materials": [
+    {
+      "element": "Оригинальный текст сказки",
+      "title": "Сказка о рыбаке и рыбке",
+      "author": "Александр Сергеевич Пушкин",
+      "country_of_creation": "Российская империя",
+      "creation_date": "1833-10-14",
+      "first_publication": {
+        "date": "1835-05",
+        "place": "Российская империя",
+        "edition": "«Библиотека для чтения», 1835, том X, май, № 5, отдел I, страницы 5–11",
+        "bibliographic_source": "https://books.google.ru/books?id=qDQWAAAAYAAJ&pg=PA5",
+        "verification_source": "https://ru.wikisource.org/w/index.php?title=Сказка_о_рыбаке_и_рыбке_(Пушкин)&oldid=5019506"
+      },
+      "source_edition": {
+        "bibliographic_description": "Пушкин А. С. Полное собрание сочинений: в 10 томах. Ленинград: Наука, 1977. Том 4: Поэмы. Сказки. С. 338–343.",
+        "country": "СССР",
+        "publication_year": 1977,
+        "transcription_page": "https://ru.wikisource.org/w/index.php?title=Сказка_о_рыбаке_и_рыбке_(Пушкин)&oldid=5019506",
+        "transcription_page_revision_date": "2023-09-01",
+        "transcription_contributors": "Участники русской Викитеки; индивидуальный транскрибатор на странице не указан",
+        "transcription_contributors_country": "Не указан; для транскрипции используется прямая глобальная лицензия CC BY-SA 4.0"
+      },
+      "rights_basis": [
+        "Общественное достояние оригинального произведения в проверенных юрисдикциях; международная оценка учитывает дату создания, первую публикацию, дату смерти автора, отсутствие соавторов и отсутствие посмертной первой публикации",
+        "Дополнительная лицензия страницы-транскрипции CC BY-SA 4.0, разрешающая коммерческое копирование и адаптацию при атрибуции, указании изменений и ShareAlike"
+      ],
+      "transcription_license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "source_page": "https://ru.wikisource.org/w/index.php?title=Сказка_о_рыбаке_и_рыбке_(Пушкин)&oldid=5019506",
+      "attribution": "Александр Сергеевич Пушкин, «Сказка о рыбаке и рыбке»; текстовая транскрипция участников русской Викитеки, версия страницы от 1 сентября 2023 года; CC BY-SA 4.0.",
+      "changes": "В BookCheef использован только окончательный авторский текст; черновой вариант и редакторские примечания исключены. Нормализованы переносы строк и форматирование строф для Markdown-ридера; словесный состав не сокращён и не пересказан.",
+      "translation": "Не применимо: произведение изначально написано на русском языке; сторонний перевод не использовался.",
+      "scan_used": false,
+      "scan_note": "Скан первого выпуска 1835 года использован только как библиографическая ссылка и не загружался, не воспроизводился и не включался в публикацию. Скан издания 1977 года также не использовался. Редакторские комментарии, аппарат и оформление издания 1977 года не воспроизводятся.",
+      "commercial_use_explanation": "Оригинал опубликован в 1835 году при жизни автора, умершего в 1837 году. Исключительное право на оригинальный текст истекло задолго до 2026 года. Для текста транскрипции дополнительно соблюдается CC BY-SA 4.0, которая прямо разрешает коммерческое распространение и адаптацию при соблюдении условий лицензии."
+    },
+    {
+      "element": "Обложка",
+      "title": "Оригинальная векторная иллюстрация BookCheef",
+      "creator": "BookCheef editorial automation; оригинальная SVG-композиция создана для этой публикации",
+      "country_of_creation": "Цифровой оригинал; страна издания не применима",
+      "creation_date": "2026-11-27",
+      "source_page": "https://github.com/KDNMGames/BookCheef/blob/main/book-publications/assets/2026-11-27-skazka-o-rybake-i-rybke-cover.svg",
+      "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/book-publications/assets/2026-11-27-skazka-o-rybake-i-rybke-cover.svg",
+      "file_path": "book-publications/assets/2026-11-27-skazka-o-rybake-i-rybke-cover.svg",
+      "license": "CC0 1.0 Universal Public Domain Dedication",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "Атрибуция не обязательна; рекомендуемая подпись: «Оригинальная иллюстрация BookCheef, CC0 1.0».",
+      "restrictions": "Нет ограничений авторского права в максимально допустимой законом степени; сторонние изображения, шрифты, логотипы и текстовые надписи не использованы.",
+      "commercial_use_explanation": "Оригинальный SVG-файл создан для BookCheef, состоит из собственных векторных фигур и не содержит сторонних ресурсов. Файл прямо посвящён CC0 1.0, разрешающей копирование, изменение, распространение и коммерческое использование по всему миру.",
+      "validation": {
+        "svg_valid": true,
+        "embedded_text": false,
+        "external_assets": false,
+        "third_party_assets": []
+      }
+    },
+    {
+      "element": "Вопросы читателю",
+      "creator": "Оригинальные редакционные вопросы BookCheef",
+      "country_of_creation": "Цифровой оригинал",
+      "creation_date": "2026-11-27",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attribution": "Не требуется; создано специально для этой публикации.",
+      "commercial_use_explanation": "Четыре коротких вопроса и ответа написаны специально для BookCheef и не копируют чужие комментарии или учебное пособие."
+    }
+  ],
+  "legal_review": {
+    "checked_on": "2026-11-27",
+    "result": "rights_verified_for_publication",
+    "author_and_term_analysis": {
+      "death_date": "1837-02-10 Gregorian / 1837-01-29 Julian",
+      "ordinary_life_plus_70_expiry": "1907-12-31",
+      "public_domain_from": "1908-01-01",
+      "first_publication_during_author_lifetime": true,
+      "posthumous_first_publication_right": false,
+      "coauthor_extension": false,
+      "anonymous_or_pseudonymous_term": false,
+      "translation_rights": "Не применимо; публикация содержит оригинальный русский текст.",
+      "moral_rights": "Авторство указано; текст не искажён и не представлен как одобренный наследниками."
+    },
+    "jurisdictions": {
+      "EU/EEA": {
+        "result": "public_domain",
+        "basis": "Directive 2006/116/EC, Article 1(1): life plus 70 years, with the term running from 1 January following the relevant event. Pushkin died in 1837; the term ended 31 December 1907. The work was first published in 1835 during his lifetime, so the 25-year first-publication right for previously unpublished posthumous works in Article 4 is not applicable. Article 10(2) does not revive a work that was already out of copyright before 1 July 1995. If the 1977 source edition qualifies for the maximum 30-year scientific/critical edition right under Article 5, that term ended by 31 December 2007.",
+        "source": "https://eur-lex.europa.eu/eli/dir/2006/116/oj/eng"
+      },
+      "Germany": {
+        "result": "public_domain",
+        "basis": "UrhG Sections 64 and 69: 70 years after the author's death, calculated at the end of the calendar year; expiry 31 December 1907. Section 70's 25-year right for a qualifying scientific edition published in 1977 expired by 31 December 2002. Section 71's posthumous-work right does not apply because the story was first published in 1835 while Pushkin was alive.",
+        "source": "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html"
+      },
+      "Netherlands": {
+        "result": "public_domain",
+        "basis": "Official Business.gov.nl guidance: copyright expires 70 years after the creator's death, counted from 1 January of the following year. The term ended 31 December 1907. The story was published during the author's lifetime.",
+        "source": "https://business.gov.nl/regulations/copyright/"
+      },
+      "Poland": {
+        "result": "public_domain",
+        "basis": "Polish Copyright and Related Rights Act Article 36: 70 years from the author's death; Article 39 calculates full years. The term ended 31 December 1907. If the 1977 source edition qualifies as a scientific/critical edition under Article 99², its 30-year related right expired by 31 December 2007. The first-publication right under Article 99¹ does not apply because the work was already lawfully published in 1835.",
+        "sources": [
+          "https://www.wipo.int/wipolex/en/legislation/details/22307",
+          "https://eli.gov.pl/api/acts/DU/2025/24/text/O/D20250024.pdf"
+        ]
+      },
+      "Russia": {
+        "result": "public_domain",
+        "basis": "Civil Code Article 1281 now states life plus 70 years, but Federal Law No. 231-FZ Article 6 applies the extended term only where the previous 50-year term had not expired by 1 January 1993. For an author who died in 1837, the former 50-year term had expired by the end of 1887; the later extension does not revive it. The original work is public domain in Russia.",
+        "sources": [
+          "https://www.consultant.ru/document/cons_doc_LAW_64629/675b81f0bc9b8ecd68ea332ecfd9d1562541fb98/",
+          "https://rospatent.gov.ru/ru/documents/231-federalnyy-zakon-ot-18-dekabrya-2006-g-231"
+        ]
+      },
+      "United States": {
+        "result": "public_domain",
+        "basis": "U.S. Copyright Office Circular 22 states that U.S. copyright in any work published before 1 January 1931 has expired by operation of law. This work was first published in 1835.",
+        "source": "https://www.copyright.gov/circs/circ22.pdf"
+      },
+      "International screening": {
+        "result": "no_current_economic_rights_identified",
+        "basis": "WIPO's 2026 guide to the Berne Convention notes examples of longer national terms of 100 years after death in Mexico and 99 years in Côte d'Ivoire. Even a conservative life-plus-100-year term for an author who died in 1837 would have expired by the end of 1937. The source text is also licensed through a global CC BY-SA 4.0 transcription, and the original cover is CC0 1.0. No country-specific exception keeping the economic rights alive in 2026 was identified in the sources checked.",
+        "source": "https://www.wipo.int/edocs/pubdocs/en/wipo-pub-891-1-en-guide-to-the-copyright-and-related-rights-treaties-administered-by-wipo.pdf",
+        "scope_note": "Это международная кабинетная проверка по применимым основным рынкам и международным источникам, а не формальное заключение юриста по каждой стране. При добавлении конкретного рынка с особым сроком охраны требуется повторная проверка."
+      }
+    },
+    "global_clearance": "clear_on_current_evidence",
+    "legal_advice_note": "Проверка снижает риск, но не заменяет юридическое заключение; применены только свободные коммерческие основания, не исключения вроде fair use.",
+    "license_compliance": {
+      "attribution_in_description": true,
+      "source_link_in_description": true,
+      "license_link_in_description": true,
+      "changes_indicated": true,
+      "sharealike_applied_to_text_adaptation": true,
+      "cc0_cover": true,
+      "no_nc_materials": true,
+      "no_nd_materials": true,
+      "no_modern_translation": true,
+      "no_unlicensed_scan_or_illustration": true
+    }
+  },
+  "duplicate_check": {
+    "github_tree_checked_before_file_creation": true,
+    "github_matching_package_found": false,
+    "database_exact_title_match": false,
+    "database_author_title_match": false,
+    "existing_distinct_pushkin_titles": [
+      "Сказка о мёртвой царевне и о семи богатырях",
+      "Сказка о царе Салтане"
+    ],
+    "duplicate_basis": "В public.books проверены названия с «рыбак», «рыбк», «золотая рыбка» и автор Пушкин; точного названия/издания нет. В GitHub tree до создания пакета совпадающих файлов не было."
+  },
+  "package": {
+    "json_path": "book-publications/inbox/2026-11-27-skazka-o-rybake-i-rybke.json",
+    "cover_path": "book-publications/assets/2026-11-27-skazka-o-rybake-i-rybke-cover.svg",
+    "rights_record_path": "book-publications/license-records/2026-11-27-skazka-o-rybake-i-rybke.json",
+    "cover_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/book-publications/assets/2026-11-27-skazka-o-rybake-i-rybke-cover.svg",
+    "json_validation": "valid JSON; 1 non-empty chapter; unique chapter ID; 4 questions; no placeholder; full final text only",
+    "image_validation": "1 original SVG cover, 1200x1600, no text, no external assets"
+  },
+  "publication": {
+    "status": "published_in_supabase_and_public_catalog",
+    "supabase_project_id": "wendffewxxmnaglfksfg",
+    "supabase_id": "f80cf97d-d6ab-4d11-b80b-754d7976d50a",
+    "publication_key": "bookcheef-2026-11-27-skazka-o-rybake-i-rybke",
+    "database_inserted": true,
+    "idempotent_insert": true,
+    "on_conflict_clause": "ON CONFLICT (publication_key) WHERE publication_key IS NOT NULL DO NOTHING",
+    "row_verified_by_separate_select": true,
+    "catalog_verified_by_separate_select": true,
+    "is_hidden": false,
+    "website_visual_check": false,
+    "website_check_note": "Публичный фронтенд в main использует public.book_catalog для неадминистративного каталога; GitHub Pages Deploy для SHA 705c05cf26219479c1d598ab39afb29ef3674271 завершился success. Прямую визуальную загрузку страницы в этом запуске подтвердить не удалось из-за недоступности сайта инструменту просмотра; поэтому визуальную проверку не заявляем.",
+    "supabase_row_url": null,
+    "public_site_url": "https://kdnmgames.github.io/BookCheef/",
+    "deploy_run_url": "https://github.com/KDNMGames/BookCheef/actions/runs/45960477191"
+  },
+  "sources_checked": [
+    "https://ru.wikisource.org/w/index.php?title=Сказка_о_рыбаке_и_рыбке_(Пушкин)&oldid=5019506",
+    "https://creativecommons.org/licenses/by-sa/4.0/",
+    "https://creativecommons.org/publicdomain/zero/1.0/",
+    "https://eur-lex.europa.eu/eli/dir/2006/116/oj/eng",
+    "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html",
+    "https://business.gov.nl/regulations/copyright/",
+    "https://www.wipo.int/wipolex/en/legislation/details/22307",
+    "https://eli.gov.pl/api/acts/DU/2025/24/text/O/D20250024.pdf",
+    "https://www.consultant.ru/document/cons_doc_LAW_64629/675b81f0bc9b8ecd68ea332ecfd9d1562541fb98/",
+    "https://rospatent.gov.ru/ru/documents/231-federalnyy-zakon-ot-18-dekabrya-2006-g-231",
+    "https://www.copyright.gov/circs/circ22.pdf",
+    "https://www.wipo.int/edocs/pubdocs/en/wipo-pub-891-1-en-guide-to-the-copyright-and-related-rights-treaties-administered-by-wipo.pdf",
+    "https://www.culture.ru/persons/8195/aleksandr-pushkin"
+  ]
+}
