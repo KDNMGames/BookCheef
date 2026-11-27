@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#101a38"/><stop offset=".58" stop-color="#25385c"/><stop offset="1" stop-color="#6e4939"/></linearGradient>
+ <linearGradient id="gold" x2=".8" y2="1"><stop stop-color="#fff0a4"/><stop offset=".45" stop-color="#e5ae37"/><stop offset="1" stop-color="#8d4c16"/></linearGradient>
+ <radialGradient id="moon"><stop stop-color="#fff8d6"/><stop offset="1" stop-color="#d7a64a" stop-opacity="0"/></radialGradient>
+ <pattern id="orn" width="90" height="90" patternUnits="userSpaceOnUse"><path d="M45 4 C70 28 70 62 45 86 C20 62 20 28 45 4Z" fill="none" stroke="#d5a94b" stroke-width="3" opacity=".55"/><circle cx="45" cy="45" r="8" fill="#d5a94b" opacity=".6"/></pattern>
+</defs>
+<rect width="1200" height="1600" fill="url(#sky)"/>
+<circle cx="880" cy="310" r="210" fill="url(#moon)"/><circle cx="880" cy="310" r="92" fill="#f4d98d" opacity=".88"/>
+<path d="M0 1130 Q250 980 490 1110 T1200 1050 V1600 H0Z" fill="#18243a"/>
+<path d="M0 1260 Q260 1150 510 1260 T1200 1190 V1600 H0Z" fill="#111b2c"/>
+<g opacity=".9" fill="#f5d782"><circle cx="150" cy="190" r="4"/><circle cx="290" cy="340" r="5"/><circle cx="480" cy="170" r="3"/><circle cx="690" cy="250" r="4"/><circle cx="1050" cy="520" r="4"/><circle cx="1020" cy="170" r="3"/><circle cx="200" cy="540" r="3"/></g>
+<path d="M480 1220 L520 650 L680 650 L720 1220Z" fill="#b78339" stroke="#f1cf76" stroke-width="12"/>
+<path d="M440 670 L760 670 L720 610 L480 610Z" fill="#d8ad55" stroke="#f5d782" stroke-width="10"/>
+<path d="M500 610 L700 610 L600 490Z" fill="#9c6230" stroke="#f5d782" stroke-width="10"/>
+<path d="M560 500 Q600 410 640 500 L630 530 L570 530Z" fill="url(#gold)" stroke="#fff0a4" stroke-width="8"/>
+<g transform="translate(600 390)">
+ <path d="M-12 62 C-85 8 -75 -60 -20 -72 C12 -80 45 -50 40 -16 C90 -60 124 -23 92 18 C66 52 24 60 -12 62Z" fill="url(#gold)" stroke="#fff0a4" stroke-width="9"/>
+ <path d="M-10 -65 C-35 -120 -12 -145 12 -117 C32 -157 57 -139 46 -98 C75 -113 85 -81 57 -52Z" fill="#b52e2c" stroke="#f6c65b" stroke-width="8"/>
+ <path d="M78 -12 L142 5 L82 25Z" fill="#d74c24" stroke="#f6c65b" stroke-width="7"/>
+ <circle cx="37" cy="-38" r="10" fill="#18243a"/><circle cx="40" cy="-41" r="3" fill="#fff"/>
+ <path d="M-5 54 Q-48 105 -70 88 Q-40 48 -5 35 M20 54 Q65 100 82 82 Q55 45 23 35" fill="none" stroke="#f1c75d" stroke-width="16" stroke-linecap="round"/>
+ <path d="M-15 62 L-25 130 M30 62 L38 130" stroke="#d99a35" stroke-width="10"/>
+</g>
+<path d="M530 1240 Q600 1160 670 1240 L710 1350 L490 1350Z" fill="#a43c2b" stroke="#e9bd69" stroke-width="9"/>
+<path d="M80 80 H1120 V1520 H80Z" fill="none" stroke="#d6b15e" stroke-width="10"/>
+<rect x="105" y="105" width="990" height="1390" fill="url(#orn)" opacity=".22"/>
+<g fill="none" stroke="#e3bd67" stroke-width="8"><path d="M130 250 Q210 150 290 250 T450 250 T610 250 T770 250 T930 250 T1070 250"/><path d="M130 1370 Q210 1470 290 1370 T450 1370 T610 1370 T770 1370 T930 1370 T1070 1370"/></g>
+</svg>
