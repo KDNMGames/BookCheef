@@ -87,7 +87,11 @@
       "United States": "Public domain: first publication in 1835, long before 1 January 1931. https://www.copyright.gov/circs/circ22.pdf",
       "International screening": "A conservative life-plus-100-year term expired by the end of 1937. The original SVG assets are CC0 1.0 worldwide; the text transcription carries CC BY-SA 4.0 worldwide. No active economic right identified in the jurisdictions screened."
     },
-    "scope_note": "Кабинетная проверка основных юрисдикций, включая ЕС/ЕЭЗ, Германию, Нидерланды, Россию и США; не заменяет юридическое заключение по каждой стране."
+    "scope_note": "Кабинетная проверка основных юрисдикций, включая ЕС/ЕЭЗ, Германию, Нидерланды, Россию и США; не заменяет юридическое заключение по каждой стране.",
+    "license_compliance": {
+      "reader_facing_source_and_license_urls": false,
+      "reader_facing_attribution_gap": "The description identifies source platform/version and CC BY-SA 4.0 but does not expose clickable URLs. Rights ledger contains the exact links. Manual follow-up is required; do not claim full reader-facing attribution-link compliance."
+    }
   },
   "duplicate_check": {
     "github_tree_checked": true,
@@ -115,8 +119,15 @@
     "row_verified_by_separate_select": true,
     "catalog_verified_by_separate_select": true,
     "is_hidden": false,
-    "attribution_note": "Description identifies the author, Wikisource transcription version and CC BY-SA 4.0; the detailed source URL and license URL are in this public rights ledger. The reader-facing description does not currently expose clickable source/license URLs. Do not claim full in-reader attribution-link compliance; this limitation is recorded for manual review because the project rules prohibit UPDATE.",
-    "website_visual_check": "Not yet visually confirmed in a browser; database row and public catalog view are confirmed. GitHub Pages deployment status must be checked separately.",
-    "supabase_verified_at": "2026-11-27"
+    "attribution_note": "Reader description names Pushkin, the Wikisource transcription version and CC BY-SA 4.0, but does not include clickable source and license URLs. The complete source URL, license URL, attribution and change statement are preserved in this rights ledger. Manual review is required before claiming full reader-facing CC BY-SA link compliance. No UPDATE was executed because project rules prohibit UPDATE.",
+    "website_visual_check": "Not confirmed by browser. Database row is present in public.book_catalog and GitHub Pages deployment succeeded.",
+    "supabase_verified_at": "2026-11-27",
+    "deployment": {
+      "workflow": "Deploy BookCheef",
+      "run_id": 46028379932,
+      "conclusion": "success",
+      "url": "https://github.com/KDNMGames/BookCheef/actions/runs/46028379932",
+      "commit": "ed360d5d1f4a1c992d99fcd12ae70518a5c52d14"
+    }
   }
 }
