@@ -1,0 +1,144 @@
+{
+  "record_id": "bookcheef-2026-11-28-bremenskie-muzykanty-v3",
+  "supersedes": [
+    "book-publications/inbox/2026-11-28-bremenskie-muzykanty.json",
+    "book-publications/inbox/2026-11-28-bremenskie-muzykanty-v2.json"
+  ],
+  "status": "rights_verified_for_reviewed_markets",
+  "checked_at": "2026-11-28",
+  "publication_key": "bookcheef-2026-11-28-bremenskie-muzykanty",
+  "work": {
+    "title_ru": "Бременские музыканты",
+    "original_title": "Die Bremer Stadtmusikanten",
+    "catalogue_number": "KHM 27",
+    "original_language": "de",
+    "country_of_origin": "Германия",
+    "edition": "Kinder- und Haus-Märchen, 2. Auflage, Band 1, Berlin: G. Reimer, 1819, pages 141–145",
+    "first_publication": "1819",
+    "creators": [
+      {
+        "name": "Jacob Grimm",
+        "role": "named co-editor/co-compiler of the 1819 text",
+        "born": "1785-01-04",
+        "died": "1863-09-20",
+        "evidence": "https://grimms.de/leben-und-wirken/"
+      },
+      {
+        "name": "Wilhelm Grimm",
+        "role": "named co-editor/co-compiler of the 1819 text",
+        "born": "1786-02-24",
+        "died": "1859-12-16",
+        "evidence": "https://grimms.de/leben-und-wirken/"
+      }
+    ],
+    "last_surviving_named_editor": "Jacob Grimm",
+    "last_surviving_named_editor_death": "1863-09-20",
+    "informant": "No individual informant is named in the consulted edition. The story is presented as a traditional folk narrative collected and edited by the Brothers Grimm.",
+    "publication_characteristics": "The 1819 edition names the Brothers Grimm, was published during both of their lifetimes, and is not anonymous, pseudonymous, or posthumous. The 1857 seventh edition is a different later text and was not used.",
+    "source_page": "https://de.wikisource.org/wiki/Die_Bremer_Stadtmusikanten_(1819)",
+    "source_transcription_quality": "The source page identifies the 1819 second edition, volume 1, pages 141–145, and states that the text was proofread twice against the source and follows the original spelling.",
+    "original_scan_files": [
+      {
+        "page": 141,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_141.jpg",
+        "license": "Public Domain Mark 1.0"
+      },
+      {
+        "page": 142,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_142.jpg",
+        "license": "Public Domain Mark 1.0"
+      },
+      {
+        "page": 143,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_143.jpg",
+        "license": "Public Domain Mark 1.0"
+      },
+      {
+        "page": 144,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_144.jpg",
+        "license": "Public Domain Mark 1.0"
+      },
+      {
+        "page": 145,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_145.jpg",
+        "license": "Public Domain Mark 1.0"
+      }
+    ],
+    "scan_use": "The scan pages were used only to verify the historical text. None of the scans, page images, or historical illustrations are embedded in the BookCheef publication."
+  },
+  "public_domain_analysis": {
+    "EU_EEA": "Directive 2006/116/EC, Article 1(1)–(2): life plus 70 years, calculated from the death of the last surviving co-author. The last surviving named editor died in 1863; the term ended 31 December 1933 and the work has been public domain since 1 January 1934.",
+    "Germany": "Urheberrechtsgesetz §§64–65 and §69: 70 years after the last surviving joint author, calculated from the end of the calendar year. No §71 posthumous first-publication right applies because the 1819 text was published during the editors' lifetimes.",
+    "Netherlands": "Government guidance states that copyright expires 70 years after the creator's death, counted from 1 January of the following year.",
+    "Poland": "Copyright and Related Rights Act, consolidated text Dz.U. 2025 poz. 24, Article 36(1) for joint works and Article 39 for calculation. Article 40 is marked repealed in the current consolidated text.",
+    "Mexico": "Federal Law on Copyright, current WIPO Lex version 2026, Article 29(I): life plus 100 years for co-authored works, counted from the death of the last co-author. Even this longer term ended by 31 December 1963.",
+    "United_States": "The source edition was published in 1819, before 1 January 1931; the Commons source scans also carry the public-domain designation for the United States.",
+    "sources": [
+      "https://eur-lex.europa.eu/legal-content/en/ALL/?uri=CELEX%3A02006L0116-20111031",
+      "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html",
+      "https://business.gov.nl/regulations/copyright/",
+      "https://dziennikustaw.gov.pl/D2025000002401.pdf",
+      "https://www.wipo.int/wipolex/en/legislation/details/23966",
+      "https://grimms.de/leben-und-wirken/",
+      "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_141.jpg"
+    ]
+  },
+  "translation": {
+    "language": "ru",
+    "created_on": "2026-11-28",
+    "method": "New AI-assisted translation directly from the 1819 German text; no existing Russian or other modern third-party translation was used.",
+    "translator_credit": "Новый русский перевод подготовлен с помощью ИИ специально для BookCheef, 28.11.2026.",
+    "completeness": "Full translation of the selected 1819 version; one chapter; no abridgement or retelling. Modern Russian punctuation and syntax are used while preserving the story's sequence and meaning.",
+    "commercial_rights_basis": "OpenAI Europe Terms of Use, effective 16 January 2026, Content section: as between user and OpenAI, user owns Output and OpenAI assigns any rights it has in Output to the user, to the extent permitted by applicable law. The terms do not guarantee uniqueness; no exclusivity is claimed.",
+    "terms_url": "https://openai.com/policies/eu-terms-of-use/",
+    "no_human_authorship_claim": true
+  },
+  "cover": {
+    "file_path": "book-publications/assets/2026-11-28-bremenskie-muzykanty-cover.svg",
+    "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/book-publications/assets/2026-11-28-bremenskie-muzykanty-cover.svg",
+    "format": "Original SVG vector artwork",
+    "created_on": "2026-11-28",
+    "commercial_rights_basis": "OpenAI Europe Terms of Use, Content section, assignment of Output to user to the extent permitted by applicable law.",
+    "terms_url": "https://openai.com/policies/eu-terms-of-use/",
+    "third_party_assets": [],
+    "notes": "Original vector illustration; no external image, film frame, logo, or embedded font. Title and author are in separate top and bottom typography areas, not over the illustration."
+  },
+  "reader_questions": {
+    "commercial_rights_basis": "Original editorial questions prepared for BookCheef with AI assistance; OpenAI Europe Terms of Use, Content section, assignment of Output to user to the extent permitted by applicable law.",
+    "terms_url": "https://openai.com/policies/eu-terms-of-use/"
+  },
+  "attribution_for_publication": "Братья Якоб и Вильгельм Гримм. «Бременские музыканты» (Die Bremer Stadtmusikanten, KHM 27), 2-е издание «Kinder- und Haus-Märchen», том 1, Берлин, 1819, с. 141–145. Новый русский перевод подготовлен с помощью ИИ специально для BookCheef 28.11.2026. Оригинальный текст — общественное достояние.",
+  "elements": [
+    {
+      "element": "Original German text",
+      "status": "public_domain",
+      "commercial_use": "Allowed after expiry of economic rights; source edition published in 1819 during the named editors' lifetimes."
+    },
+    {
+      "element": "1819 page scans used for verification",
+      "status": "Public Domain Mark 1.0",
+      "commercial_use": "PDM page applied individually to scans 141–145; scans are not redistributed in the book."
+    },
+    {
+      "element": "Russian translation",
+      "status": "user-owned AI output to extent permitted by law",
+      "commercial_use": "OpenAI Europe Terms assign any OpenAI rights in output to user; no third-party translation used; no exclusivity claimed."
+    },
+    {
+      "element": "Original cover SVG",
+      "status": "user-owned AI output to extent permitted by law",
+      "commercial_use": "No third-party assets or fonts embedded."
+    },
+    {
+      "element": "Description and reader questions",
+      "status": "user-owned AI output to extent permitted by law",
+      "commercial_use": "Original editorial output for BookCheef."
+    }
+  ],
+  "limitations": [
+    "This is a documented rights assessment, not legal advice or a guarantee that every national rule worldwide has been exhaustively reviewed.",
+    "Attribution is preserved; no endorsement by the Brothers Grimm is implied.",
+    "No historical scan page, historical illustration, modern translation, modern commentary, or later 1857 edition is included in the published book."
+  ],
+  "status_recommendation": "rights_verified_for_reviewed_markets"
+}
