@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 900 1350" role="img" aria-labelledby="title desc">
+<title id="title">Бременские музыканты — обложка</title>
+<desc id="desc">Четверо сказочных животных стоят друг на друге перед освещённым окном лесного дома в ночном лесу.</desc>
+<defs>
+  <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#050913"/><stop offset=".48" stop-color="#142437"/><stop offset="1" stop-color="#03060c"/>
+  </linearGradient>
+  <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#243342"/><stop offset="1" stop-color="#070b11"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#fff0b0"/><stop offset=".38" stop-color="#d9a64d"/><stop offset=".72" stop-color="#85501f"/><stop offset="1" stop-color="#f6d88c"/>
+  </linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#69462c"/><stop offset=".5" stop-color="#241a17"/><stop offset="1" stop-color="#0b1017"/>
+  </linearGradient>
+  <linearGradient id="donkey" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#c1c0b5"/><stop offset=".5" stop-color="#777e82"/><stop offset="1" stop-color="#353f49"/>
+  </linearGradient>
+  <linearGradient id="dog" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#c18a50"/><stop offset=".55" stop-color="#76502f"/><stop offset="1" stop-color="#30231d"/>
+  </linearGradient>
+  <linearGradient id="cat" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#d8c6a0"/><stop offset=".55" stop-color="#8c7862"/><stop offset="1" stop-color="#332c2a"/>
+  </linearGradient>
+  <radialGradient id="moon">
+    <stop stop-color="#fff6d8" stop-opacity=".95"/><stop offset=".42" stop-color="#d7c08d" stop-opacity=".34"/><stop offset="1" stop-color="#b6a16e" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="window">
+    <stop stop-color="#fff2b0"/><stop offset=".45" stop-color="#e6a84d"/><stop offset="1" stop-color="#a44d1c" stop-opacity=".12"/>
+  </radialGradient>
+  <filter id="softGlow"><feGaussianBlur stdDeviation="26"/></filter>
+  <filter id="smallGlow"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="900" height="1350" fill="url(#night)"/>
+<circle cx="720" cy="405" r="205" fill="url(#moon)"/>
+<circle cx="720" cy="405" r="66" fill="#e7d8b2" opacity=".8"/>
+<g fill="#e8e2d4" opacity=".68">
+  <circle cx="93" cy="360" r="2"/><circle cx="210" cy="418" r="2"/><circle cx="330" cy="342" r="2"/>
+  <circle cx="482" cy="390" r="2"/><circle cx="835" cy="325" r="2"/><circle cx="610" cy="515" r="2"/>
+  <circle cx="120" cy="560" r="3"/><circle cx="410" cy="525" r="2"/><circle cx="780" cy="575" r="2"/>
+</g>
+<g opacity=".95">
+  <path d="M0 870L0 500 65 565 35 420 110 520 132 360 177 520 205 445 220 650 260 590 282 880Z" fill="#08121c"/>
+  <path d="M900 875L900 430 850 515 866 360 800 500 775 335 740 530 690 455 680 880Z" fill="#08121c"/>
+  <path d="M0 930L0 660 52 710 70 575 116 700 145 600 168 930Z" fill="#101b25"/>
+  <path d="M900 930L900 635 854 710 830 570 790 710 760 590 730 930Z" fill="#101b25"/>
+  <g stroke="#594a36" stroke-width="9" fill="none" opacity=".55">
+    <path d="M90 900Q105 700 68 545M88 710Q150 655 177 580M92 760Q36 700 18 635"/>
+    <path d="M820 900Q790 700 842 500M812 735Q745 665 720 590M815 775Q870 720 892 650"/>
+  </g>
+</g>
+<path d="M0 900Q180 840 360 900T720 890T900 875V1350H0Z" fill="url(#ground)"/>
+<g opacity=".45" stroke="#9c8b70" fill="none">
+  <path d="M0 1000Q170 965 340 1000T680 995T900 980" stroke-width="3"/>
+  <path d="M0 1090Q200 1055 390 1090T760 1080T900 1070" stroke-width="2"/>
+  <path d="M0 1170Q170 1145 330 1170T650 1165T900 1150" stroke-width="2"/>
+</g>
+<!-- The robbers' cottage -->
+<g>
+  <path d="M610 690L790 555 930 690V1015H590V715Z" fill="url(#wood)" stroke="#9b7041" stroke-width="7"/>
+  <path d="M580 700L790 535 950 700L925 722 790 615 625 728Z" fill="#100f12" stroke="#c09354" stroke-width="8"/>
+  <path d="M640 730L790 625 900 720" fill="none" stroke="#5d422b" stroke-width="8"/>
+  <rect x="735" y="755" width="132" height="170" rx="4" fill="#24170f" stroke="#b57b3b" stroke-width="11"/>
+  <rect x="751" y="771" width="100" height="138" fill="url(#window)"/>
+  <rect x="751" y="771" width="100" height="138" fill="#ffca65" opacity=".36" filter="url(#smallGlow)"/>
+  <path d="M801 771V909M751 840H851" stroke="#5a3219" stroke-width="9"/>
+  <path d="M685 955H890M700 975H875" stroke="#6b4a2d" stroke-width="9"/>
+  <path d="M650 1015V1055H915V1015" fill="#090b10" stroke="#65472d" stroke-width="7"/>
+  <path d="M715 1055V1015M855 1055V1015" stroke="#4b3929" stroke-width="5"/>
+  <ellipse cx="798" cy="930" rx="120" ry="45" fill="#f3a84c" opacity=".18" filter="url(#softGlow)"/>
+</g>
+<!-- Warm light spilling into the forest -->
+<path d="M748 905Q590 920 470 1035Q620 1000 800 1010Z" fill="#d58a3d" opacity=".13" filter="url(#softGlow)"/>
+<!-- Donkey, at the base -->
+<g stroke="#252d34" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="340" cy="965" rx="175" ry="98" fill="url(#donkey)"/>
+  <path d="M420 930Q455 830 472 735Q478 690 520 672L575 700Q552 755 532 817Q515 883 505 956Z" fill="url(#donkey)"/>
+  <path d="M505 700Q510 645 558 625Q598 610 631 640L652 680Q626 719 566 723Q528 725 505 700Z" fill="#9ea2a0"/>
+  <path d="M540 632Q523 560 538 500Q562 550 570 624Z" fill="#8f999d"/>
+  <path d="M584 625Q588 548 620 505Q627 570 615 640Z" fill="#7b858b"/>
+  <path d="M618 675Q656 660 674 682Q660 711 625 708Z" fill="#b9b6a9"/>
+  <path d="M235 1024L220 1120M330 1044L325 1122M430 1035L452 1118" fill="none" stroke="#727c80" stroke-width="24"/>
+  <path d="M202 1120H246M305 1122H347M430 1118H472" stroke="#262c32" stroke-width="16"/>
+  <path d="M185 910Q120 870 112 815Q155 840 206 865" fill="none" stroke="#8c969a" stroke-width="17"/>
+  <path d="M552 680Q570 686 584 677" fill="none" stroke="#3b4146" stroke-width="5"/>
+  <circle cx="620" cy="660" r="7" fill="#17191c" stroke="none"/>
+  <circle cx="622" cy="658" r="2.5" fill="#fff4d2" stroke="none"/>
+</g>
+<!-- Dog -->
+<g stroke="#38271e" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="435" cy="755" rx="112" ry="58" fill="url(#dog)"/>
+  <path d="M492 748Q505 695 548 684Q590 678 614 707Q623 744 587 767Q536 785 492 748Z" fill="#9b6b3f"/>
+  <path d="M550 690Q555 646 585 643Q602 682 585 711Z" fill="#4a2d20"/>
+  <path d="M600 720Q645 710 660 735Q646 755 605 750Z" fill="#d2a071"/>
+  <path d="M340 756Q292 720 300 690Q338 701 362 735" fill="none" stroke="#a9784b" stroke-width="15"/>
+  <path d="M392 790L380 846M458 795L468 846" fill="none" stroke="#68472f" stroke-width="17"/>
+  <circle cx="596" cy="707" r="6" fill="#151416" stroke="none"/>
+  <circle cx="598" cy="705" r="2" fill="#fff2cf" stroke="none"/>
+</g>
+<!-- Cat -->
+<g stroke="#302a29" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M425 615Q432 550 493 533Q555 514 584 560Q603 597 571 629Q523 660 461 638Z" fill="url(#cat)"/>
+  <path d="M540 563L549 510 580 548M580 548L615 513 617 575" fill="#b8a58b"/>
+  <path d="M467 596Q420 563 404 520Q448 532 475 566" fill="none" stroke="#8c7762" stroke-width="16"/>
+  <path d="M454 631Q420 670 438 692" fill="none" stroke="#8c7762" stroke-width="14"/>
+  <path d="M608 580Q637 570 648 590Q636 607 610 602Z" fill="#e3c9a7"/>
+  <circle cx="595" cy="570" r="6" fill="#151515" stroke="none"/>
+  <path d="M612 590l8 3" stroke="#3c2a26" stroke-width="4"/>
+</g>
+<!-- Rooster -->
+<g stroke="#38291c" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="525" cy="455" rx="62" ry="48" fill="url(#gold)"/>
+  <path d="M555 447Q580 397 615 400Q646 410 642 446Q630 476 591 474Z" fill="#bd5b28"/>
+  <path d="M594 406Q574 377 591 355Q606 373 610 390Q619 357 637 357Q649 383 629 408Z" fill="#a92d24"/>
+  <path d="M638 430L681 442 641 458Z" fill="#e4b54e"/>
+  <path d="M478 447Q434 410 426 382Q470 389 505 430Q472 390 478 365Q520 389 526 430" fill="#a34a24" stroke="#e4b04d"/>
+  <path d="M510 492Q493 521 478 528M552 495Q561 521 579 529" fill="none" stroke="#d8a34d" stroke-width="7"/>
+  <path d="M465 529H493M565 530H591" stroke="#d8a34d" stroke-width="7"/>
+  <circle cx="625" cy="426" r="5" fill="#141414" stroke="none"/>
+  <circle cx="627" cy="424" r="2" fill="#fff4d2" stroke="none"/>
+</g>
+<!-- Gold glints and snow -->
+<g fill="#f3d28b" opacity=".72">
+  <circle cx="286" cy="785" r="4"/><circle cx="380" cy="620" r="3"/><circle cx="694" cy="610" r="3"/>
+  <circle cx="165" cy="1045" r="3"/><circle cx="550" cy="1050" r="4"/><circle cx="690" cy="1125" r="3"/>
+</g>
+<!-- Typography area, separate from the illustration -->
+<text x="450" y="84" text-anchor="middle" fill="#d7b678" font-family="Georgia, 'Times New Roman', serif" font-size="29" letter-spacing="5">БРАТЬЯ ГРИММ</text>
+<text x="450" y="174" text-anchor="middle" fill="#fff8e9" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="bold">БРЕМЕНСКИЕ</text>
+<text x="450" y="258" text-anchor="middle" fill="#fff8e9" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="bold">МУЗЫКАНТЫ</text>
+<path d="M120 1195H780" stroke="#b58a4d" stroke-width="2"/>
+<path d="M440 1195l10 -12 10 12 -10 12Z" fill="#e0bd79"/>
+<text x="450" y="1250" text-anchor="middle" fill="#dfc18d" font-family="Georgia, 'Times New Roman', serif" font-size="28" letter-spacing="3">СКАЗКИ БРАТЬЕВ ГРИММ</text>
+<text x="450" y="1312" text-anchor="middle" fill="#f1d59d" font-family="Georgia, 'Times New Roman', serif" font-size="36">6+</text>
+</svg>
