@@ -1,0 +1,98 @@
+{
+  "record_id": "bookcheef-2026-11-28-bremenskie-muzykanty-special-rights-check",
+  "publication_key": "bookcheef-2026-11-28-bremenskie-muzykanty",
+  "checked_at": "2026-11-28",
+  "purpose": "Supplement to the main rights record: specific-edition, scan, and post-publication rights checks.",
+  "source_edition": {
+    "edition": "Kinder- und Haus-Märchen, 2. Auflage, Band 1, Berlin: G. Reimer, 1819, KHM 27, pages 141–145.",
+    "source_url": "https://de.wikisource.org/wiki/Die_Bremer_Stadtmusikanten_(1819)",
+    "facts": "The 1819 source page identifies the second edition, volume 1, Berlin, G. Reimer, pages 141–145; it marks the text proofread twice against the source and says the spelling follows the original. The story is identified as KHM 27 and as appearing since 1819.",
+    "original_scan_files": [
+      {
+        "page": 141,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_141.jpg",
+        "designation": "Public Domain Mark 1.0",
+        "license_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+      },
+      {
+        "page": 142,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_142.jpg",
+        "designation": "Public Domain Mark 1.0",
+        "license_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+      },
+      {
+        "page": 143,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_143.jpg",
+        "designation": "Public Domain Mark 1.0",
+        "license_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+      },
+      {
+        "page": 144,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_144.jpg",
+        "designation": "Public Domain Mark 1.0",
+        "license_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+      },
+      {
+        "page": 145,
+        "url": "https://commons.wikimedia.org/wiki/File:De_Kinder_und_Hausm%C3%A4rchen_Grimm_1819_V1_145.jpg",
+        "designation": "Public Domain Mark 1.0",
+        "license_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+      }
+    ],
+    "use": "Scans 141–145 were checked as historical sources only. No scan image, original historical illustration, modern transcription layout, or publisher's scan file is embedded or redistributed in BookCheef. The published illustration is a separate original SVG."
+  },
+  "special_rights_review": {
+    "germany": {
+      "section_70_scientific_editions": {
+        "rule": "German UrhG §70 protects editions of unprotected works/texts only where they result from scientifically organised activity and differ substantially from previously known editions; the related right expires 25 years after publication.",
+        "application": "The source used is the original 1819 edition, not a later scientific or critical edition. No new scholarly apparatus, commentary, or editorial apparatus from a modern edition is used. The modern digital transcription is only a cross-check; the Russian text was prepared directly from the 1819 source and the original scan pages.",
+        "source_url": "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html"
+      },
+      "section_71_posthumous_works": {
+        "rule": "German UrhG §71 provides a 25-year related right for a previously unreleased work first lawfully released after copyright expiry.",
+        "application": "Not applicable: this tale was published in the 1819 edition during the lifetimes of the named Brothers Grimm editors; it is not a previously unreleased posthumous work.",
+        "source_url": "https://www.gesetze-im-internet.de/englisch_urhg/englisch_urhg.html"
+      }
+    },
+    "poland": {
+      "article_99_1_first_publication": {
+        "rule": "Polish Copyright and Related Rights Act, Article 99¹: 25-year exclusive right for a publisher who first lawfully publishes or otherwise disseminates a work whose copyright term has expired and whose copies were not previously made publicly available.",
+        "application": "Not applicable: the tale was first published in 1819 while its named editors were alive and their copyright was still running. This is not a first post-expiry publication.",
+        "source_url": "https://dziennikustaw.gov.pl/D2025000002401.pdf"
+      },
+      "article_99_2_critical_or_scientific_editions": {
+        "rule": "Polish Copyright and Related Rights Act, Article 99²: 30-year related right for a critical or scientific edition prepared after the copyright term has expired.",
+        "application": "Not applicable: BookCheef uses the historical 1819 source edition and its PDM scans for verification, not a later critical or scientific edition. No critical apparatus or modern scholarly editorial content is reproduced.",
+        "source_url": "https://dziennikustaw.gov.pl/D2025000002401.pdf"
+      },
+      "article_36_and_39": {
+        "rule": "Article 36(1) sets 70 years from the death of the last surviving co-author; Article 39 counts full years following the year of the triggering event.",
+        "application": "With the conservative last-survivor date of 20 September 1863, the term expired after 31 December 1933.",
+        "source_url": "https://dziennikustaw.gov.pl/D2025000002401.pdf"
+      }
+    },
+    "eu_eea": {
+      "rule": "Directive 2006/116/EC Article 1(1)–(2) sets life plus 70 years and uses the death of the last surviving author for joint works; Article 4 addresses first lawful publication of previously unpublished works after expiry.",
+      "application": "The tale was already lawfully published in 1819 during the named editors' lifetimes. No post-expiry first-publication right is being relied on or reproduced.",
+      "source_url": "https://eur-lex.europa.eu/legal-content/en/ALL/?uri=CELEX%3A02006L0116-20111031"
+    }
+  },
+  "other_elements": {
+    "translation": {
+      "created": "2026-11-28",
+      "source": "1819 German text only",
+      "third_party_translations_used": false,
+      "commercial_basis": "OpenAI Europe Terms of Use, effective 16 January 2026: user owns Output and OpenAI assigns any rights it has in Output to the user to the extent permitted by law; similarity/non-uniqueness is expressly noted.",
+      "source_url": "https://openai.com/policies/eu-terms-of-use/",
+      "credit": "Новый русский перевод подготовлен с помощью ИИ специально для BookCheef, 28.11.2026."
+    },
+    "cover": {
+      "file_url": "https://raw.githubusercontent.com/KDNMGames/BookCheef/main/book-publications/assets/2026-11-28-bremenskie-muzykanty-cover.svg",
+      "commercial_basis": "Original vector output created for BookCheef; OpenAI Europe Terms of Use assign any OpenAI rights in Output to the user to the extent permitted by law.",
+      "source_url": "https://openai.com/policies/eu-terms-of-use/",
+      "external_assets": [],
+      "typography": "Title and author are in separate top and bottom areas, not over the illustration."
+    }
+  },
+  "final_assessment": "The original 1819 text is public domain in the reviewed EU/EEA, Germany, Netherlands, Poland, Mexico (100-year maximum check), and United States contexts. The historical scan files each carry Public Domain Mark 1.0. No later translation, critical edition, posthumous publication, historical illustration, or third-party cover is used. This assessment is documented for the reviewed territories and is not a universal legal opinion for every jurisdiction."
+}
